@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thông báo nhắc nhở - FACE CLASS</title>
+  </head>
+  <body>
+    <table>
+      <tr>
+        <td align="center">
+          <h1>FACE CLASS</h1>
+          <p>Xác nhận thiết lập nhắc nhở thành công</p>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <h2>Xin chào {{ name }}!</h2>
+          <p>Bạn đã thiết lập thành công lời nhắc vào lúc {{ remindsuccesstime }}.</p>
+
+          <p>Thông tin chi tiết:</p>
+          <ul>
+            <li><strong>Môn học:</strong> {{ subject_name }}</li>
+            <li><strong>Giờ điểm danh:</strong> {{ date_attendance }}</li>
+            <li><strong>Thời gian nhắc nhở:</strong> {{ timeremind }}</li>
+          </ul>
+
+          <p>Chúng tôi sẽ gửi thông báo đúng thời gian như đã thiết lập. Vui lòng đảm bảo thiết bị của bạn đang được kết nối internet để nhận thông báo kịp thời.</p>
+
+          <p>Nếu bạn muốn chỉnh sửa hoặc hủy bỏ nhắc nhở này, vui lòng đăng nhập vào hệ thống FACE CLASS để thực hiện.</p>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <p>Trân trọng,</p>
+          <p><strong>FACE CLASS</strong></p>
+          <p>Website: <a href="https://faceclass.io">faceclass.io</a></p>
+          <p>Phone: 0825 025 347</p>
+          <p>Email: <a href="mailto:zephyrnguyen.vn@gmail.com">zephyrnguyen.vn@gmail.com</a></p>
+          <hr />
+          <p>&copy; 2025 FACE CLASS. All rights reserved.</p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

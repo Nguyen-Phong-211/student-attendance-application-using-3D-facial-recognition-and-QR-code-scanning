@@ -1,0 +1,27 @@
+{
+  "files": {
+    "main.css": "/static/css/main.f44dd013.css",
+    "main.js": "/static/js/main.af2e8f26.js",
+    "static/js/453.3892f310.chunk.js": "/static/js/453.3892f310.chunk.js",
+    "static/media/fa-solid-900.ttf": "/static/media/fa-solid-900.2582b0e4bcf85eceead0.ttf",
+    "static/media/fa-brands-400.ttf": "/static/media/fa-brands-400.1815e00441357e01619e.ttf",
+    "static/media/fa-solid-900.woff2": "/static/media/fa-solid-900.2463b90d9a316e4e5294.woff2",
+    "static/media/fa-brands-400.woff2": "/static/media/fa-brands-400.c210719e60948b211a12.woff2",
+    "static/media/fa-regular-400.ttf": "/static/media/fa-regular-400.914997e1bdfc990d0897.ttf",
+    "static/media/computer.png": "/static/media/computer.6e0f19eb1a095ce9deaa.png",
+    "static/media/face-recognition.png": "/static/media/face-recognition.11bdc5265c2031b7942e.png",
+    "static/media/login.png": "/static/media/login.0878a973f0b9e4325186.png",
+    "static/media/fa-regular-400.woff2": "/static/media/fa-regular-400.89999bdf5d835c012025.woff2",
+    "static/media/Face_ID_logo.png": "/static/media/Face_ID_logo.3c6e388d6a67d6094f5e.png",
+    "static/media/fa-v4compatibility.ttf": "/static/media/fa-v4compatibility.da94ef451f4969af06e6.ttf",
+    "static/media/fa-v4compatibility.woff2": "/static/media/fa-v4compatibility.ea8f94e1d22e0d35ccd4.woff2",
+    "index.html": "/index.html",
+    "main.f44dd013.css.map": "/static/css/main.f44dd013.css.map",
+    "main.af2e8f26.js.map": "/static/js/main.af2e8f26.js.map",
+    "453.3892f310.chunk.js.map": "/static/js/453.3892f310.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.f44dd013.css",
+    "static/js/main.af2e8f26.js"
+  ]
+}

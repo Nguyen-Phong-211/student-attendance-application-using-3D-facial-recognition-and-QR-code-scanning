@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mã OTP - FACE CLASS</title>
+  </head>
+  <body>
+    <table>
+      <tr>
+        <td align="center">
+          <h1>FACE CLASS</h1>
+          <p>Thông báo đăng ký thành công</p>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <h2>Xin chào!</h2>
+          <p>Bạn đã đăng ký thành công vào hệ thống lúc {{ datelogin }}</p>
+
+          <p>Thông tin đăng ký:</p>
+          <ul>
+            <li>Tài khoản: {{ user_email }}</li>
+            <li>Địa chỉ IP: {{ ip_address }}</li>
+            <li>Thiết bị: {{ device_info }}</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <p>Trân trọng,</p>
+          <p><strong>FACE CLASS</strong></p>
+          <p>Website: <a href="https://faceclass.io">faceclass.io</a></p>
+          <p>Phone number: 0825 025 347</p>
+          <p>
+            Email:
+            <a href="mailto:zephyrnguyen.vn@gmail.com"
+              >zephyrnguyen.vn@gmail.com</a
+            >
+          </p>
+          <hr />
+          <p>&copy; 2025 FACE CLASS. All rights reserved.</p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
