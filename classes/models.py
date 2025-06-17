@@ -19,18 +19,14 @@ class Class(models.Model):
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     academic_year = models.ForeignKey(AcademicYear, on_delete=models.CASCADE)
-    room = models.ForeignKey("rooms.Room", on_delete=models.CASCADE)
     status = models.CharField(max_length=1, default='1')
     class_code = models.CharField(max_length=20, default=generate_random_code, unique=True, null=True)
-    lecturer = models.ForeignKey("lecturers.Lecturer", on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'classes'
         indexes = [
             models.Index(fields=['department_id']),
             models.Index(fields=['academic_year_id']),
-            models.Index(fields=['room_id']),
-            models.Index(fields=['lecturer_id'])
         ]
         managed = True
         verbose_name = 'Class'

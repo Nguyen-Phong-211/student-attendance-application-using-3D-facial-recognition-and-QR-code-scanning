@@ -52,3 +52,4 @@
 6. `python manage.py seed_semester`
 7. `python manage.py seed_class`
 8. `python manage.py seed_subject`
+9. `python manage.py seed_shift`

@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     
     'corsheaders',
     'rest_framework',
+    "channels",
     
     'attend3d',
     'accounts',
@@ -92,6 +93,18 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'attend3d.wsgi.application'
+
+# Channels
+ASGI_APPLICATION = 'attend3d.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
 
 
 # Database
@@ -161,8 +174,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = '[your email]'
-EMAIL_HOST_PASSWORD = '[your password app]'   
+EMAIL_HOST_USER = 
+EMAIL_HOST_PASSWORD = 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 MEDIA_URL = '/media/'
