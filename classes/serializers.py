@@ -3,6 +3,11 @@ from students.models import Major
 from students.models import Subject, Department
 from subjects.models import AcademicYear
 from .models import Class
+import random
+
+def generate_random_code():
+    length = random.randint(10, 20)
+    return ''.join(str(random.randint(0, 9)) for _ in range(length))
 
 class MajorSerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,4 +20,15 @@ class ClassSerializer(serializers.ModelSerializer):
     class Meta:
         model = Class 
         fields = ['class_id', 'class_name', 'academic_year', 'department', 'class_code', 'status', 'created_at']
+        
+# Create a class
+class ClassCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Class
+        fields = ['class_code', 'class_name', 'department', 'academic_year', 'status', 'created_at']
+        read_only_fields = ['class_code', 'created_at']
+        
+    def create(self, validated_data):
+        validated_data['class_code'] = generate_random_code()
+        return super().create(validated_data)
         

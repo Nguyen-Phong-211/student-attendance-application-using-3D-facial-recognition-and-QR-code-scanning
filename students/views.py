@@ -4,6 +4,7 @@ from rest_framework import status, permissions
 from .serializers import StudentSerializer, DepartmentSerializer, MajorSerializer
 from .models import Department, Major
 from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
 
 class CreateStudentView(APIView):
     permission_classes = [permissions.IsAuthenticated] 
@@ -18,6 +19,7 @@ class CreateStudentView(APIView):
 class DepartmentListAPIView(generics.ListAPIView):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
+    permission_classes = [permissions.IsAuthenticated]
     
 class MajorListAPIView(APIView):
     def get(self, request):
