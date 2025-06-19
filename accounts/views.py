@@ -5,14 +5,14 @@ from django.http import JsonResponse
 from django.contrib.auth.hashers import make_password
 from .models import Account 
 from accounts.models import Role 
-from .serializers import AccountSerializer
+from .serializers import AccountSerializer, AccountResetPassword
 from django.middleware.csrf import get_token
 import traceback
 from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
 from django.core.cache import cache
 from .otp_storage import otp_storage
-import random
+import random, string
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
 from rest_framework import status, permissions
@@ -32,6 +32,11 @@ import string
 from datetime import datetime
 from students.models import Student
 from rest_framework.permissions import AllowAny
+from accounts.utils.recaptcha import verify_recaptcha
+from rest_framework.permissions import IsAdminUser
+
+def generate_password(length=8):
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
 @api_view(['GET'])
 @ensure_csrf_cookie
@@ -164,8 +169,13 @@ def update_avatar(request, account_id):
 class LoginView(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
+        
         serializer = LoginSerializer(data=request.data)
-
+        captcha_token = request.data.get("captcha")
+        
+        if not captcha_token or not verify_recaptcha(captcha_token):
+            return Response({'error': 'Xác minh reCAPTCHA không hợp lệ.'}, status=400)
+        
         if serializer.is_valid():
             user = serializer.validated_data['user']
             refresh = RefreshToken.for_user(user)
@@ -193,3 +203,80 @@ class LoginView(APIView):
             })
 
         return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    
+class ResetPasswordView(APIView):
+    def post(self, request, email):
+        data = request.data.copy()
+        data['email'] = email 
+
+        serializer = AccountResetPassword(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Đặt lại mật khẩu thành công. Mật khẩu đã được gửi qua email."})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+# Update status of account (is_locked = True -> Lock account's user)
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def lock_account(request, email):
+    try:
+        account = Account.objects.get(email=email)
+        account.is_locked = request.data.get("is_locked", True)
+        account.save()
+        return Response({'detail': 'Tài khoản đã được cập nhật.'})
+    except Account.DoesNotExist:
+        return Response({'error': 'Không tìm thấy tài khoản.'}, status=404)
+    
+# Create multiple account when uploading .xlsx file
+@api_view(['POST'])
+@permission_classes([IsAdminUser]) # is_staff = True
+def bulk_create_students(request):
+    students = request.data.get("students", [])
+    student_role = Role.objects.get(role_id=3)  # Hoặc name='Sinh viên'
+    created = []
+
+    for student in students:
+        email = student.get("email")
+        phone = student.get("phone")
+        name = student.get("name")
+        student_code = student.get("student_code")
+
+        if not all([email, phone, name]):
+            continue
+
+        password = generate_password()
+        hashed_password = make_password(password)
+
+        account = Account.objects.create(
+            email=email,
+            phone_number=phone,
+            full_name=name,
+            student_code=student_code,
+            password=hashed_password,
+            role=student_role,
+            user_type='student',
+            is_active=True,
+        )
+
+        Student.objects.create(
+            account=account,
+            student_code=student_code,
+            fullname=name,
+        )
+
+        html_content = render_to_string("account/create_multiple_account.html", {
+            "name": name,
+            "phone": phone,
+            "password": password,
+        })
+
+        subject = "Tài khoản đăng nhập hệ thống điểm danh"
+        from_email = "zephyrnguyen.vn@gmail.com"
+
+        msg = EmailMultiAlternatives(subject, '', from_email, [email])
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+
+        created.append(email)
+
+    return Response({"created": created})

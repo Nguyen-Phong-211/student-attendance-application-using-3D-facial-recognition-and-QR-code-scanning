@@ -2,6 +2,10 @@ from rest_framework import serializers
 from accounts.models import Account, Role
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
+from django.core.mail import send_mail
+from accounts.models import Account 
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
 
 class AccountSerializer(serializers.ModelSerializer):
     role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all())
@@ -77,3 +81,38 @@ class AccountListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
         fields = ['account_id', 'email', 'is_active', 'phone_number', 'is_locked']
+        
+class AccountResetPassword(serializers.Serializer):
+    email = serializers.EmailField()
+    new_password = serializers.CharField(min_length=8)
+    
+    def validate_email(self, value):
+        try:
+            account = Account.objects.get(email=value)
+            if not hasattr(account, 'student'):
+                raise serializers.ValidationError("Email không thuộc về sinh viên.")
+            return value
+        except Account.DoesNotExist:
+            raise serializers.ValidationError("Tài khoản với email này không tồn tại.")
+
+    def save(self):
+        email = self.validated_data['email']
+        new_password = self.validated_data['new_password']
+        account = Account.objects.get(email=email)
+
+        account.set_password(new_password)
+        account.save()
+
+        subject = 'Reset Password'
+        from_email = 'zephyrnguyen.vn@gmail.com'
+        to = [email]
+
+        html_content = render_to_string('account/reset_password.html', {'new_password': new_password})
+        text_content = f'Mật khẩu mới của bạn là: {new_password}'
+
+        msg = EmailMultiAlternatives(subject, text_content, from_email, to)
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+
+        return account
+    
