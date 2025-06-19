@@ -5,6 +5,8 @@ from .serializers import StudentSerializer, DepartmentSerializer, MajorSerialize
 from .models import Department, Major
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
+from students.serializers import StudentGetListSerializer
+from .models import Student
 
 class CreateStudentView(APIView):
     permission_classes = [permissions.IsAuthenticated] 
@@ -25,4 +27,10 @@ class MajorListAPIView(APIView):
     def get(self, request):
         majors = Major.objects.select_related('department').all()
         serializer = MajorSerializer(majors, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class StudentListView(APIView):
+    def get(self, request):
+        students = Student.objects.select_related('account').all()
+        serializer = StudentGetListSerializer(students, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

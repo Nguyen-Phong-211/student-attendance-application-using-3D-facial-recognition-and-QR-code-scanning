@@ -66,6 +66,14 @@ class LoginSerializer(serializers.Serializer):
 
         if not account.check_password(password):
             raise serializers.ValidationError("Sai mật khẩu")
+        
+        if account.is_locked:
+            raise serializers.ValidationError("Tài khoản của bạn bị khoá. Vui lòng liên hệ với quản trị hệ thống.")
 
         data['user'] = account
         return data
+    
+class AccountListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = ['account_id', 'email', 'is_active', 'phone_number', 'is_locked']

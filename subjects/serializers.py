@@ -12,7 +12,7 @@ class SubjectSerializer(serializers.ModelSerializer):
         fields = [
             'subject_id', 'subject_code', 'subject_name',
             'academic_year', 'department',
-            'theoretical_credits', 'practical_credits',
+            'theoretical_credits', 'practical_credits', 'total_credits',
             'status', 'status_display' 
         ]
 

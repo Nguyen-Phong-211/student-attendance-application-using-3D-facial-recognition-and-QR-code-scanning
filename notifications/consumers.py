@@ -27,10 +27,12 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
 
     @database_sync_to_async
     def get_user_from_token(self):
+        query = self.scope['query_string'].decode()
+        params = dict(param.split('=') for param in query.split('&'))
+        token = params.get('token')
         try:
-            token = self.scope['query_string'].decode().split('=')[1]
-            decoded_data = jwt_decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            user_id = decoded_data.get("user_id")
-            return Account.objects.get(pk=user_id)
-        except Exception:
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+            user_id = payload.get("user_id") or payload.get("user_id")
+            return Account.objects.get(account_id=user_id)
+        except:
             return None

@@ -6,6 +6,7 @@ import uuid
 from django.core.files.base import ContentFile
 from rest_framework import serializers
 from accounts.models import Account
+from accounts.serializers import AccountListSerializer
 
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -60,3 +61,9 @@ class MajorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Major
         fields = ['major_id', 'major_name', 'major_code', 'department']
+        
+class StudentGetListSerializer(serializers.ModelSerializer):
+    account = AccountListSerializer(read_only=True)
+    class Meta:
+        model = Student 
+        fields = ['student_id', 'student_code', 'fullname', 'account']

@@ -53,7 +53,7 @@ class ClassCreateView(APIView):
             
             channel_layer = get_channel_layer()
             async_to_sync(channel_layer.group_send)(
-                f"user_{request.user.id}",
+                f"user_{request.user.account_id}",
                 {
                     "type": "send.notification",
                     "content": {

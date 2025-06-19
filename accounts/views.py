@@ -31,6 +31,7 @@ from django.conf import settings
 import string
 from datetime import datetime
 from students.models import Student
+from rest_framework.permissions import AllowAny
 
 @api_view(['GET'])
 @ensure_csrf_cookie
@@ -161,6 +162,7 @@ def update_avatar(request, account_id):
 
 
 class LoginView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
 
