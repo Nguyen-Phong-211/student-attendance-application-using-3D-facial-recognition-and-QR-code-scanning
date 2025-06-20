@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.contrib.auth.hashers import make_password
 from .models import Account 
 from accounts.models import Role 
-from .serializers import AccountSerializer, AccountResetPassword
+from .serializers import AccountSerializer, AccountResetPassword, AccountResetPasswordLecturer
 from django.middleware.csrf import get_token
 import traceback
 from django.core.mail import send_mail
@@ -34,9 +34,22 @@ from students.models import Student
 from rest_framework.permissions import AllowAny
 from accounts.utils.recaptcha import verify_recaptcha
 from rest_framework.permissions import IsAdminUser
+from django.db.models import Q
+from students.models import Department, Major
+from notifications.models import Notification
+from audit.models import AuditLog
+from lecturers.models import Lecturer
 
 def generate_password(length=8):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 @api_view(['GET'])
 @ensure_csrf_cookie
@@ -227,41 +240,118 @@ def lock_account(request, email):
     except Account.DoesNotExist:
         return Response({'error': 'Không tìm thấy tài khoản.'}, status=404)
     
-# Create multiple account when uploading .xlsx file
+# Update status of account (is_locked = False -> Unlock account's user)
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def unlock_account(request, email):
+    try:
+        account = Account.objects.get(email=email)
+        account.is_locked = request.data.get("is_locked", False)
+        account.save()
+        return Response({'detail': 'Tài khoản đã được cập nhật.'})
+    except Account.DoesNotExist:
+        return Response({'error': 'Không tìm thấy tài khoản.'}, status=404)
+    
+# Create multiple student's account when uploading .xlsx file
 @api_view(['POST'])
 @permission_classes([IsAdminUser]) # is_staff = True
 def bulk_create_students(request):
     students = request.data.get("students", [])
-    student_role = Role.objects.get(role_id=3)  # Hoặc name='Sinh viên'
+    student_role = Role.objects.get(role_id=3)
     created = []
 
     for student in students:
         email = student.get("email")
         phone = student.get("phone")
-        name = student.get("name")
+        
         student_code = student.get("student_code")
-
+        name = student.get("name")
+        gender = student.get("gender")
+        dob = student.get("dob")
+        department_name = student.get("department")
+        major_name = student.get("major")
+        
         if not all([email, phone, name]):
+            print(f"[SKIP] Missing info: {student}")
+            continue
+
+        if gender == "Nam":
+            gender = '1'
+        else:
+            gender = '0'
+
+        department = Department.objects.filter(department_name__iexact=department_name).first()
+        if not department:
+            print(f"[SKIP] Department not found: {department_name}")
+            continue
+
+        major = Major.objects.filter(major_name__iexact=major_name, department=department).first()
+        if not major:
+            print(f"[SKIP] Major not found or not under department {department_name}: {major_name}")
             continue
 
         password = generate_password()
         hashed_password = make_password(password)
-
+        
         account = Account.objects.create(
             email=email,
             phone_number=phone,
-            full_name=name,
-            student_code=student_code,
             password=hashed_password,
             role=student_role,
             user_type='student',
-            is_active=True,
         )
 
         Student.objects.create(
-            account=account,
             student_code=student_code,
             fullname=name,
+            gender=gender,
+            dob=dob,
+            account=account,
+            department=department,
+            major=major,
+            status='1'
+        )
+        
+        Notification.objects.create(
+            title=f"Bạn đã tạo tài khoản cho sinh viên {name}",
+            content=f"Sinh viên {name} đã có tài khoản trong hệ thống.",
+            created_by=request.user
+        )
+        
+        AuditLog.objects.create(
+            operation='C',
+            old_data={},
+            new_data={
+                "email": email,
+                "phone_number": phone,
+            },
+            ip_address=get_client_ip(request),
+            user_agent=request.META.get('HTTP_USER_AGENT', ''),
+            changed_by=request.user,
+            record_id=str(account.pk),
+            entity_id=str(account.pk),
+            entity_name='Account',
+            action_description=f"Tạo tài khoản sinh viên: {name}"
+        )
+
+        AuditLog.objects.create(
+            operation='C',
+            old_data={},
+            new_data={
+                "student_code": student_code,
+                "name": name,
+                "gender": gender,
+                "dob": dob,
+                "department": department.department_name,
+                "major": major.major_name,
+            },
+            ip_address=get_client_ip(request),
+            user_agent=request.META.get('HTTP_USER_AGENT', ''),
+            changed_by=request.user,
+            record_id=str(account.pk),
+            entity_id=str(account.pk),
+            entity_name='Student',
+            action_description=f"Tạo hồ sơ sinh viên: {name}"
         )
 
         html_content = render_to_string("account/create_multiple_account.html", {
@@ -280,3 +370,123 @@ def bulk_create_students(request):
         created.append(email)
 
     return Response({"created": created})
+
+# Create multiple student's lecturer when uploading .xlsx file
+@api_view(['POST'])
+@permission_classes([IsAdminUser]) # is_staff = True
+def bulk_create_lecturers(request):
+    lecturers = request.data.get("lecturers", [])
+    lecturer_role = Role.objects.get(role_id=2)
+    created = []
+
+    for lecturer in lecturers:
+        email = lecturer.get("email")
+        phone = lecturer.get("phone")
+        
+        lecturer_code = lecturer.get("lecturer_code")
+        name = lecturer.get("name")
+        gender = lecturer.get("gender")
+        dob = lecturer.get("dob")
+        department_name = lecturer.get("department")
+        
+        if not all([email, phone, name]):
+            print(f"[SKIP] Missing info: {lecturer}")
+            continue
+
+        if gender == "Nam":
+            gender = '1'
+        else:
+            gender = '0'
+
+        department = Department.objects.filter(department_name__iexact=department_name).first()
+        if not department:
+            print(f"[SKIP] Department not found: {department_name}")
+            continue
+
+        password = generate_password()
+        hashed_password = make_password(password)
+        
+        account = Account.objects.create(
+            email=email,
+            phone_number=phone,
+            password=hashed_password,
+            role=lecturer_role,
+            user_type='lecturer',
+        )
+
+        Lecturer.objects.create(
+            fullname=name,
+            gender=gender,
+            dob=dob,
+            account=account,
+            department=department,
+            # status='1'
+        )
+        
+        Notification.objects.create(
+            title=f"Bạn hàng tạo tài khoản cho giảng viên {name}",
+            content=f"Giảng viên {name} hàng có tài khoản trong hệ thống.",
+            created_by=request.user
+        )
+        
+        AuditLog.objects.create(
+            operation='C',
+            old_data={},
+            new_data={
+                "email": email,
+                "phone_number": phone,
+            },
+            ip_address=get_client_ip(request),
+            user_agent=request.META.get('HTTP_USER_AGENT', ''),
+            changed_by=request.user,
+            record_id=str(account.pk),
+            entity_id=str(account.pk),
+            entity_name='Account',
+            action_description=f"Tạo tài khoản giảng viên: {name}"
+        )
+
+        AuditLog.objects.create(
+            operation='C',
+            old_data={},
+            new_data={
+                "fullname": name,
+                "gender": gender,
+                "dob": dob,
+                "department": department.department_name,
+            },
+            ip_address=get_client_ip(request),
+            user_agent=request.META.get('HTTP_USER_AGENT', ''),
+            changed_by=request.user,
+            record_id=str(account.pk),
+            entity_id=str(account.pk),
+            entity_name='Lecturer',
+            action_description=f"Tạo hồ sơ giảng viên: {name}"
+        )
+
+        html_content = render_to_string("account/create_multiple_account.html", {
+            "name": name,
+            "phone": phone,
+            "password": password,
+        })
+
+        subject = "Tài khoản đăng nhập hệ thống điểm danh"
+        from_email = "zephyrnguyen.vn@gmail.com"
+
+        msg = EmailMultiAlternatives(subject, '', from_email, [email])
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+
+        created.append(email)
+
+    return Response({"created": created})
+
+class ResetPasswordLecturerView(APIView):
+    def post(self, request, email):
+        data = request.data.copy()
+        data['email'] = email 
+
+        serializer = AccountResetPasswordLecturer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Đặt lại mật khẩu thành công. Mật khẩu đã được gửi qua email."})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

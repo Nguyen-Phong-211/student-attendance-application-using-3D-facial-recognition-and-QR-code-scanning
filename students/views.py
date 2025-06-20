@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
-from .serializers import StudentSerializer, DepartmentSerializer, MajorSerializer
+from .serializers import StudentSerializer, DepartmentSerializer, MajorSerializer, AllStudentGetListSerializer
 from .models import Department, Major
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
@@ -33,4 +33,13 @@ class StudentListView(APIView):
     def get(self, request):
         students = Student.objects.select_related('account').all()
         serializer = StudentGetListSerializer(students, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class AllStudentGetListView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        students = Student.objects.select_related(
+            'account', 'major__department', 'department'
+        ).all()
+        serializer = AllStudentGetListSerializer(students, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

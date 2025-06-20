@@ -2,10 +2,15 @@ from django.db import models
 from accounts.models import Account
 from students.models import Department
 from subjects.models import Subject
+import random
+
+def generate_random_code():
+    return str(random.randint(10000000, 99999999))
 
 
 class Lecturer(models.Model):
     lecturer_id = models.BigAutoField(primary_key=True)
+    lecturer_code = models.CharField(max_length=8, unique=True, default=generate_random_code, null=True, blank=True)
     fullname = models.CharField(max_length=255)
     account = models.OneToOneField(Account, on_delete=models.CASCADE)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)

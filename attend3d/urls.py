@@ -30,6 +30,7 @@ urlpatterns = [
     path('api/rooms/', include('rooms.urls')),
     path('api/', include('subjects.urls')),
     path('api/', include('notifications.urls')),
+    path('api/lecturers/', include('lecturers.urls')),
     path('', include('classes.urls')),
     path('', include('students.urls')),
     re_path(r'^(?!api/).*$', ReactAppView.as_view(), name="react_app"),

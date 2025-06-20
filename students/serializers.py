@@ -67,3 +67,11 @@ class StudentGetListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student 
         fields = ['student_id', 'student_code', 'fullname', 'account']
+
+class AllStudentGetListSerializer(serializers.ModelSerializer):
+    account = AccountListSerializer()
+    major = MajorSerializer()
+    department = DepartmentSerializer()
+    class Meta:
+        model = Student 
+        fields = '__all__'

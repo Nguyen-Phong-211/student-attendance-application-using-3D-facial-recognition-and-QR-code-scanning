@@ -116,3 +116,37 @@ class AccountResetPassword(serializers.Serializer):
 
         return account
     
+# Reset password for lecturer
+class AccountResetPasswordLecturer(serializers.Serializer):
+    email = serializers.EmailField()
+    new_password = serializers.CharField(min_length=8)
+    
+    def validate_email(self, value):
+        try:
+            account = Account.objects.get(email=value)
+            if not hasattr(account, 'lecturer'):
+                raise serializers.ValidationError("Email không thuộc về giảng viên.")
+            return value
+        except Account.DoesNotExist:
+            raise serializers.ValidationError("Tài khoản với email này không tồn tại.")
+
+    def save(self):
+        email = self.validated_data['email']
+        new_password = self.validated_data['new_password']
+        account = Account.objects.get(email=email)
+
+        account.set_password(new_password)
+        account.save()
+
+        subject = 'Reset Password'
+        from_email = 'zephyrnguyen.vn@gmail.com'
+        to = [email]
+
+        html_content = render_to_string('account/reset_password.html', {'new_password': new_password})
+        text_content = f'Mật khẩu mới của bạn là: {new_password}'
+
+        msg = EmailMultiAlternatives(subject, text_content, from_email, to)
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+
+        return account
