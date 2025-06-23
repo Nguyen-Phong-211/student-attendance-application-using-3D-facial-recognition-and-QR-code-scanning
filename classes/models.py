@@ -42,12 +42,14 @@ class ClassStudent(models.Model):
     is_active = models.CharField(max_length=1, default='0')
     created_at = models.DateTimeField(auto_now_add=True)
     registration_status = models.CharField(max_length=20, default='auto')
+    registered_by_account = models.ForeignKey('accounts.Account', on_delete=models.CASCADE)
     
     class Meta:
         db_table = 'class_students'
         indexes = [
             models.Index(fields=['class_id']),
             models.Index(fields=['student_id']),
+            models.Index(fields=['registered_by_account_id'])
         ]
         managed = True
         verbose_name = 'Class Student'
