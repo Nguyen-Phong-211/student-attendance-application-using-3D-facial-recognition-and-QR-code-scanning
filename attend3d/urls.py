@@ -21,6 +21,7 @@ from django.urls import path, re_path, include
 from django.conf.urls import include
 from django.conf import settings
 from django.conf.urls.static import static
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -34,6 +35,10 @@ urlpatterns = [
     path('', include('classes.urls')),
     path('', include('students.urls')),
     re_path(r'^(?!api/).*$', ReactAppView.as_view(), name="react_app"),
+    
+    # 
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
 
 if settings.DEBUG:
