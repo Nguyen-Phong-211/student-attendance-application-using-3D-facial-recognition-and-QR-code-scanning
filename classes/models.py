@@ -42,7 +42,7 @@ class ClassStudent(models.Model):
     is_active = models.CharField(max_length=1, default='0')
     created_at = models.DateTimeField(auto_now_add=True)
     registration_status = models.CharField(max_length=20, default='auto')
-    registered_by_account = models.ForeignKey('accounts.Account', on_delete=models.CASCADE)
+    registered_by_account = models.ForeignKey('accounts.Account', on_delete=models.CASCADE, null=True)
     
     class Meta:
         db_table = 'class_students'
@@ -70,7 +70,10 @@ class Schedule(models.Model):
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
     latitude = models.DecimalField(max_digits=10, decimal_places=5)
     longitude = models.DecimalField(max_digits=10, decimal_places=5)
-    shift = models.ForeignKey(Shift, on_delete=models.CASCADE)
+    # shift = models.ForeignKey(Shift, on_delete=models.CASCADE)
+    slot = models.ForeignKey("subjects.LessonSlot", on_delete=models.CASCADE, null=True)
+    lesson_type = models.CharField(max_length=50, null=True)
+    day_of_week = models.IntegerField(null=True)
 
     class Meta:
         db_table = 'schedules'
@@ -78,7 +81,8 @@ class Schedule(models.Model):
             models.Index(fields=['class_id']),
             models.Index(fields=['subject_id']),
             models.Index(fields=['room_id']),
-            models.Index(fields=['shift_id']),
+            # models.Index(fields=['shift_id']),
+            models.Index(fields=['slot_id']),
         ]
         managed = True
         verbose_name = 'Schedule'

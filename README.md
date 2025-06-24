@@ -53,6 +53,7 @@
 7. `python manage.py seed_class`
 8. `python manage.py seed_subject`
 9. `python manage.py seed_shift`
+10. `python manage.py seed_lesson_slot`
 
 Use daphne attend3d.asgi:application or daphne -b 127.0.0.1 -p 8000 attend3d.asgi:application to replace to python3 manage.py runserver -> real time by Websocket
 Have to install redis by brew install redis and to run redis: brew services start redis

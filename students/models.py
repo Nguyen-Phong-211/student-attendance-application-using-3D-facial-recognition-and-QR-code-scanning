@@ -78,7 +78,7 @@ class StudentSubject(models.Model):
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
     registration_status = models.CharField(max_length=20, default='auto')
     created_at = models.DateTimeField(auto_now_add=True)
-    registered_by_account = models.ForeignKey("accounts.Account", on_delete=models.CASCADE)
+    registered_by_account = models.ForeignKey("accounts.Account", on_delete=models.CASCADE, null=True)
 
     class Meta:
         db_table = 'student_subjects'

@@ -33,7 +33,7 @@ urlpatterns = [
     path('api/', include('notifications.urls')),
     path('api/lecturers/', include('lecturers.urls')),
     path('', include('classes.urls')),
-    path('', include('students.urls')),
+    path('api/', include('students.urls')),
     re_path(r'^(?!api/).*$', ReactAppView.as_view(), name="react_app"),
     
     # 

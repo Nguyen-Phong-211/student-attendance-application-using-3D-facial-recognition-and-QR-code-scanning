@@ -88,3 +88,23 @@ class Shift(models.Model):
 
     def __str__(self):
         return self.shift_name
+    
+class LessonSlot(models.Model):
+    slot_id = models.BigIntegerField(primary_key=True)
+    shift_id = models.ForeignKey("subjects.Shift", on_delete=models.CASCADE)
+    slot_name = models.CharField(max_length=50)
+    start_time = models.TimeField(auto_now=False)
+    end_time = models.TimeField(auto_now=False)
+    duration_minutes = models.IntegerField()
+    
+    class Meta:
+        db_table = 'lesson_slots'
+        indexes = [
+            models.Index(fields=['shift_id']),
+        ]
+        managed = True
+        verbose_name = 'Lesson Slot'
+        verbose_name_plural = 'Lesson Slots'
+
+    def __str__(self):
+        return self.slot_name
