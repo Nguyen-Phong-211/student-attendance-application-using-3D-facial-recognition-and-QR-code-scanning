@@ -1,10 +1,11 @@
 from rest_framework import serializers
-from .models import Subject, AcademicYear
+from .models import Subject, AcademicYear, Semester
 from students.models import Department
+from students.serializers import DepartmentSerializer
 
 class SubjectSerializer(serializers.ModelSerializer):
-    academic_year = serializers.CharField(source='academic_year.academic_year_name')
-    department = serializers.CharField(source='department.department_name')
+    academic_year = AcademicYear()
+    department = DepartmentSerializer(read_only=True)
     status_display = serializers.SerializerMethodField() 
 
     class Meta:
@@ -23,3 +24,9 @@ class AcademicYearSerializer(serializers.ModelSerializer):
     class Meta:
         model = AcademicYear
         fields = ['academic_year_id', 'academic_year_name', 'academic_year_code']
+        
+class SemesterSerializer(serializers.ModelSerializer):
+    academic_year = AcademicYear()
+    class Meta:
+        model = Semester
+        fields = '__all__'

@@ -20,7 +20,7 @@ class Class(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     academic_year = models.ForeignKey(AcademicYear, on_delete=models.CASCADE)
     status = models.CharField(max_length=1, default='1')
-    class_code = models.CharField(max_length=20, default=generate_random_code, unique=True, null=True)
+    class_code = models.CharField(max_length=20, default=generate_random_code, unique=True)
 
     class Meta:
         db_table = 'classes'
@@ -42,7 +42,7 @@ class ClassStudent(models.Model):
     is_active = models.CharField(max_length=1, default='0')
     created_at = models.DateTimeField(auto_now_add=True)
     registration_status = models.CharField(max_length=20, default='auto')
-    registered_by_account = models.ForeignKey('accounts.Account', on_delete=models.CASCADE, null=True)
+    registered_by_account = models.ForeignKey('accounts.Account', on_delete=models.CASCADE)
     
     class Meta:
         db_table = 'class_students'
@@ -71,8 +71,8 @@ class Schedule(models.Model):
     latitude = models.DecimalField(max_digits=10, decimal_places=5)
     longitude = models.DecimalField(max_digits=10, decimal_places=5)
     # shift = models.ForeignKey(Shift, on_delete=models.CASCADE)
-    slot = models.ForeignKey("subjects.LessonSlot", on_delete=models.CASCADE, null=True)
-    lesson_type = models.CharField(max_length=50, null=True)
+    slot = models.ForeignKey("subjects.LessonSlot", on_delete=models.CASCADE)
+    lesson_type = models.CharField(max_length=50)
     day_of_week = models.IntegerField(null=True)
 
     class Meta:

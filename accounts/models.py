@@ -55,7 +55,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
     avatar_url = models.ImageField(upload_to='avatars/', blank=True, null=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
     is_locked = models.BooleanField(default=False)
-    reset_token = models.CharField(max_length=255, null=True, blank=True)
+    # reset_token = models.CharField(max_length=255, null=True, blank=True)
     is_verified_email = models.BooleanField(default=False)
     user_type = models.CharField(max_length=50)
     is_staff = models.BooleanField(default=False)

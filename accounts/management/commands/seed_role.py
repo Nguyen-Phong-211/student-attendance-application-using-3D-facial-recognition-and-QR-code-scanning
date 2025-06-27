@@ -6,7 +6,7 @@ class Command(BaseCommand):
     help = 'Seed roles into the database'
 
     def handle(self, *args, **options):
-        roles = ['admin', 'lecturer', 'student']
+        roles = ['admin', 'lecturer', 'student', 'superadmin']
         for role in roles:
             obj, created = Role.objects.get_or_create(role_name=role)
             if created:

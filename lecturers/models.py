@@ -10,14 +10,14 @@ def generate_random_code():
 
 class Lecturer(models.Model):
     lecturer_id = models.BigAutoField(primary_key=True)
-    lecturer_code = models.CharField(max_length=8, unique=True, default=generate_random_code, null=True, blank=True)
+    lecturer_code = models.CharField(max_length=8, unique=True, default=generate_random_code)
     fullname = models.CharField(max_length=255)
     account = models.OneToOneField(Account, on_delete=models.CASCADE)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     gender = models.CharField(max_length=1)
     dob = models.DateField()
     avatar_url = models.TextField(null=True)
-    phone_number = models.CharField(max_length=10)
+    # phone_number = models.CharField(max_length=10)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -52,3 +52,28 @@ class LecturerSubject(models.Model):
 
     def __str__(self):
         return f"{self.subject_id} - {self.lecturer_id}"
+    
+class SubjectClass(models.Model):
+    subject_class_id = models.BigAutoField(primary_key=True)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    class_id = models.ForeignKey("classes.Class", on_delete=models.CASCADE)
+    lecturer = models.ForeignKey("lecturers.Lecturer", on_delete=models.CASCADE)
+    semester = models.ForeignKey("subjects.Semester", on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'subject_classes'
+        indexes = [
+            models.Index(fields=['subject_id']),
+            models.Index(fields=['class_id']),
+            models.Index(fields=['lecturer_id']),
+            models.Index(fields=['semester_id']),
+        ]
+        unique_together = ('subject', 'class_id', 'lecturer', 'semester')
+        managed = True
+        verbose_name = 'Subject Class'
+        verbose_name_plural = 'Subject Classes'
+
+    def __str__(self):
+        return f"{self.subject_id} - {self.class_id}"

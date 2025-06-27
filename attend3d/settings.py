@@ -62,6 +62,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'attend3d.middleware.thread_local.ThreadLocalMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -80,6 +81,7 @@ TEMPLATES = [
         'DIRS': [
             os.path.join(BASE_DIR, 'attend3d', 'templates', 'react'),
             os.path.join(BASE_DIR, 'templates'),
+            os.path.join(BASE_DIR, 'media', 'avatars'),
         ],
         'APP_DIRS': True,
         'OPTIONS': {

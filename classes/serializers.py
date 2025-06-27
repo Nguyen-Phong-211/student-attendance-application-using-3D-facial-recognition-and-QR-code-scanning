@@ -15,7 +15,8 @@ class MajorSerializer(serializers.ModelSerializer):
         fields = ['major_id', 'major_name', 'department']
         
 class ClassSerializer(serializers.ModelSerializer):
-    academic_year = serializers.CharField(source='academic_year.academic_year_name')
+    # academic_year = serializers.CharField(source='academic_year.academic_year_name')
+    academic_year = AcademicYear()
     department = serializers.CharField(source='department.department_name')
     class Meta:
         model = Class 

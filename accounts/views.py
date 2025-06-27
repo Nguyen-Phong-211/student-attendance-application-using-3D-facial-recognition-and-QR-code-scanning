@@ -52,11 +52,14 @@ def get_client_ip(request):
     return ip
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 @ensure_csrf_cookie
 def csrf_cookie(request):
     return JsonResponse({'message': 'CSRF cookie set'})
 
+@csrf_exempt
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def send_otp(request):
     data = request.data
     email = data.get("email", "").strip().lower()
@@ -89,7 +92,9 @@ def send_otp(request):
 
 
 # Save information of user then auth OTP
+@csrf_exempt
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def verify_otp(request):
     print(request.data)
     email = request.data.get("email", "").strip().lower()
@@ -110,7 +115,7 @@ def verify_otp(request):
 
     user_data = stored['data']
     # user_data['password'] = make_password(user_data['password'])
-    user_data['reset_token'] = reset_token
+    # user_data['reset_token'] = reset_token
 
     serializer = AccountSerializer(data=user_data)
     if serializer.is_valid():
@@ -128,7 +133,7 @@ def verify_otp(request):
                 'email': account.email,
                 'phone_number': account.phone_number,
                 'role_id': getattr(account.role, 'role_id', None),
-                'reset_token': account.reset_token,
+                # 'reset_token': account.reset_token,
                 'user_type': account.user_type,
             },
             "refresh_token": str(refresh),
@@ -204,6 +209,13 @@ class LoginView(APIView):
                     }
                 except Exception as e:
                     student_data = {}
+            elif hasattr(user, 'lecturer'):
+                
+                extra_data = {
+                    "fullname": user.lecturer.fullname,
+                    "lecturer_code": user.lecturer.lecturer_code,
+                    "lecturer_id": user.lecturer.lecturer_id,
+                }
 
             return Response({
                 "refresh": str(refresh),
@@ -211,6 +223,7 @@ class LoginView(APIView):
                 "user": {
                     "account_id": user.account_id,
                     "role": user.role.role_name if user.role else None,
+                    "role_id": user.role.role_id if user.role else None,
                     **student_data,
                 }
             })

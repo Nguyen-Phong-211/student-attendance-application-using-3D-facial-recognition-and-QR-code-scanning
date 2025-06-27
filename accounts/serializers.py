@@ -12,10 +12,9 @@ class AccountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Account
-        fields = ['account_id', 'role', 'email', 'password', 'phone_number', 'reset_token', 'user_type']
+        fields = ['account_id', 'role', 'email', 'password', 'phone_number', 'user_type']
         extra_kwargs = {
             'password': {'write_only': True},
-            'reset_token': {'required': False},
             'user_type': {'read_only': True},
         }
 
@@ -66,13 +65,10 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError("Tài khoản của bạn bị khoá. Vui lòng liên hệ với quản trị hệ thống.")
 
         if not account.role or account.role.role_id != role_input:
-            raise serializers.ValidationError("Vai trò không đúng. Vui lòng chọn đúng vai trò.")
+            raise serializers.ValidationError("Vui lòng kiểm tra lại thông tin.")
 
         if not account.check_password(password):
-            raise serializers.ValidationError("Sai mật khẩu")
-        
-        if account.is_locked:
-            raise serializers.ValidationError("Tài khoản của bạn bị khoá. Vui lòng liên hệ với quản trị hệ thống.")
+            raise serializers.ValidationError("Vui lòng kiểm tra lại thông tin")
 
         data['user'] = account
         return data

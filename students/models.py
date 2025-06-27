@@ -162,27 +162,3 @@ class CreditLimit(models.Model):
 
     def __str__(self):
         return f"{self.student_id} - {self.credit_limit}"
-    
-class SubjectClass(models.Model):
-    subject_class_id = models.BigAutoField(primary_key=True)
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
-    class_id = models.ForeignKey("classes.Class", on_delete=models.CASCADE)
-    lecturer = models.ForeignKey("lecturers.Lecturer", on_delete=models.CASCADE)
-    semester = models.ForeignKey("subjects.Semester", on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'subject_classes'
-        indexes = [
-            models.Index(fields=['subject_id']),
-            models.Index(fields=['class_id']),
-            models.Index(fields=['lecturer_id']),
-            models.Index(fields=['semester_id']),
-        ]
-        managed = True
-        verbose_name = 'Subject Class'
-        verbose_name_plural = 'Subject Classes'
-
-    def __str__(self):
-        return f"{self.subject_id} - {self.class_id}"
