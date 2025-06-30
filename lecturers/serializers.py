@@ -9,6 +9,7 @@ from .models import Lecturer, SubjectClass, LecturerSubject
 from accounts.serializers import AccountListSerializer
 from classes.models import Class
 from subjects.models import Semester, Subject
+from subjects.serializers import SubjectSerializer, SemesterSerializer
 
 class LecturerListSerializer(serializers.ModelSerializer):
     account = AccountListSerializer(read_only=True)
@@ -23,6 +24,52 @@ class AllLecturerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lecturer
         fields = '__all__'
+        
+class SubjectClassSerializer(serializers.ModelSerializer):
+    subject = SubjectSerializer()
+    class_id = serializers.SerializerMethodField()
+    semester = SemesterSerializer()
+    class Meta:
+        model = SubjectClass
+        fields = '__all__'
+        
+    def get_class_id(self, obj):
+        return {
+            'class_id': obj.class_id.class_id,
+            'class_name': obj.class_id.class_name,
+            'class_code': obj.class_id.class_code
+        }
+        
+class LecturerWithSubjectsSerializer(serializers.ModelSerializer):
+    account = AccountListSerializer(read_only=True)
+    department = DepartmentSerializer(read_only=True)
+    # subjects = serializers.SerializerMethodField()
+    subject_classes = serializers.SerializerMethodField()
+    class Meta:
+        model = Lecturer
+        fields = [
+            'lecturer_id',
+            'lecturer_code',
+            'fullname',
+            'gender',
+            'dob',
+            'account',
+            'department',
+            # 'subjects',
+            'subject_classes',
+        ]
+
+    def get_subjects(self, obj):
+        subject_qs = Subject.objects.filter(
+            lecturersubject__lecturer_id=obj.lecturer_id
+        ).distinct()
+        return SubjectSerializer(subject_qs, many=True).data
+    
+    def get_subject_classes(self, obj):
+        subject_classes_qs = SubjectClass.objects.filter(lecturer=obj)
+        return SubjectClassSerializer(subject_classes_qs, many=True).data
+    
+    
 
 class LecturerAssignmentSerializer(serializers.Serializer):
     lecturer_id = serializers.IntegerField()

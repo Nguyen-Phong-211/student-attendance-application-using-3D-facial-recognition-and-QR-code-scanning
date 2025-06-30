@@ -3,8 +3,13 @@ from .models import Subject, AcademicYear, Semester
 from students.models import Department
 from students.serializers import DepartmentSerializer
 
+class AcademicYearSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AcademicYear
+        fields = ['academic_year_id', 'academic_year_name', 'academic_year_code']
+
 class SubjectSerializer(serializers.ModelSerializer):
-    academic_year = AcademicYear()
+    academic_year = AcademicYearSerializer(read_only=True)
     department = DepartmentSerializer(read_only=True)
     status_display = serializers.SerializerMethodField() 
 
@@ -19,11 +24,6 @@ class SubjectSerializer(serializers.ModelSerializer):
 
     def get_status_display(self, obj):
         return 'Hoạt động' if obj.status else 'Bảo trì'
-    
-class AcademicYearSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AcademicYear
-        fields = ['academic_year_id', 'academic_year_name', 'academic_year_code']
         
 class SemesterSerializer(serializers.ModelSerializer):
     academic_year = AcademicYear()
