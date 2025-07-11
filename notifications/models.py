@@ -8,15 +8,19 @@ class Notification(models.Model):
     notification_id = models.BigAutoField(primary_key=True)
     title = models.CharField(max_length=255)
     content = models.TextField()
-    created_by = models.ForeignKey(Account, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='notifications_created')
     is_read = models.CharField(max_length=1, default='0')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    # add column
+    to_target = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='notifications_received', null=True)
 
     class Meta:
         db_table = 'notifications'
         indexes = [
             models.Index(fields=['created_by']),
+            models.Index(fields=['to_target']),
         ]
         managed = True
         verbose_name = 'Notification'

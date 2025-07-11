@@ -39,6 +39,7 @@ from students.models import Department, Major
 from notifications.models import Notification
 from audit.models import AuditLog
 from lecturers.models import Lecturer
+from django.contrib.auth import login
 
 def generate_password(length=8):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
@@ -196,6 +197,7 @@ class LoginView(APIView):
         
         if serializer.is_valid():
             user = serializer.validated_data['user']
+            login(request, user) 
             refresh = RefreshToken.for_user(user)
 
             student_data = {}

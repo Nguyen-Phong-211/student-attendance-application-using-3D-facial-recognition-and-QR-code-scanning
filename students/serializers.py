@@ -60,7 +60,7 @@ class DepartmentSerializer(serializers.ModelSerializer):
         
 class MajorSerializer(serializers.ModelSerializer):
     # department = serializers.CharField(source='department.department_id')
-    department = Department()
+    department = DepartmentSerializer()
     class Meta:
         model = Major
         fields = ['major_id', 'major_name', 'major_code', 'department']

@@ -54,7 +54,10 @@ INSTALLED_APPS = [
     'classes',
     'leaves',
     'lecturers',
-    'notifications',
+    
+    # 'notifications',
+    'notifications.apps.NotificationsConfig',
+
     'rooms',
     'students',
     'subjects',

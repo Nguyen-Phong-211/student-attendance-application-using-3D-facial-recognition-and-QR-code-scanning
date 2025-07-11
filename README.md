@@ -51,8 +51,8 @@
 
 - **Backend:** Django, Django Channels (ASGI), REST API
 - **Realtime:** WebSocket, Redis (Pub/Sub)
-- **Database:** PostgreSQL/MySQL (configurable)
-- **Frontend:** (Optional: Next.js, React, or Django Template)
+- **Database:** PostgreSQL (configurable)
+- **Frontend:** (React, Tailwindcss, Ant Design)
 - **Email/SMS:** SMTP, HTML Template
 - **DevOps:** Docker-ready, cloud deployment supported
 
@@ -68,7 +68,7 @@
 
 ### 1. Environment Setup
 
-- Python 3.8+
+- Python 3.13.5
 - Redis
 - Django, Django Channels, required packages
 

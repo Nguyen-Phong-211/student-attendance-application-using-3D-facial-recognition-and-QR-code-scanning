@@ -25,20 +25,20 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/accounts/', include('accounts.urls')),
-    path('api/admin/', include('admin_panel.urls')),
-    path('api/', include('attend3d.api_urls')),  
-    path('api/rooms/', include('rooms.urls')),
-    path('api/', include('subjects.urls')),
-    path('api/', include('notifications.urls')),
-    path('api/lecturers/', include('lecturers.urls')),
-    path('', include('classes.urls')),
-    path('api/', include('students.urls')),
+    path('api/v1/accounts/', include('accounts.urls')),
+    path('api/v1/admin/', include('admin_panel.urls')),
+    path('api/v1/', include('attend3d.api_urls')),  
+    path('api/v1/rooms/', include('rooms.urls')),
+    path('api/v1/', include('subjects.urls')),
+    path('api/v1/', include('notifications.urls')),
+    path('api/v1/lecturers/', include('lecturers.urls')),
+    path('api/v1/', include('classes.urls')),
+    path('api/v1/', include('students.urls')),
     re_path(r'^(?!api/).*$', ReactAppView.as_view(), name="react_app"),
     
     # 
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
 
 if settings.DEBUG:
