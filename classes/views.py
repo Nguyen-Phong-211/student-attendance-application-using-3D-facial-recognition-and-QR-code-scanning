@@ -5,7 +5,7 @@ from students.models import Department
 from students.serializers import DepartmentSerializer
 from .models import Class
 from students.models import Major
-from .serializers import MajorSerializer, ClassSerializer, ClassCreateSerializer
+from .serializers import MajorSerializer, ClassSerializer, ClassCreateSerializer, ClassUpdateSerializer
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework import status
@@ -16,6 +16,7 @@ from django.utils.timezone import now
 from rest_framework.permissions import IsAuthenticated
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from .utils.request import get_client_ip, get_user_agent
 
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -67,7 +68,8 @@ class ClassCreateView(APIView):
                 title="Lớp học mới đã được tạo",
                 content=f"Lớp {new_class.class_name} đã được thêm vào hệ thống.",
                 created_by=request.user,
-                is_read='0'
+                is_read='0',
+                to_target=request.user
             )
             
             AuditLog.objects.create(
@@ -87,4 +89,28 @@ class ClassCreateView(APIView):
                 'message': 'Tạo lớp học thành công',
                 'data': serializer.data
             }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# Update class
+class ClassUpdateAPIView(APIView):
+    def put(self, request, pk):
+        try:
+            class_instance = Class.objects.get(pk=pk)
+        except Class.DoesNotExist:
+            return Response({"error": "Lớp học không tồn tại"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ClassUpdateSerializer(class_instance, data=request.data)
+        if serializer.is_valid():
+            
+            class_instance._changed_by = request.user
+            class_instance._ip_address = get_client_ip(request)
+            class_instance._user_agent = get_user_agent(request)
+
+            serializer.save()
+
+            return Response({
+                "message": "Cập nhật thành công",
+                "data": serializer.data
+            })
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

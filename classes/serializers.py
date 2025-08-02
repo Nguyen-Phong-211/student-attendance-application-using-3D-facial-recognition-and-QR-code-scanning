@@ -6,6 +6,8 @@ from .models import Class
 import random
 from subjects.serializers import AcademicYearSerializer
 from students.serializers import DepartmentSerializer
+from subjects.models import AcademicYear
+from students.models import Department
 
 def generate_random_code():
     length = random.randint(10, 20)
@@ -37,7 +39,26 @@ class ClassCreateSerializer(serializers.ModelSerializer):
 
 # Update a class
 class ClassUpdateSerializer(serializers.ModelSerializer):
+    academic_year_code = serializers.CharField(write_only=True)
+    department_code = serializers.CharField(write_only=True)
+    status = serializers.CharField()
+
     class Meta:
         model = Class
-        fields = ['class_name', 'department', 'academic_year', 'status']
-        read_only_fields = ['class_code', 'created_at']
+        fields = ['class_name', 'academic_year_code', 'department_code', 'status']
+
+    def update(self, instance, validated_data):
+        instance.class_name = validated_data.get('class_name', instance.class_name)
+        instance.status = validated_data.get('status', instance.status)
+
+        academic_year_code = validated_data.get('academic_year_code')
+        if academic_year_code:
+            instance.academic_year = AcademicYear.objects.get(academic_year_code=academic_year_code)
+
+        department_code = validated_data.get('department_code')
+        if department_code:
+            instance.department = Department.objects.get(department_code=department_code)
+
+        instance.save()
+        return instance
+

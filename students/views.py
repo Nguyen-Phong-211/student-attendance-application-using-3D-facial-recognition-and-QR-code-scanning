@@ -10,6 +10,8 @@ from .models import Student
 from rest_framework.decorators import api_view, permission_classes
 from notifications.models import Notification
 from audit.models import AuditLog
+from django.shortcuts import get_object_or_404
+from accounts.models import Account
 
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
@@ -137,3 +139,15 @@ def create_student(request):
             "student_code": student.student_code
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# Update major
+class MajorUpdateAPIView(APIView):
+    def put(self, request, pk):
+        major = get_object_or_404(Major, pk=pk)
+        serializer = MajorSerializer(major, data=request.data, partial=True)
+        if serializer.is_valid():
+            request._changed_by = request.user
+            request._request_data = request.data 
+            serializer.save()
+            return Response({"message": "Cập nhật thành công", "data": serializer.data})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -59,11 +59,16 @@ class DepartmentSerializer(serializers.ModelSerializer):
         fields = ['department_id', 'department_name', 'department_code']
         
 class MajorSerializer(serializers.ModelSerializer):
-    # department = serializers.CharField(source='department.department_id')
     department = DepartmentSerializer()
+    
+    department_id = serializers.PrimaryKeyRelatedField(
+        queryset=Department.objects.all(),
+        source='department',
+        write_only=True
+    )
     class Meta:
         model = Major
-        fields = ['major_id', 'major_name', 'major_code', 'department']
+        fields = ['major_id', 'major_name', 'major_code', 'department', 'department_id']
         
 class StudentGetListSerializer(serializers.ModelSerializer):
     account = AccountListSerializer(read_only=True)
@@ -131,5 +136,5 @@ class StudentCreateSerializer(serializers.Serializer):
             student_code=code,
             **validated_data
         )
-        
+    
         return student
