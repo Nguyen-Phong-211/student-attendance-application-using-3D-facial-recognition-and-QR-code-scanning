@@ -122,6 +122,12 @@ daphne -b 127.0.0.1 -p 8000 attend3d.asgi:application
 
 ---
 
+## To run environment python
+source env/bin/activate
+
+## To download and install all libraries
+pip freeze > requirements.txt
+
 ## 💡 Usage Guide
 
 - Log in to the system with your provided account.
