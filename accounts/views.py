@@ -115,8 +115,6 @@ def verify_otp(request):
         return Response({'error': 'Mã OTP không đúng'}, status=400)
 
     user_data = stored['data']
-    # user_data['password'] = make_password(user_data['password'])
-    # user_data['reset_token'] = reset_token
 
     serializer = AccountSerializer(data=user_data)
     if serializer.is_valid():
@@ -134,7 +132,6 @@ def verify_otp(request):
                 'email': account.email,
                 'phone_number': account.phone_number,
                 'role_id': getattr(account.role, 'role_id', None),
-                # 'reset_token': account.reset_token,
                 'user_type': account.user_type,
             },
             "refresh_token": str(refresh),
@@ -146,92 +143,75 @@ def verify_otp(request):
 @csrf_exempt
 @api_view(['POST'])
 def update_avatar(request, account_id):
-    if request.method == 'POST':
-        if 'avatar' not in request.FILES:
-            return JsonResponse({'error': 'Không có file avatar được gửi lên'}, status=400)
+    avatar_file = request.FILES.get('avatar')
+    avatar_base64 = request.data.get('avatar_base64')
 
-        avatar_file = request.FILES['avatar']
+    if not avatar_file and not avatar_base64:
+        return JsonResponse({'error': 'Không có file hoặc base64 được gửi lên'}, status=400)
 
-        avatar_dir = os.path.join(settings.MEDIA_ROOT, 'avatars')
-        os.makedirs(avatar_dir, exist_ok=True)
+    avatar_dir = os.path.join(settings.MEDIA_ROOT, 'avatars')
+    os.makedirs(avatar_dir, exist_ok=True)
 
-        # Create image's name file
-        random_digits = ''.join(random.choices(string.digits, k=10))
-        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+    random_digits = ''.join(random.choices(string.digits, k=10))
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+
+    if avatar_file:
         ext = os.path.splitext(avatar_file.name)[1]
         filename = f"avatar_{random_digits}_{timestamp}{ext}"
-
         filepath = os.path.join(avatar_dir, filename)
-
         with open(filepath, 'wb+') as destination:
             for chunk in avatar_file.chunks():
                 destination.write(chunk)
+    else:
+        header, data = avatar_base64.split(',')
+        ext = header.split('/')[1].split(';')[0]
+        filename = f"avatar_{random_digits}_{timestamp}.{ext}"
+        filepath = os.path.join(avatar_dir, filename)
+        with open(filepath, 'wb') as f:
+            f.write(base64.b64decode(data))
 
-        avatar_url = 'avatars/' + filename
+    avatar_url = 'avatars/' + filename
+    try:
+        account = Account.objects.get(account_id=account_id)
+        account.avatar_url = avatar_url
+        account.save()
+    except Account.DoesNotExist:
+        return JsonResponse({'error': 'Không tìm thấy tài khoản'}, status=404)
 
-        # Save image in database
-        try:
-            account = Account.objects.get(account_id=account_id)
-            account.avatar_url = avatar_url 
-            account.save()
-        except Account.DoesNotExist:
-            return JsonResponse({'error': 'Không tìm thấy tài khoản'}, status=404)
+    return JsonResponse({
+        'message': 'Upload avatar thành công',
+        'avatar_url': settings.MEDIA_URL + avatar_url,
+    })
 
-        return JsonResponse({
-            'message': 'Upload avatar thành công',
-            'avatar_url': settings.MEDIA_URL + avatar_url,
-        })
-
-    return JsonResponse({'error': 'Phương thức không được hỗ trợ'}, status=405)
-
-
+# Login
 class LoginView(APIView):
     permission_classes = [AllowAny]
+
     def post(self, request):
-        
         serializer = LoginSerializer(data=request.data)
         captcha_token = request.data.get("captcha")
-        
+
         if not captcha_token or not verify_recaptcha(captcha_token):
             return Response({'error': 'Xác minh reCAPTCHA không hợp lệ.'}, status=400)
-        
+
         if serializer.is_valid():
             user = serializer.validated_data['user']
-            login(request, user) 
-            refresh = RefreshToken.for_user(user)
+            login(request, user)
 
-            student_data = {}
-            if hasattr(user, 'role') and user.role.role_name == "student":
-                try:
-                    student = user.student
-                    student_data = {
-                        "fullname": student.fullname,
-                        "student_code": student.student_code,
-                        "student_id": student.student_id
-                    }
-                except Exception as e:
-                    student_data = {}
-            elif hasattr(user, 'lecturer'):
-                
-                extra_data = {
-                    "fullname": user.lecturer.fullname,
-                    "lecturer_code": user.lecturer.lecturer_code,
-                    "lecturer_id": user.lecturer.lecturer_id,
-                }
+            refresh = RefreshToken.for_user(user)
 
             return Response({
                 "refresh": str(refresh),
                 "access": str(refresh.access_token),
                 "user": {
                     "account_id": user.account_id,
-                    "role": user.role.role_name if user.role else None,
-                    "role_id": user.role.role_id if user.role else None,
-                    **student_data,
+                    "phone_number": user.phone_number,
+                    "email": user.email,
                 }
             })
 
         return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-    
+# End login
 class ResetPasswordView(APIView):
     def post(self, request, email):
         data = request.data.copy()
