@@ -204,9 +204,11 @@ class LoginView(APIView):
                 "refresh": str(refresh),
                 "access": str(refresh.access_token),
                 "user": {
-                    "account_id": user.account_id,
-                    "phone_number": user.phone_number,
-                    "email": user.email,
+                    # "account_id": user.account_id,
+                    # "phone_number": user.phone_number,
+                    # "email": user.email,
+                    "message": "Đăng nhập thành công",
+                    "avatar": request.build_absolute_uri(user.avatar_url.url) if user.avatar_url else None
                 }
             })
 
