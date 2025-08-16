@@ -68,7 +68,7 @@ const AppRoutes = () => {
             <Route path="/student/information/*" element={<ProtectedRoute><StudentInformation /></ProtectedRoute>} />
             <Route path="/attendance-statistics" element={<ProtectedRoute><AttendanceStatistics /></ProtectedRoute>} />
             <Route path="/timetable" element={<ProtectedRoute><TimeTable /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/profile/*" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="*" element={<ErrorPage />} />
 
             {/* Admin */}

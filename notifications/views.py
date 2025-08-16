@@ -10,7 +10,7 @@ class UserNotificationListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Notification.objects.filter(created_by=self.request.user).order_by('-created_at') # , is_read='0'
+        return Notification.objects.filter(to_target=self.request.user).order_by('-created_at') # , is_read='0'
     
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

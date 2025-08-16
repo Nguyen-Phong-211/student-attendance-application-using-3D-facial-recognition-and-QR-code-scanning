@@ -33,6 +33,7 @@ import MobileMenu from "./MobileMenu";
 import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 import api from '../../api/axiosInstance';
+import { v4 as uuidv4 } from 'uuid';
 
 export default function Header() {
   const [openDrawer, setOpenDrawer] = useState(false);
@@ -40,6 +41,7 @@ export default function Header() {
 
   const [user, setUser] = useState(null);
   const [notifications, setNotifications] = useState([]);
+  const randomId = uuidv4();
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -152,20 +154,6 @@ export default function Header() {
               },
             ],
           },
-          // {
-          //   key: "user-information-account",
-          //   label: (
-          //     <a href="/account/information-account">{t("account_info")}</a>
-          //   ),
-          //   icon: <SnippetsOutlined />,
-          // },
-          // {
-          //   key: "change-password",
-          //   label: (
-          //     <a href="/account/change-password">{t("change_password")}</a>
-          //   ),
-          //   icon: <TeamOutlined />,
-          // },
           {
             key: "general-setting",
             label: <a href="/general-setting">{t("general_setting")}</a>,
@@ -268,7 +256,7 @@ export default function Header() {
         <p className="text-sm text-gray-500">Không có thông báo.</p>
       )}
       <a
-        href="/notifications"
+        href={`/profile/${randomId}?tab=notifications`}
         className="block text-center mt-2 text-blue-500 hover:underline text-sm"
       >
         Xem tất cả
