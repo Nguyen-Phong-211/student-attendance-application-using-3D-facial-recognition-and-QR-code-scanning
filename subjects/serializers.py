@@ -3,6 +3,7 @@ from .models import Subject, AcademicYear, Semester
 from students.models import Department
 from students.serializers import DepartmentSerializer
 
+
 class AcademicYearSerializer(serializers.ModelSerializer):
     class Meta:
         model = AcademicYear
@@ -30,3 +31,17 @@ class SemesterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Semester
         fields = '__all__'
+
+class SemesterByAcademicSerializer(serializers.ModelSerializer):
+    academic_year = AcademicYear()
+    class Meta:
+        model = Semester
+        fields = '__all__'
+
+# Display subjects to register
+class DisplaySubjectForRegistion(serializers.ModelSerializer):
+    department = DepartmentSerializer(read_only=True)
+    academic_year = AcademicYearSerializer(read_only=True)
+    class Meta:
+        model = Subject
+        fields = ['subject_id', 'subject_name', 'theoretical_credits', 'practical_credits', 'total_credits', 'department', 'academic_year']

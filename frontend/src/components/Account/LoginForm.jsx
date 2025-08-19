@@ -1,0 +1,81 @@
+import React from "react";
+import { Form, Button } from "antd";
+import LoginFormItems from "./LoginFormItems";
+import LoginFooterLinks from "./LoginFooterLinks";
+import { useAuth } from "../../auth/AuthContext";
+
+const LoginForm = ({ messageApi, executeRecaptcha, navigate, randomId }) => {
+    const [form] = Form.useForm();
+    const { login, user } = useAuth();
+
+    const onFinish = async (values) => {
+        if (!executeRecaptcha) {
+            messageApi.error("Lỗi reCAPTCHA.");
+            return;
+        }
+
+        try {
+            const captchaToken = await executeRecaptcha("login_action");
+            if (!captchaToken) {
+                messageApi.error("Vui lòng xác minh reCAPTCHA.");
+                return;
+            }
+            // Call the login function from AuthContext
+            await login({ ...values, captcha: captchaToken });
+
+            messageApi.success("Đăng nhập thành công!");
+
+            const params = new URLSearchParams(window.location.search);
+            const redirect = params.get("redirect");
+
+            if (redirect) {
+                navigate(redirect);
+            } else {
+                if (user?.role === "admin") {
+                    navigate("/admin");
+                } else {
+                    navigate("/");
+                }
+            }
+        } catch (error) {
+        
+            const errMsg =
+                error?.response?.data?.errors?.non_field_errors?.[0] || 
+                error?.response?.data?.detail ||
+                "Đăng nhập thất bại. Vui lòng thử lại!";
+
+            messageApi.error(errMsg);
+        }
+    };
+
+    return (
+        <Form
+            name="login"
+            layout="vertical"
+            method="POST"
+            form={form}
+            onFinish={onFinish}
+            autoComplete="off"
+        >
+            <LoginFormItems />
+            <LoginFooterLinks randomId={randomId} />
+            <Form.Item>
+                <Button type="primary" htmlType="submit" block size="large">
+                    Đăng nhập
+                </Button>
+            </Form.Item>
+
+            <div className="text-center">
+                <span className="text-gray-600">Chưa có tài khoản? </span>
+                <a
+                    href={`/account/signup/${randomId}`}
+                    className="text-blue-600 hover:underline"
+                >
+                    Đăng ký
+                </a>
+            </div>
+        </Form>
+    );
+};
+
+export default LoginForm;

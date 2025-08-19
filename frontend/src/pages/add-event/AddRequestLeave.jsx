@@ -91,11 +91,13 @@ export default function ContactPage() {
             record[dataIndex]
                 ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
                 : '',
-        onFilterDropdownVisibleChange: visible => {
-            if (visible) {
-                setTimeout(() => searchInput?.select(), 100);
-            }
-        },
+                filterDropdownProps: {
+                    onOpenChange: (open) => {
+                        if (open) {
+                            setTimeout(() => searchInput?.select(), 100);
+                        }
+                    },
+                },
         render: text =>
             searchedColumn === dataIndex ? (
                 <Highlighter

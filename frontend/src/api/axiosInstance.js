@@ -1,49 +1,80 @@
 import axios from 'axios';
-import { getAccessToken, getRefreshToken, setTokens, clearTokensAndRedirect } from '../utils/auth';
 
 const api = axios.create({
     baseURL: process.env.REACT_APP_API_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    }
+    headers: { 'Content-Type': 'application/json' },
+    withCredentials: true,
 });
 
-api.interceptors.request.use(config => {
-    const token = getAccessToken();
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
+const raw = axios.create({
+    baseURL: process.env.REACT_APP_API_URL,
+    withCredentials: true,
 });
+
+let isRefreshing = false;
+let refreshPromise = null;
+
+const shouldSkip = (url = '') => {
+    return (
+        url.includes('accounts/login/') ||
+        url.includes('accounts/logout/') ||
+        url.includes('accounts/refresh-token/')
+    );
+};
 
 api.interceptors.response.use(
-    res => res,
-    async error => {
+    (response) => response,
+    async (error) => {
         const originalRequest = error.config;
+        const resp = error.response;
 
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        if (!resp) return Promise.reject(error);
+        if (originalRequest._retry) return Promise.reject(error);
+        if (shouldSkip(originalRequest.url)) return Promise.reject(error);
+
+        const onAuthPage = window.location.pathname.startsWith('/account/');
+
+        if (resp.status === 401) {
             originalRequest._retry = true;
 
             try {
-                const refreshToken = getRefreshToken();
-                if (!refreshToken) throw new Error("No refresh token");
+                if (!isRefreshing) {
+                    isRefreshing = true;
+                    refreshPromise = raw.post('accounts/refresh-token/', {});
+                }
+                await refreshPromise;
+                isRefreshing = false;
+                refreshPromise = null;
 
-                const response = await axios.post(`${process.env.REACT_APP_API_URL}/token/refresh/`, {
-                    refresh: refreshToken,
-                });
-
-                const { access } = response.data;
-                setTokens({ access });
-
-                originalRequest.headers.Authorization = `Bearer ${access}`;
                 return api(originalRequest);
-            } catch (refreshError) {
-                clearTokensAndRedirect();
+            } catch (e) {
+                isRefreshing = false;
+                refreshPromise = null;
+
+                if (onAuthPage) {
+                    return Promise.reject(e);
+                }
+
+                try { await raw.post('accounts/logout/', {}); } catch (_) { }
+                window.location.replace('/account/login/?session=expired');
+                return Promise.reject(e);
             }
         }
 
         return Promise.reject(error);
     }
 );
+
+export const logout = async () => {
+    try {
+        await raw.post('accounts/logout/', {});
+    } catch (err) {
+        console.error('Logout error:', err);
+    } finally {
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.replace('/account/login/');
+    }
+};
 
 export default api;

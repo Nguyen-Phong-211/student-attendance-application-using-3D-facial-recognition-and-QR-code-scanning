@@ -7,6 +7,12 @@ from accounts.models import Account
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 
+# Account List
+class AccountInformationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = ['email', 'phone_number', 'email']
+
 # Signup
 class AccountSerializer(serializers.ModelSerializer):
     role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all())

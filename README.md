@@ -91,6 +91,12 @@ sudo systemctl enable redis-server.service
 sudo systemctl start redis-server
 ```
 
+### Note: To push tables on PostgreSQL. You must do this
+```bash
+python3 manage.py makemigrations [app_name]
+python3 manage.py migrate [app_name]
+```
+
 ### 3. Initialize Sample Data
 
 Create seed commands similar to Laravel for generating sample data:
@@ -121,6 +127,10 @@ daphne -b 127.0.0.1 -p 8000 attend3d.asgi:application
 ```
 
 ---
+```bash
+python manage.py runserver but for react, you must still run npm start then you change url on browser that is http://127.0.0.1:3000
+File's changes are accounts/authentication.py (create), accounts/views.py, accounts/urls.py, attend3d/settings.py, frontend/src/utils/auth.js and frontend/src/api/axiosInstance.js
+```
 
 ## To run environment python
 source env/bin/activate

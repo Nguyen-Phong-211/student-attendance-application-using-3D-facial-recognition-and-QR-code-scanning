@@ -9,7 +9,7 @@ class Staff(models.Model):
     department = models.ForeignKey('students.Department', on_delete=models.CASCADE)
     gender = models.CharField(max_length=1)
     dob = models.DateField()
-    avatar_url = models.TextField(null=True)
+    # avatar_url = models.TextField(null=True)
     phone_number = models.CharField(max_length=10)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -2,6 +2,9 @@ import React from 'react';
 import { Card } from 'antd';
 
 export default function LeavePreview({ academicYears, subjects, selectedAcademicYear, selectedSubject, rangeDate, personalLeave, teacher, formattedDate }) {
+
+    const user = JSON.parse(localStorage.getItem('user'));
+
     return (
         <Card className="p-4">
             <div className="prose max-w-full">
@@ -14,7 +17,7 @@ export default function LeavePreview({ academicYears, subjects, selectedAcademic
                 <p className="mt-6"><strong>Kính gửi: </strong> Giảng viên {teacher}</p>
 
                 <div className="grid grid-cols-2 gap-8 mt-4">
-                    <p><strong>Em tên là: </strong> Nguyễn Văn A</p>
+                    <p><strong>Em tên là: </strong> { user.fullname }</p>
                     <p><strong>Mã số sinh viên: </strong> 21080701</p>
                 </div>
 
@@ -50,6 +53,7 @@ export default function LeavePreview({ academicYears, subjects, selectedAcademic
                         <p>{formattedDate}</p>
                         <p><strong>Người làm đơn</strong></p>
                         <p className="italic">(Ký và ghi rõ họ tên)</p>
+                        <p className='mt-5'><strong>{ user.fullname }</strong></p>
                     </div>
                 </div>
             </div>

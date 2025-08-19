@@ -6,7 +6,7 @@ from rest_framework import serializers
 from accounts.models import Account
 from students.serializers import DepartmentSerializer
 from .models import Lecturer, SubjectClass, LecturerSubject
-from accounts.serializers import AccountListSerializer
+from accounts.serializers import AccountListSerializer, AccountInformationSerializer
 from classes.models import Class
 from subjects.models import Semester, Subject
 from subjects.serializers import SubjectSerializer, SemesterSerializer
@@ -121,3 +121,13 @@ class LecturerAssignmentSerializer(serializers.Serializer):
             "lecturer_subject_ids": lecturer_subject_ids,
             "subject_class_ids": subject_class_ids
         }
+
+# 
+class LecturerWithAccountSerializer(serializers.ModelSerializer):
+    account = AccountInformationSerializer(read_only=True)
+    class Meta:
+        model = LecturerSubject
+        fields = [
+            'fullname',
+            'account'
+        ]

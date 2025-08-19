@@ -1,29 +1,57 @@
-import React, { useEffect } from "react";
-import { BrowserRouter } from 'react-router-dom';
-import AppRoutes from './routes/AppRoutes';
+// import React, { useEffect, useState } from "react";
+// import { BrowserRouter } from "react-router-dom";
+// import AppRoutes from "./routes/AppRoutes";
+// import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
+// import api from "./api/axiosInstance";
+// import { Spin } from 'antd';
+
+// const SITE_KEY = "6LcfimYrAAAAADA4cOKVbRBjWsmd4Z1LAfPwyEBm";
+
+// const App = () => {
+//   const [user, setUser] = useState(null);
+//   const [loading, setLoading] = useState(true);
+
+//   useEffect(() => {
+//     const checkAuth = async () => {
+//       try {
+//         const res = await api.get("accounts//me/", { withCredentials: true });
+//         setUser(res.data);
+//       } catch (err) {
+//         setUser(null);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+//     checkAuth();
+//   }, []);
+
+//   if (loading) return <Spin size="large" style={{position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "50%"}}/>;
+
+//   return (
+//     <GoogleReCaptchaProvider reCaptchaKey={SITE_KEY}>
+//       <BrowserRouter>
+//         <AppRoutes user={user} setUser={setUser} />
+//       </BrowserRouter>
+//     </GoogleReCaptchaProvider>
+//   );
+// };
+
+import React from "react";
+import { BrowserRouter } from "react-router-dom";
+import AppRoutes from "./routes/AppRoutes";
 import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
+import { AuthProvider } from "./auth/AuthContext";
 
-  const SITE_KEY = "6LcfimYrAAAAADA4cOKVbRBjWsmd4Z1LAfPwyEBm";
+const SITE_KEY = "6LcfimYrAAAAADA4cOKVbRBjWsmd4Z1LAfPwyEBm";
 
-  const App = () => {
-    useEffect(() => {
-      const handleStorageChange = (event) => {
-          if (event.key === "access_token" && event.newValue === null) {
-              window.location.href = "/account/login";
-          }
-          if (event.key === 'logout') {
-            window.location.href = "/account/login";
-          }
-      };
-      window.addEventListener("storage", handleStorageChange);
-      return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
-  
+const App = () => {
   return (
     <GoogleReCaptchaProvider reCaptchaKey={SITE_KEY}>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </AuthProvider>
     </GoogleReCaptchaProvider>
   );
 };

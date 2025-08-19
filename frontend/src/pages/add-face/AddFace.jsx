@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import 'dayjs/locale/vi';
-import { Breadcrumb, Card, Typography, Button, message, Tabs } from "antd";
+import { Breadcrumb, Card, Typography, Button, message } from "antd";
 import Header from "../../components/Header/Header";
 import { HomeOutlined, PlusCircleOutlined, CameraOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';

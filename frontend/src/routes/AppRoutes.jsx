@@ -10,13 +10,13 @@ import RegisterFace from "../pages/add-face/RegisterFace";
 import AddReminder from "../pages/add-event/AddReminder";
 import AddRequestLeave from "../pages/add-event/AddRequestLeave";
 import AddRequest from "../pages/add-event/AddRequest";
-import InformationAccount from "../pages/account/InfomationAccount"; //
 import ChangePassword from "../pages/account/ChangePassword"; //
-import UpdateInformation from "../pages/account/UpdateInformation"; //
+import AccountInformation from "../pages/account/AccountInformation"; //
 import GeneralSetting from "../pages/general-setting/GeneralSetting";
 import AdminDashboard from "../pages/admin/Dashboard"; //
-import StudentInformation from "../pages/student/StudentInformation";
+
 import VerifyOtp from "../pages/account/VerifyOtp"; //
+
 import ProtectedRoute from "../routes/ProtectedRoute";
 import ErrorPage from "../components/404";
 import AttendanceStatistics from "../pages/attendance-statistics/AttendanceStatistics";
@@ -53,7 +53,7 @@ const AppRoutes = () => {
             <Route path="/account/login/*" element={<Login />} />
             <Route path="/account/signup/*" element={<Signup />} />
             <Route path="/account/verify-otp/*" element={<VerifyOtp />} />
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={ <ProtectedRoute> <Home /> </ProtectedRoute> } />
             <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/add-face" element={<ProtectedRoute><AddFace /></ProtectedRoute>} />
@@ -61,11 +61,9 @@ const AppRoutes = () => {
             <Route path="/add-event/add-reminder" element={<ProtectedRoute><AddReminder /></ProtectedRoute>} />
             <Route path="/add-event/request-leave" element={<ProtectedRoute><AddRequestLeave /></ProtectedRoute>} />
             <Route path="/add-event/request-leave/request" element={<ProtectedRoute><AddRequest /></ProtectedRoute>} />
-            <Route path="/account/information-account" element={<InformationAccount />} />
             <Route path="/account/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
-            <Route path="/account/information-account/update" element={<ProtectedRoute><UpdateInformation /></ProtectedRoute>} />
             <Route path="/general-setting" element={<GeneralSetting />} />
-            <Route path="/student/information/*" element={<ProtectedRoute><StudentInformation /></ProtectedRoute>} />
+            <Route path="/account/information/update/*" element={<ProtectedRoute><AccountInformation /></ProtectedRoute>} />
             <Route path="/attendance-statistics" element={<ProtectedRoute><AttendanceStatistics /></ProtectedRoute>} />
             <Route path="/timetable" element={<ProtectedRoute><TimeTable /></ProtectedRoute>} />
             <Route path="/profile/*" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

@@ -40,6 +40,42 @@ from notifications.models import Notification
 from audit.models import AuditLog
 from lecturers.models import Lecturer
 from django.contrib.auth import login
+# 
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
+from django.contrib.auth import get_user_model
+
+@ensure_csrf_cookie
+def get_csrf(request):
+    return JsonResponse({'detail': 'CSRF cookie set'})
+
+class RefreshTokenView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        refresh_token = request.COOKIES.get('refresh_token')
+        if not refresh_token:
+            return Response({'error': 'Refresh token không tồn tại'}, status=401)
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            new_access_token = str(refresh.access_token)
+
+            # Get user from refresh token
+            user_id = refresh['user_id']
+            user = Account.objects.get(id=user_id)
+
+            # Create new refresh
+            new_refresh = RefreshToken.for_user(user)
+            new_refresh_token = str(new_refresh)
+
+            response = JsonResponse({'message': 'Token refreshed successfully'})
+            response.set_cookie('access_token', new_access_token, httponly=True, samesite='Lax')
+            response.set_cookie('refresh_token', new_refresh_token, httponly=True, samesite='Lax')
+            return response
+
+        except Exception:
+            return Response({'error': 'Invalid refresh token'}, status=401)
 
 def generate_password(length=8):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
@@ -199,21 +235,84 @@ class LoginView(APIView):
             login(request, user)
 
             refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+            refresh_token = str(refresh)
 
-            return Response({
-                "refresh": str(refresh),
-                "access": str(refresh.access_token),
+            student_fullname = user.student.fullname if hasattr(user, "student") else None
+
+            response = JsonResponse({
                 "user": {
-                    # "account_id": user.account_id,
-                    # "phone_number": user.phone_number,
-                    # "email": user.email,
                     "message": "Đăng nhập thành công",
+                    "account_id": user.account_id,
+                    "fullname": student_fullname,
+                    "email": user.email,
                     "avatar": request.build_absolute_uri(user.avatar_url.url) if user.avatar_url else None
                 }
             })
 
+            # Access token
+            response.set_cookie(
+                key='access_token',
+                value=access_token,
+                httponly=True,
+                secure=False,
+                samesite='Lax',
+                # max_age=3600,
+                path='/'
+            )
+
+            # Refresh token
+            response.set_cookie(
+                key='refresh_token',
+                value=refresh_token,
+                httponly=True,
+                secure=False,
+                samesite='Lax',
+                # max_age=7 * 24 * 3600,
+                path='/'
+            )
+
+            return response
+
         return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 # End login
+
+# Me
+class MeView(APIView):
+    def get(self, request):
+        if not request.user or not request.user.is_authenticated:
+            return Response({"error": "Unauthorized"}, status=401)
+
+        user = request.user
+        return Response({
+            "account_id": user.account_id,
+            "fullname": user.fullname if hasattr(user, "fullname") else None,
+            "avatar": request.build_absolute_uri(user.avatar_url.url) if user.avatar_url else None,
+            "email": user.email,
+        })
+# End me
+
+# Logout
+class LogoutView(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        refresh_token = request.COOKIES.get('refresh_token')
+        
+        if refresh_token:
+            try:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+            except Exception:
+                pass 
+        
+        response = JsonResponse({'message': 'Đăng xuất thành công'})
+        response.delete_cookie('access_token')
+        response.delete_cookie('refresh_token')
+        
+        return response
+# End logout
+
 class ResetPasswordView(APIView):
     def post(self, request, email):
         data = request.data.copy()

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import csrf_cookie, send_otp, verify_otp, update_avatar, LoginView, ResetPasswordView, lock_account, bulk_create_students, bulk_create_lecturers, ResetPasswordLecturerView, unlock_account
+from .views import csrf_cookie, send_otp, verify_otp, update_avatar, LoginView, ResetPasswordView, lock_account, bulk_create_students, bulk_create_lecturers, ResetPasswordLecturerView, unlock_account, LogoutView, RefreshTokenView, MeView, get_csrf
 
 urlpatterns = [
     path('send_otp/', send_otp),
@@ -13,4 +13,9 @@ urlpatterns = [
     path('bulk-create-students/', bulk_create_students, name='bulk-create-students'),
     path('bulk-create-lecturers/', bulk_create_lecturers, name='bulk-create-lecturers'),
     path('lecturer/reset-password/<str:email>', ResetPasswordLecturerView.as_view(), name='reset-password-lecturer'),
+    # Authentication and Token Management
+    path('logout/', LogoutView.as_view(), name='logout'),
+    path('refresh-token/', RefreshTokenView.as_view(), name='refresh-token'),
+    path('me/', MeView.as_view(), name='me'),
+    path('get-csrf-token/', get_csrf, name='get-csrf-token'),
 ]

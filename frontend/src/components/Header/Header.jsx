@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   Button,
-  Drawer,
   Avatar,
   Dropdown,
   message,
@@ -29,14 +28,14 @@ import {
 
 import Logo from "../../assets/general/face-recognition.png";
 import DesktopMenu from "./DesktopMenu";
-import MobileMenu from "./MobileMenu";
 import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 import api from '../../api/axiosInstance';
 import { v4 as uuidv4 } from 'uuid';
+import { logout } from "../../utils/auth";
 
 export default function Header() {
-  const [openDrawer, setOpenDrawer] = useState(false);
+  const [, setOpenDrawer] = useState(false);
   const { t } = useTranslation();
 
   const [user, setUser] = useState(null);
@@ -44,31 +43,18 @@ export default function Header() {
   const randomId = uuidv4();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-
-    if (storedUser && storedUser !== "undefined") {
+    const fetchUser = async () => {
       try {
-        setUser(JSON.parse(storedUser));
+        const res = await api.get("/accounts/me/", { withCredentials: true });
+        setUser(res.data);
       } catch (err) {
-        console.error("Error parsing user from localStorage:", err);
-        localStorage.removeItem("user");
         setUser(null);
       }
-    } else {
-      setUser(null);
-    }
-
+    };
+  
+    fetchUser();
     fetchNotifications();
   }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.setItem("logout", Date.now());
-    setUser(null);
-    window.location.href = "/account/login";
-  };
 
   const items = [
     {
@@ -177,7 +163,7 @@ export default function Header() {
           },
           {
             key: "logout",
-            onClick: handleLogout,
+            onClick: logout,
             label: <span style={{ color: "red" }}>{t("logout")}</span>,
             icon: <LogoutOutlined style={{ color: "red" }} />,
           },
@@ -272,12 +258,10 @@ export default function Header() {
     },
     {
       key: "logout",
-      label: <a href="/admin/account/logout">Đăng xuất</a>,
+      label: <a href="accounts/logout/" onClick={logout}>Đăng xuất</a>,
       icon: <LogoutOutlined />,
     },
   ];
-
-  const avatar_url = localStorage.getItem("avatar_url");
 
   return (
     <header className="flex justify-between items-center py-6 border-b border-gray-200 w-full">
@@ -333,8 +317,8 @@ export default function Header() {
                 menu={{ items: userMenuItems }}
               >
                 <div className="flex items-center gap-2 cursor-pointer">
-                  {avatar_url ? (
-                    <img src={avatar_url} alt="Avatar" height={40} width={40} />
+                  {user?.avatar ? (
+                    <img src={user?.avatar} alt="Avatar" height={40} width={40} />
                   ) : <Avatar icon={<UserOutlined />} />}
                 </div>
               </Dropdown>
@@ -346,34 +330,6 @@ export default function Header() {
       <div className="md:hidden">
         <Button icon={<MenuOutlined />} onClick={() => setOpenDrawer(true)} />
       </div>
-
-      <Drawer
-        title="Menu"
-        placement="left"
-        onClose={() => setOpenDrawer(false)}
-        open={openDrawer}
-      >
-        <MobileMenu items={items} />
-        <div className="mt-4 space-y-2">
-          {!user ? (
-            <>
-              <Button
-                block
-                type="primary"
-                href="/account/login"
-                icon={<LoginOutlined />}
-                size="large"
-              >
-                Đăng nhập
-              </Button>
-            </>
-          ) : (
-            <div className="flex flex-col space-y-2">
-              <span>Xin chào, {user.fullname}</span>
-            </div>
-          )}
-        </div>
-      </Drawer>
     </header>
   );
 }

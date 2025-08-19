@@ -79,6 +79,9 @@ class StudentSubject(models.Model):
     registration_status = models.CharField(max_length=20, default='auto')
     created_at = models.DateTimeField(auto_now_add=True)
     registered_by_account = models.ForeignKey("accounts.Account", on_delete=models.CASCADE, null=True)
+    # Change
+    subject_registration_request = models.ForeignKey("students.SubjectRegistrationRequest", on_delete=models.CASCADE, null=True)
+    # End change
 
     class Meta:
         db_table = 'student_subjects'
@@ -87,6 +90,7 @@ class StudentSubject(models.Model):
             models.Index(fields=['subject_id']),
             models.Index(fields=['semester_id']),
             models.Index(fields=['registered_by_account_id']),
+            models.Index(fields=['subject_registration_request_id']),
         ]
         managed = True
         verbose_name = 'Student Subject'

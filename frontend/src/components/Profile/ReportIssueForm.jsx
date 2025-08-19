@@ -61,7 +61,7 @@ export default function ReportIssueForm() {
                 </Form.Item>
 
                 <Form.Item
-                    name="avatar"
+                    name="imageIssues"
                     label="Ảnh mô tả (Optional)"
                 >
                     <Upload

@@ -98,10 +98,13 @@ export default function TimeTablePage() {
                 padding: "6px 8px",
                 boxShadow: "0 1px 3px rgba(0,0,0,0.08)"
               }}
-              bodyStyle={{ padding: 0 }}
+              styles={{
+                body: { padding: 0 }
+              }}
             >
+
               <Tag color={item.color || "blue"} style={{ fontWeight: 500, marginBottom: 4 }}>
-              Môn: {item.subject}
+                Môn: {item.subject}
               </Tag>
               <div style={{ fontSize: 12 }}>Thời gian: {item.time}</div>
               <div style={{ fontSize: 12, color: "#555" }}>Giảng viên: {item.lectureName}</div>
