@@ -112,6 +112,7 @@ python manage.py seed_class
 python manage.py seed_subject
 python manage.py seed_shift
 python manage.py seed_lesson_slot
+python manage.py seed_schedule
 ```
 
 **Note:**  

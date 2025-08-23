@@ -34,12 +34,6 @@ export default function ClassAssignment() {
     useEffect(() => {
         document.title = 'Gán sinh viên vào lớp/môn học';
 
-        const token = localStorage.getItem("access_token");
-        if (!token) {
-            window.location.href = "/account/login";
-            return;
-        }
-
         fetchAll();
     }, []);
 
@@ -79,17 +73,13 @@ export default function ClassAssignment() {
     const onFinish = async (values) => {
         setLoading(true);
         try {
-            const token = localStorage.getItem("access_token");
-            const response = await fetch('http://127.0.0.1:8000/api/v1/class-students/assign', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
+            const response = await api.post('students/class-students/assign/', {
                 body: JSON.stringify(values),
             });
 
-            if (response.ok) {
+            const data = response.data;
+
+            if (data.success === true) {
                 message.success('Gán thành công!');
                 form.resetFields();
                 setSelectedStudent(null);
@@ -134,6 +124,8 @@ export default function ClassAssignment() {
                                     filterOption={(input, option) =>
                                         String(option?.children).toLowerCase().includes(input.toLowerCase())
                                     }
+                                    className='w-full custom-select'
+                                    size='large'
                                 >
                                     {students.map(student => (
                                         <Option key={student.student_id} value={student.student_id}>
@@ -174,6 +166,8 @@ export default function ClassAssignment() {
                                         filterOption={(input, option) =>
                                             String(option?.children).toLowerCase().includes(input.toLowerCase())
                                         }
+                                        className='w-full custom-select'
+                                        size='large'
                                     >
                                         {academic_years.map(year => (
                                             <Option key={year.academic_year_id} value={year.academic_year_id}>
@@ -201,6 +195,8 @@ export default function ClassAssignment() {
                                         filterOption={(input, option) =>
                                             String(option?.children).toLowerCase().includes(input.toLowerCase())
                                         }
+                                        className='w-full custom-select'
+                                        size='large'
                                     >
                                         {semesters
                                             .filter(sem => sem.academic_year === selectedYear)
@@ -226,6 +222,8 @@ export default function ClassAssignment() {
                                         filterOption={(input, option) =>
                                             String(option?.children).toLowerCase().includes(input.toLowerCase())
                                         }
+                                        className='w-full custom-select'
+                                        size='large'
                                     >
                                         {filteredClasses
                                             .filter(cls => cls.academic_year?.academic_year_id === selectedYear)
@@ -250,6 +248,8 @@ export default function ClassAssignment() {
                                     filterOption={(input, option) =>
                                         String(option?.children).toLowerCase().includes(input.toLowerCase())
                                     }
+                                    className='w-full custom-select'
+                                    size='large'
                                 >
                                     {filteredSubjects
                                         .filter(sub => sub.academic_year?.academic_year_id  === selectedYear)
@@ -263,7 +263,7 @@ export default function ClassAssignment() {
                         </Card>
 
                         <Form.Item className="mt-4">
-                            <Button type="primary" htmlType="submit" loading={loading}>Gán sinh viên</Button>
+                            <Button type="primary" htmlType="submit" loading={loading} size='large'>Gán sinh viên</Button>
                         </Form.Item>
                     </Form>
                 </main>

@@ -14,33 +14,45 @@ import api from '../../api/axiosInstance';
 const Navbar = ({ changeLanguage, searchValue, setSearchValue }) => {
     const { t } = useTranslation();
     const [openDrawer, setOpenDrawer] = useState(false);
+    const [user, setUser] = useState(null);
     const [notifications, setNotifications] = useState([]);
 
     useEffect(() => {
-        const token = localStorage.getItem("access_token");
-        if (!token) {
-            window.location.href = "/account/login";
-            return;
-        }
-        fetchNotifications();
-    }, []);
+        let intervalId;
 
-    const fetchNotifications = async () => {
-        try {
-            const res = await api.get('notifications/all/');
-            const data = res.data;
-    
-            if (Array.isArray(data)) {
-                setNotifications(data);
-            } else {
-                setNotifications([]); 
+        const fetchUserAndNotifications = async () => {
+            try {
+                const res = await api.get("/accounts/me/", { withCredentials: true });
+                setUser(res.data);
+
+                if (res.data?.account_id) {
+                    fetchNotifications(res.data.account_id);
+                }
+            } catch (err) {
+                setUser(null);
             }
+        };
+
+        fetchUserAndNotifications();
+
+        intervalId = setInterval(() => {
+            if (user?.account_id) {
+                fetchNotifications(user.account_id);
+            }
+        }, 1000);
+
+        return () => clearInterval(intervalId);
+    }, [user?.account_id]);
+
+    const fetchNotifications = async (accountId) => {
+        try {
+            const res = await api.get(`notifications/${accountId}/unread/`);
+            setNotifications(Array.isArray(res.data) ? res.data : []);
         } catch (error) {
-            console.error("Lỗi khi tải thông báo:", error);
-            setNotifications([]);
             message.error("Không tải được thông báo.");
+            setNotifications([]);
         }
-    };    
+    };
 
     const notificationContent = (
         <div className="max-w-xs">
@@ -120,6 +132,7 @@ const Navbar = ({ changeLanguage, searchValue, setSearchValue }) => {
                     allowClear
                     size="large"
                     className="rounded-md w-full"
+                    style={{ borderWidth: 1.5, boxShadow: 'none' }}
                 />
 
                 <Dropdown trigger={['hover']} placement="bottomRight" menu={{ items: settingMenuItems }}>
@@ -175,7 +188,7 @@ const Navbar = ({ changeLanguage, searchValue, setSearchValue }) => {
                         <Button icon={<SettingOutlined />} block>Settings</Button>
                     </Dropdown>
 
-                    <Popover content={notificationContent} title={t('Notifications')} trigger="click">
+                    <Popover content={notificationContent} title={t('Notifications')} trigger="click"> 
                         <Button icon={<BellOutlined />} block>Notifications</Button>
                     </Popover>
 

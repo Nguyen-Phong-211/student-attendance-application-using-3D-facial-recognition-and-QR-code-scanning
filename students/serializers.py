@@ -9,6 +9,8 @@ from accounts.models import Account, Role
 from accounts.serializers import AccountListSerializer
 import random
 from notifications.models import Notification
+from datetime import date
+import re
 
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -138,3 +140,46 @@ class StudentCreateSerializer(serializers.Serializer):
         )
     
         return student
+
+# Update information
+class StudentUpdateSerializer(serializers.Serializer):
+    fullname = serializers.CharField(required=True)
+    student_code = serializers.CharField(required=True)
+    phone_number = serializers.CharField(required=True)
+    email = serializers.EmailField(required=True)
+    gender = serializers.CharField(required=True)
+    dob = serializers.DateField(required=True)
+    department_id = serializers.IntegerField(required=False)
+    major_id = serializers.IntegerField(required=False)
+
+    def validate_phone_number(self, value):
+        pattern = r'^(096|097|086|098|039|038|037|036|035|034|033|032|083|084|085|081|088|082|091|094|070|076|077|078|079|089|090|093|092|056|058|099|059|087)\d{7}$'
+        if not re.match(pattern, value):
+            raise serializers.ValidationError("Số điện thoại không hợp lệ.")
+        return value
+
+    def validate_dob(self, value):
+        age = (date.today() - value).days // 365
+        if age < 17:
+            raise serializers.ValidationError("Tuổi phải lớn hơn hoặc bằng 17.")
+        return value
+
+    def update(self, account: Account, validated_data):
+        """ account is instance Account """
+
+        # update account
+        account.phone_number = validated_data.get("phone_number", account.phone_number)
+        account.email = validated_data.get("email", account.email)
+        account.save()
+
+        # update student (OneToOne với account)
+        student = account.student  
+        student.fullname = validated_data.get("fullname", student.fullname)
+        student.student_code = validated_data.get("student_code", student.student_code)
+        student.gender = validated_data.get("gender", student.gender)
+        student.dob = validated_data.get("dob", student.dob)
+        student.department_id = validated_data.get("department_id", student.department_id)
+        student.major_id = validated_data.get("major_id", student.major_id)
+        student.save()
+
+        return account

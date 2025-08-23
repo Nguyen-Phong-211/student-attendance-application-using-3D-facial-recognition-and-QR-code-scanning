@@ -11,6 +11,8 @@ import Sidebar from '../../../components/Layout/Sidebar';
 import Navbar from '../../../components/Layout/Navbar';
 import { saveAs } from 'file-saver';
 import Highlighter from 'react-highlight-words';
+import api from '../../../api/axiosInstance';
+import { logout } from "../../../utils/auth";
 
 const { Header } = Layout;
 
@@ -35,33 +37,22 @@ export default function LecturerManagement() {
     const [unlockConfirmVisible, setUnLockConfirmVisible] = useState(false);
 
     useEffect(() => {
-        document.title = "ATTEND 3D - Lecturer Management";
+        document.title = "ATTEND 3D - Quản lý tài khoản giảng viên";
         
         const fetchLecturers = async () => {
             try {
-                const token = localStorage.getItem("access_token");
-                const response = await fetch('http://127.0.0.1:8000/api/v1/lecturers/all', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                });
-
+                const response = await api.get('lecturers/all/');
+        
                 if (response.status === 401) {
-                    localStorage.removeItem("access_token");
-                    localStorage.removeItem("refresh_token");
+                    logout();
                     window.location.href = "/account/login";
                     return;
                 }
-
-                if (!response.ok) {
-                    throw new Error('Không thể lấy dữ liệu giảng viên');
-                }
-
-                const data = await response.json();
-
+        
+                const data = response.data;
+        
                 const transformed = data.map((item, index) => ({
-                    key: item.student_id || index,
+                    key: item.lecturer_id || index,
                     lecturer_code: item.lecturer_code,
                     name: item.fullname,
                     email: item.account?.email || '',
@@ -69,12 +60,12 @@ export default function LecturerManagement() {
                     is_locked: item.account?.is_locked === true,
                     is_active: item.account?.is_active === true,
                 }));
-
+        
                 setLecturers(transformed);
             } catch (error) {
-                console.error('Lỗi khi tải danh sách sinh viên:', error);
+                console.error('Lỗi khi tải danh sách giảng viên:', error);
             }
-        };
+        };        
 
         fetchLecturers();
     }, [t]);
@@ -247,7 +238,7 @@ export default function LecturerManagement() {
 
     const exportCSV = () => {
         const now = new Date();
-        const filename = `danh_sach_sinh_vien_${now.toISOString().replace(/[-:.]/g, '').slice(0, 15)}.csv`;
+        const filename = `danh_sach_giang_vien_${now.toISOString().replace(/[-:.]/g, '').slice(0, 15)}.csv`;
         const csv = convertToCSV(filteredStudents);
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         saveAs(blob, filename);
@@ -287,35 +278,26 @@ export default function LecturerManagement() {
     const handlePasswordReset = async () => {
         setIsResettingPassword(true);
         try {
-            const token = localStorage.getItem("access_token");
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/accounts/lecturer/reset-password/${selectedLecturer.email}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({ new_password: newPassword }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Lỗi khi cập nhật mật khẩu');
-            }
-
+            await api.post(
+                `accounts/lecturer/reset-password/${selectedLecturer.email}/`,
+                { new_password: newPassword }
+            );
+    
             Modal.success({
                 title: 'Thành công',
                 content: 'Cập nhật mật khẩu thành công!',
             });
-
+    
             setResetPasswordModalVisible(false);
         } catch (error) {
             Modal.error({
                 title: 'Thất bại',
-                content: error.message,
+                content: error.response?.data?.message || error.message,
             });
         } finally {
             setIsResettingPassword(false);
         }
-    };
+    };    
 
     const openLockConfirmModal = (lecturer) => {
         setLecturerToLock(lecturer);
@@ -334,19 +316,9 @@ export default function LecturerManagement() {
     const handleConfirmLock = async () => {
         setIsLocking(true);
         try {
-            const token = localStorage.getItem("access_token");
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/accounts/lock/${lecturerToLock.email}`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ is_locked: true }),
+            await api.patch(`accounts/lock/${lecturerToLock.email}/`, {
+                is_locked: true
             });
-    
-            if (!response.ok) {
-                throw new Error('Không thể tạm dừng tài khoản');
-            }
     
             Modal.success({
                 title: 'Thành công',
@@ -368,19 +340,9 @@ export default function LecturerManagement() {
     const handleConfirmUnLock = async () => {
         setIsLocking(true);
         try {
-            const token = localStorage.getItem("access_token");
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/accounts/unlock/${lecturerToUnLock.email}`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ is_locked: false }),
+            await api.patch(`accounts/unlock/${lecturerToUnLock.email}/`, {
+                is_locked: false
             });
-    
-            if (!response.ok) {
-                throw new Error('Không thể mở tài khoản');
-            }
     
             Modal.success({
                 title: 'Thành công',
@@ -412,7 +374,7 @@ export default function LecturerManagement() {
 
                 <main className="mx-4 my-4 p-4 sm:p-6 bg-white rounded shadow">
                     <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
-                        <h1 className="text-2xl font-bold">Quản lý giảng viên</h1>
+                        <h1 className="text-2xl font-bold">Quản lý tài khoản giảng viên</h1>
                         <div className="flex flex-wrap gap-3">
                             <Button
                                 type="default"
@@ -421,8 +383,8 @@ export default function LecturerManagement() {
                             >
                                 Làm mới
                             </Button>
-                            <Button type="primary" icon={<PlusOutlined />} href='/admin/management/lecturer/create'>
-                                {t('Add Lecturer')}
+                            <Button type="primary" icon={<PlusOutlined />} href='/admin/management/lecturers/create' key={"4-2-1"}>
+                                Thêm danh sách giảng viên
                             </Button>
                             <Button
                                 type="primary"
@@ -439,7 +401,7 @@ export default function LecturerManagement() {
                         columns={columns}
                         dataSource={filteredStudents}
                         pagination={{ pageSize: 10 }}
-                        scroll={{ x: 1000 }}
+                        scroll={{ x: 'max-content' }}
                         bordered
                     />
 
@@ -470,6 +432,8 @@ export default function LecturerManagement() {
                                     onChange={(e) => setNewPassword(e.target.value)}
                                     minLength={8}
                                     required
+                                    size='large'
+                                    style={{ borderWidth: 1.5, boxShadow: 'none' }}
                                 />
                                 {newPassword && newPassword.length < 8 && (
                                     <p className="text-red-500 text-sm mt-1">Mật khẩu phải có ít nhất 8 ký tự.</p>
@@ -480,6 +444,7 @@ export default function LecturerManagement() {
                                 onClick={generateRandomPassword}
                                 icon={<ReloadOutlined />}
                                 className="mt-2 bg-white border border-gray-300 w-full"
+                                size='large'
                             >
                                 Tạo mật khẩu ngẫu nhiên
                             </Button>

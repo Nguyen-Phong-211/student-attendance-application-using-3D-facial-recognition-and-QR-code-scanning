@@ -12,6 +12,7 @@ import Navbar from '../../../components/Layout/Navbar';
 import { saveAs } from 'file-saver';
 import Highlighter from 'react-highlight-words';
 import api from '../../../api/axiosInstance';
+import { logout } from "../../../utils/auth";
 
 const { Header } = Layout;
 
@@ -36,7 +37,7 @@ export default function StudentManagement() {
     const [unlockConfirmVisible, setUnLockConfirmVisible] = useState(false);
 
     useEffect(() => {
-        document.title = "ATTEND 3D - Student Management";
+        document.title = "ATTEND 3D - Quản lý tài khoản sinh viên";
         const fetchStudents = async () => {
             try {
                 const response = await api.get('accounts/students/all/');
@@ -56,9 +57,7 @@ export default function StudentManagement() {
                 setStudents(transformed);
             } catch (error) {
                 if (error.response && error.response.status === 401) {
-                    localStorage.removeItem("access_token");
-                    localStorage.removeItem("refresh_token");
-                    window.location.href = "/account/login";
+                    logout();
                 } else {
                     console.error('Lỗi khi tải danh sách sinh viên:', error);
                 }
@@ -283,19 +282,9 @@ export default function StudentManagement() {
     const handlePasswordReset = async () => {
         setIsResettingPassword(true);
         try {
-            const token = localStorage.getItem("access_token");
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/accounts/reset-password/${selectedStudent.email}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({ new_password: newPassword }),
+            await api.post(`accounts/reset-password/${selectedStudent.email}/`, {
+                new_password: newPassword
             });
-
-            if (!response.ok) {
-                throw new Error('Lỗi khi cập nhật mật khẩu. Vui lòng thử lại');
-            }
 
             Modal.success({
                 title: 'Thành công',
@@ -326,19 +315,7 @@ export default function StudentManagement() {
     const handleConfirmLock = async () => {
         setIsLocking(true);
         try {
-            const token = localStorage.getItem("access_token");
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/accounts/lock/${studentToLock.email}`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ is_locked: true }),
-            });
-    
-            if (!response.ok) {
-                throw new Error('Không thể tạm dừng tài khoản');
-            }
+            await api.patch(`accounts/lock/${studentToLock.email}/`);
     
             Modal.success({
                 title: 'Thành công',
@@ -360,23 +337,13 @@ export default function StudentManagement() {
     const handleConfirmUnLock = async () => {
         setIsLocking(true);
         try {
-            const token = localStorage.getItem("access_token");
-            const response = await fetch(`http://127.0.0.1:8000/api/v1/accounts/lock/${studentToUnLock.email}`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ is_locked: false }),
+            await api.patch(`accounts/unlock/${studentToUnLock.email}/`, {
+                is_locked: false,
             });
-    
-            if (!response.ok) {
-                throw new Error('Không thể tạm dừng tài khoản');
-            }
     
             Modal.success({
                 title: 'Thành công',
-                content: 'Đã tạm dừng tài khoản sinh viên.',
+                content: 'Đã mở khóa tài khoản sinh viên.',
             });
     
             setUnLockConfirmVisible(false);
@@ -384,7 +351,7 @@ export default function StudentManagement() {
         } catch (error) {
             Modal.error({
                 title: 'Thất bại',
-                content: error.message,
+                content: error.response?.data?.message || error.message,
             });
         } finally {
             setIsLocking(false);
@@ -404,7 +371,7 @@ export default function StudentManagement() {
 
                 <main className="mx-4 my-4 p-4 sm:p-6 bg-white rounded shadow">
                     <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
-                        <h1 className="text-2xl font-bold">Quản lý sinh viên</h1>
+                        <h1 className="text-2xl font-bold">Quản lý tài khoản sinh viên</h1>
                         <div className="flex flex-wrap gap-3">
                             <Button
                                 type="default"
@@ -413,8 +380,8 @@ export default function StudentManagement() {
                             >
                                 Làm mới
                             </Button>
-                            <Button type="primary" icon={<PlusOutlined />} href='/admin/management/student/create'>
-                                {t('Add Student')}
+                            <Button type="primary" icon={<PlusOutlined />} href='/admin/management/students/create' key={"4-1-1"}>
+                                Thêm danh sách sinh viên
                             </Button>
                             <Button
                                 type="primary"
@@ -431,7 +398,7 @@ export default function StudentManagement() {
                         columns={columns}
                         dataSource={finalData}
                         pagination={{ pageSize: 10 }}
-                        scroll={{ x: 1000 }}
+                        scroll={{ x: 'max-content' }}
                         bordered
                     />
 
@@ -462,6 +429,8 @@ export default function StudentManagement() {
                                     onChange={(e) => setNewPassword(e.target.value)}
                                     minLength={8}
                                     required
+                                    size='large'
+                                    style={{ borderWidth: 1.5, boxShadow: 'none' }}
                                 />
                                 {newPassword && newPassword.length < 8 && (
                                     <p className="text-red-500 text-sm mt-1">Mật khẩu phải có ít nhất 8 ký tự.</p>
@@ -471,7 +440,9 @@ export default function StudentManagement() {
                             <Button
                                 onClick={generateRandomPassword}
                                 icon={<ReloadOutlined />}
-                                className="mt-2 bg-white border border-gray-300 w-full"
+                                className="mt-2 w-full"
+                                type='default'
+                                size='large'
                             >
                                 Tạo mật khẩu ngẫu nhiên
                             </Button>

@@ -79,11 +79,13 @@ class LoginSerializer(serializers.Serializer):
         data['user'] = account
         return data
 # End login
+
+# ================================ Get all accounts ================================ #
 class AccountListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = ['account_id', 'email', 'is_active', 'phone_number', 'is_locked']
-        
+        fields = ['account_id', 'email', 'is_active', 'phone_number', 'is_locked', 'user_type']
+# ================================ End get all accounts ============================ #
 class AccountResetPassword(serializers.Serializer):
     email = serializers.EmailField()
     new_password = serializers.CharField(min_length=8)

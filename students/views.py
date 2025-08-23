@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
-from .serializers import StudentSerializer, DepartmentSerializer, MajorSerializer, AllStudentGetListSerializer, StudentCreateSerializer
+from .serializers import StudentSerializer, DepartmentSerializer, MajorSerializer, AllStudentGetListSerializer, StudentCreateSerializer, StudentUpdateSerializer
 from .models import Department, Major
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
@@ -150,4 +150,37 @@ class MajorUpdateAPIView(APIView):
             request._request_data = request.data 
             serializer.save()
             return Response({"message": "Cập nhật thành công", "data": serializer.data})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# update student
+class StudentUpdateAPIView(APIView):
+    def get(self, request, account_id):
+        try:
+            account = Account.objects.get(account_id=account_id)
+        except Account.DoesNotExist:
+            return Response({"error": "Account không tồn tại"}, status=status.HTTP_404_NOT_FOUND)
+
+        student = account.student
+        data = {
+            "fullname": student.fullname,
+            "student_code": student.student_code,
+            "phone_number": account.phone_number,
+            "email": account.email,
+            "gender": student.gender,
+            "dob": student.dob,
+            "department_id": student.department_id,
+            "major_id": student.major_id,
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
+    def put(self, request, account_id):
+        try:
+            account = Account.objects.get(account_id=account_id)
+        except Account.DoesNotExist:
+            return Response({"error": "Account không tồn tại"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = StudentUpdateSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.update(account, serializer.validated_data)
+            return Response({"message": "Cập nhật thành công"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

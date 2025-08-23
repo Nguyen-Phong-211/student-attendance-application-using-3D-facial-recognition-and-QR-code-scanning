@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
         const isAuthPage =
             path.startsWith("/account/login") ||
             path.startsWith("/account/signup") ||
-            path.startsWith("/account/forgot");
+            path.startsWith("/account/forgot-password");
 
         if (isAuthPage) {
             setInitializing(false);

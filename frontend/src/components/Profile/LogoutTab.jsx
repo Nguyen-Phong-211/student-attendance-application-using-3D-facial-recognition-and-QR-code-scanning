@@ -1,15 +1,11 @@
 import React, { useState } from "react";
 import { Modal } from "antd";
+import { logout } from "../../utils/auth";
 
 export default function LogoutTab() {
 
     function LogoutTab() {
         const [isModalVisible, setIsModalVisible] = useState(true);
-
-        const handleOk = () => {
-            console.log("Đã đăng xuất");
-            setIsModalVisible(false);
-        };
 
         const handleCancel = () => {
             setIsModalVisible(false);
@@ -20,7 +16,7 @@ export default function LogoutTab() {
                 <Modal
                     title="Xác nhận đăng xuất"
                     open={isModalVisible}
-                    onOk={handleOk}
+                    onOk={logout}
                     onCancel={handleCancel}
                     okText="Đăng xuất"
                     cancelText="Hủy"

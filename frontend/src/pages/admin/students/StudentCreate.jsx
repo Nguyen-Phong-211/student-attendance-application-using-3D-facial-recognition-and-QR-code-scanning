@@ -47,33 +47,26 @@ export default function StudentCreate() {
     };
 
     const onFinish = async (values) => {
-        setLoading(true); 
+        setLoading(true);
         try {
-            const token = localStorage.getItem("access_token");
-            // console.log(token);
-            const response = await fetch('http://127.0.0.1:8000/api/v1/students/acreated', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
+            const response = await api.post('http://127.0.0.1:8000/api/v1/students/acreated', {
                 body: JSON.stringify({
                     ...values,
                     dob: values.dob.format('YYYY-MM-DD')
                 }),
             });
 
-            if (response.ok) {
+            if (response.response === 200) {
                 message.success('Thêm sinh viên thành công!');
                 form.resetFields();
             } else {
-                const errorData = await response.json();
+                const errorData = await response.data;
                 message.error(`Lỗi: ${errorData.message || 'Không thể thêm sinh viên'}`);
             }
         } catch (error) {
             message.error('Có lỗi khi gửi yêu cầu');
         } finally {
-            setLoading(false); 
+            setLoading(false);
         }
     };
 
@@ -96,11 +89,11 @@ export default function StudentCreate() {
                 </Header>
                 <main className="mx-4 my-4 p-6 bg-white rounded shadow">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                            <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className='w-[150px]'>
-                                Quay lại
-                            </Button>
-                            <Title level={3} className="!mb-0 text-xl sm:text-2xl">Tạo tài khoản sinh viên</Title>
-                        </div>
+                        <Button type='link' icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className='w-[150px]'>
+                            Quay lại
+                        </Button>
+                        <Title level={3} className="!mb-0 text-xl sm:text-2xl">Tạo tài khoản sinh viên</Title>
+                    </div>
                     <Form
                         form={form}
                         layout="vertical"
@@ -111,12 +104,12 @@ export default function StudentCreate() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                             <Form.Item label="Họ và tên" name="fullname" rules={[{ required: true }]}>
-                                <Input placeholder="Nhập họ và tên" />
+                                <Input placeholder="Nhập họ và tên" size='large' style={{ borderWidth: 1.5, boxShadow: 'none' }} />
                             </Form.Item>
 
-                            <Form.Item 
-                                label="Số điện thoại" 
-                                name="phone_number" 
+                            <Form.Item
+                                label="Số điện thoại"
+                                name="phone_number"
                                 rules={[
                                     { required: true },
                                     {
@@ -124,11 +117,11 @@ export default function StudentCreate() {
                                         message: 'Số điện thoại không hợp lệ!'
                                     }
                                 ]}>
-                                <Input placeholder="Nhập số điện thoại" minLength={10} maxLength={10} />
+                                <Input placeholder="Nhập số điện thoại" minLength={10} maxLength={10} size='large' style={{ borderWidth: 1.5, boxShadow: 'none' }} />
                             </Form.Item>
 
-                            <Form.Item label="Email" name="email" rules={[{ type: 'email' }, {required: true}]}>
-                                <Input placeholder="Nhập email" />
+                            <Form.Item label="Email" name="email" rules={[{ type: 'email' }, { required: true }]}>
+                                <Input placeholder="Nhập email" size='large' style={{ borderWidth: 1.5, boxShadow: 'none' }} />
                             </Form.Item>
 
                             <Form.Item
@@ -159,19 +152,21 @@ export default function StudentCreate() {
                                             Tạo
                                         </Button>
                                     }
+                                    size='large'
+                                    style={{ boxShadow: 'none' }}
                                 />
                             </Form.Item>
 
                             <Form.Item label="Giới tính" name="gender" rules={[{ required: true }]}>
-                                <Select placeholder="Chọn giới tính">
+                                <Select placeholder="Chọn giới tính" size='large' className='w-full custom-select'>
                                     <Option value="1">Nam</Option>
                                     <Option value="2">Nữ</Option>
                                 </Select>
                             </Form.Item>
 
-                            <Form.Item 
-                                label="Ngày sinh" 
-                                name="dob" 
+                            <Form.Item
+                                label="Ngày sinh"
+                                name="dob"
                                 rules={[
                                     { required: true },
                                     () => ({
@@ -182,18 +177,18 @@ export default function StudentCreate() {
                                             const age = today.diff(value, "year");
 
                                             if (age < 17) {
-                                            return Promise.reject(new Error("Tuổi phải lớn hơn hoặc bằng 17"));
+                                                return Promise.reject(new Error("Tuổi phải lớn hơn hoặc bằng 17"));
                                             }
 
                                             return Promise.resolve();
                                         },
                                     }),
                                 ]}>
-                                <DatePicker format="YYYY-MM-DD" style={{ width: '100%' }} />
+                                <DatePicker format="YYYY-MM-DD" size='large' style={{ width: '100%', borderWidth: 1.5, boxShadow: 'none' }} />
                             </Form.Item>
-                            
+
                             <Form.Item label="Trạng thái" name="status" rules={[{ required: true }]}>
-                                <Select placeholder="Chọn trạng thái">
+                                <Select placeholder="Chọn trạng thái" size='large' className='w-full custom-select'>
                                     <Option value="1">Đang học</Option>
                                 </Select>
                             </Form.Item>
@@ -205,6 +200,7 @@ export default function StudentCreate() {
                                         form.setFieldsValue({ major_id: null });
                                         setSelectedDepartmentId(value);
                                     }}
+                                    size='large' className='w-full custom-select'
                                 >
                                     {departments.map(dep => (
                                         <Option key={dep.department_id} value={dep.department_id}>
@@ -215,7 +211,7 @@ export default function StudentCreate() {
                             </Form.Item>
 
                             <Form.Item label="Chuyên ngành" name="major_id" rules={[{ required: true }]}>
-                                <Select placeholder="Chọn chuyên ngành" disabled={!selectedDepartmentId}>
+                                <Select placeholder="Chọn chuyên ngành" disabled={!selectedDepartmentId} size='large' className='w-full custom-select'>
                                     {filteredMajors.length > 0 ? (
                                         filteredMajors.map(major => (
                                             <Option key={major.major_id} value={major.major_id}>
@@ -233,7 +229,7 @@ export default function StudentCreate() {
                             </Form.Item>
                         </div>
                         <Form.Item>
-                            <Button type="primary" htmlType="submit" loading={loading}>Thêm sinh viên</Button>
+                            <Button type="primary" size='large' htmlType="submit" loading={loading}>Thêm sinh viên</Button>
                         </Form.Item>
                     </Form>
                 </main>

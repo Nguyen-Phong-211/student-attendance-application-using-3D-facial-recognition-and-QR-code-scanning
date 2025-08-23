@@ -39,12 +39,6 @@ export default function LecturerList() {
     useEffect(() => {
         document.title = 'Danh sách giảng viên';
 
-        const token = localStorage.getItem("access_token");
-        if (!token) {
-            window.location.href = "/account/login";
-            return;
-        }
-
         fetchClass();
         fetchSemester();
         fetchAcademicYear();
@@ -342,7 +336,7 @@ export default function LecturerList() {
                         rowKey="lecturer_code"
                         bordered
                         pagination={{ pageSize: 10 }}
-                        scroll={{ x: 1000 }}
+                        scroll={{ x: 'max-content' }}
                     />
 
                     <Modal
@@ -385,10 +379,9 @@ export default function LecturerList() {
                                     </Descriptions.Item>
                                     <Descriptions.Item label="Môn giảng dạy" span={2}>
                                         {selectedLecturer.subject_classes && selectedLecturer.subject_classes.length > 0 ? (
-                                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                            <table style={{ width: '100%', borderCollapse: 'collapse', scrollBehavior: 'auto' }}>
                                                 <thead>
                                                     <tr>
-                                                        <th style={{ border: '1px solid #ddd', padding: 8 }}>Mã môn</th>
                                                         <th style={{ border: '1px solid #ddd', padding: 8 }}>Tên môn</th>
                                                         <th style={{ border: '1px solid #ddd', padding: 8 }}>Khoa</th>
                                                         <th style={{ border: '1px solid #ddd', padding: 8 }}>Tổng tín chỉ</th>
@@ -399,9 +392,6 @@ export default function LecturerList() {
                                                 <tbody>
                                                     {selectedLecturer.subject_classes.map((s, idx) => (
                                                         <tr key={idx}>
-                                                            <td style={{ border: '1px solid #ddd', padding: 8 }}>
-                                                                <a href={`/admin/management/subject/${s.subject.subject_code}`} className='underline'>{s.subject.subject_code}</a>
-                                                            </td>
                                                             <td style={{ border: '1px solid #ddd', padding: 8 }}>{s.subject.subject_name}</td>
                                                             <td style={{ border: '1px solid #ddd', padding: 8 }}>
                                                                 <a href={`/admin/management/academic/department/${s.subject.department.department_code}`} className='underline'>{s.subject.department.department_name}</a>

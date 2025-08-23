@@ -1,4 +1,7 @@
 import axios from 'axios';
+import { v4 as uuidv4 } from "uuid";
+
+const randomId = uuidv4();
 
 const api = axios.create({
     baseURL: process.env.REACT_APP_API_URL,
@@ -56,7 +59,7 @@ api.interceptors.response.use(
                 }
 
                 try { await raw.post('accounts/logout/', {}); } catch (_) { }
-                window.location.replace('/account/login/?session=expired');
+                window.location.replace(`/account/login/${randomId}?session=expired`);
                 return Promise.reject(e);
             }
         }

@@ -58,7 +58,7 @@ class LecturerAssignmentAPIView(APIView):
                 title=f"Phân công giảng viên {lecturer.fullname}",
                 content=f"Giảng viên {lecturer.fullname} được phân công dạy môn {subject_names_str} cho lớp {class_obj.class_name} (học kỳ {semester.semester_name}).",
                 created_by=request.user,
-                to_target_id=lecturer.pk
+                to_target=lecturer.account
             )
 
             return Response({

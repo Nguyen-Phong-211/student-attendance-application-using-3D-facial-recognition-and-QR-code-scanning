@@ -29,27 +29,43 @@ export default function NotificationManagement() {
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [dateRange, setDateRange] = useState([]);
     const [readStatus, setReadStatus] = useState('all');
+    const [user, setUser] = useState(null);
 
     useEffect(() => {
-        document.title = "ATTEND 3D - Notifications";
+        let intervalId;
 
-        const token = localStorage.getItem("access_token");
-        if (!token) {
-            window.location.href = "/account/login";
-            return;
-        }
+        const fetchUserAndNotifications = async () => {
+            try {
+                const res = await api.get("/accounts/me/", { withCredentials: true });
+                setUser(res.data);
 
-        fetchNotifications();
-    }, []);
+                if (res.data?.account_id) {
+                    fetchNotifications(res.data.account_id);
+                }
+            } catch (err) {
+                setUser(null);
+            }
+        };
 
-    const fetchNotifications = async () => {
+        fetchUserAndNotifications();
+
+        intervalId = setInterval(() => {
+            if (user?.account_id) {
+                fetchNotifications(user.account_id);
+            }
+        }, 5000);
+
+        return () => clearInterval(intervalId);
+    }, [user?.account_id]);
+
+    const fetchNotifications = async (accountId) => {
+        setLoading(true);
         try {
-            setLoading(true);
-            const res = await api.get('notifications/all/');
-            const data = res.data;
-            setNotifications(data);
+            const res = await api.get(`notifications/${accountId}/all/`);
+            setNotifications(Array.isArray(res.data) ? res.data : []);
         } catch (error) {
-            message.error("Lỗi khi tải danh sách thông báo.");
+            message.error("Không tải được thông báo.");
+            setNotifications([]);
         } finally {
             setLoading(false);
         }
@@ -171,21 +187,15 @@ export default function NotificationManagement() {
     ];
 
     const handleMarkAsRead = async () => {
-        const token = localStorage.getItem("access_token");
-
+        const user = JSON.parse(localStorage.getItem('user'));
+        const accountId = user?.account_id;
         try {
-            const res = await fetch("http://127.0.0.1:8000/api/v1/notifications/mark-read/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
-                },
-                body: JSON.stringify({ notification_id: selectedRowKeys }),
+            const res = await api.post(`notifications/${accountId}/mark-read/`, { 
+                notification_id: selectedRowKeys 
             });
-
-            if (res.ok) {
+    
+            if (res.status === 200) {
                 message.success("Đã đánh dấu đã đọc.");
-                fetchNotifications();
                 setSelectedRowKeys([]);
             } else {
                 message.error("Không thể đánh dấu đã đọc.");

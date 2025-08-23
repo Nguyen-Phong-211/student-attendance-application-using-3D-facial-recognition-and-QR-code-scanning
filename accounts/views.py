@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.contrib.auth.hashers import make_password
 from .models import Account 
 from accounts.models import Role 
-from .serializers import AccountSerializer, AccountResetPassword, AccountResetPasswordLecturer
+from .serializers import AccountSerializer, AccountResetPassword, AccountResetPasswordLecturer, AccountListSerializer
 from django.middleware.csrf import get_token
 import traceback
 from django.core.mail import send_mail
@@ -244,8 +244,7 @@ class LoginView(APIView):
                 "user": {
                     "message": "Đăng nhập thành công",
                     "account_id": user.account_id,
-                    "fullname": student_fullname,
-                    "email": user.email,
+                    "role": user.role.role_name,
                     "avatar": request.build_absolute_uri(user.avatar_url.url) if user.avatar_url else None
                 }
             })
@@ -286,9 +285,7 @@ class MeView(APIView):
         user = request.user
         return Response({
             "account_id": user.account_id,
-            "fullname": user.fullname if hasattr(user, "fullname") else None,
             "avatar": request.build_absolute_uri(user.avatar_url.url) if user.avatar_url else None,
-            "email": user.email,
         })
 # End me
 
@@ -411,7 +408,8 @@ def bulk_create_students(request):
         Notification.objects.create(
             title=f"Bạn đã tạo tài khoản cho sinh viên {name}",
             content=f"Sinh viên {name} đã có tài khoản trong hệ thống.",
-            created_by=request.user
+            created_by=request.user,
+            to_target=account.account_id
         )
         
         AuditLog.objects.create(
@@ -522,7 +520,8 @@ def bulk_create_lecturers(request):
         Notification.objects.create(
             title=f"Bạn hàng tạo tài khoản cho giảng viên {name}",
             content=f"Giảng viên {name} hàng có tài khoản trong hệ thống.",
-            created_by=request.user
+            created_by=request.user,
+            to_target=account.account_id
         )
         
         AuditLog.objects.create(
@@ -586,3 +585,12 @@ class ResetPasswordLecturerView(APIView):
             serializer.save()
             return Response({"message": "Đặt lại mật khẩu thành công. Mật khẩu đã được gửi qua email."})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# ================================ Get all accounts ================================ #
+class GetAllAccountsView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        accounts = Account.objects.all()
+        serializer = AccountListSerializer(accounts, many=True)
+        return Response(serializer.data)

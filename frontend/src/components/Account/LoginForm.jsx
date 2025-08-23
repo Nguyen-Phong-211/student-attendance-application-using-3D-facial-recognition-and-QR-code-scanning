@@ -6,7 +6,7 @@ import { useAuth } from "../../auth/AuthContext";
 
 const LoginForm = ({ messageApi, executeRecaptcha, navigate, randomId }) => {
     const [form] = Form.useForm();
-    const { login, user } = useAuth();
+    const { login } = useAuth();
 
     const onFinish = async (values) => {
         if (!executeRecaptcha) {
@@ -21,7 +21,7 @@ const LoginForm = ({ messageApi, executeRecaptcha, navigate, randomId }) => {
                 return;
             }
             // Call the login function from AuthContext
-            await login({ ...values, captcha: captchaToken });
+            const loggedInUser = await login({ ...values, captcha: captchaToken });
 
             messageApi.success("Đăng nhập thành công!");
 
@@ -31,8 +31,8 @@ const LoginForm = ({ messageApi, executeRecaptcha, navigate, randomId }) => {
             if (redirect) {
                 navigate(redirect);
             } else {
-                if (user?.role === "admin") {
-                    navigate("/admin");
+                if (loggedInUser?.role === "admin") {
+                    navigate("/admin/dashboard");
                 } else {
                     navigate("/");
                 }

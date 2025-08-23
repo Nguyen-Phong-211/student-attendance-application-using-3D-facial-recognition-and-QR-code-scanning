@@ -1,8 +1,7 @@
 import json
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
-from rest_framework_simplejwt.tokens import UntypedToken
 from django.contrib.auth import get_user_model
-from jwt import decode as jwt_decode
+from jwt import decode as jwt_decode, InvalidTokenError
 from django.conf import settings
 from channels.db import database_sync_to_async
 
@@ -11,28 +10,33 @@ Account = get_user_model()
 class NotificationConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
         self.user = await self.get_user_from_token()
-        if self.user and self.user.is_authenticated:
-            self.group_name = f"user_{self.user.account_id}" # self.group_name = f"user_{self.user.pk}"
+        if self.user:  # chỉ cần check tồn tại
+            self.group_name = f"user_{self.user.account_id}"
             await self.channel_layer.group_add(self.group_name, self.channel_name)
             await self.accept()
         else:
             await self.close()
 
     async def disconnect(self, close_code):
-        if hasattr(self, 'group_name'):
+        if hasattr(self, "group_name"):
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
     async def send_notification(self, event):
+        # event["content"] sẽ là dict bạn gửi từ views hoặc signal
         await self.send_json(event["content"])
 
     @database_sync_to_async
     def get_user_from_token(self):
-        query = self.scope['query_string'].decode()
-        params = dict(param.split('=') for param in query.split('&'))
-        token = params.get('token')
+        query = self.scope["query_string"].decode()
+        params = dict(param.split("=") for param in query.split("&") if "=" in param)
+        token = params.get("token")
+        if not token:
+            return None
         try:
-            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            user_id = payload.get("user_id") or payload.get("user_id")
+            payload = jwt_decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+            user_id = payload.get("user_id")
+            if not user_id:
+                return None
             return Account.objects.get(account_id=user_id)
-        except:
+        except (InvalidTokenError, Account.DoesNotExist, ValueError):
             return None

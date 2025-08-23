@@ -11,7 +11,7 @@ import {
     SnippetsOutlined,
     UnlockOutlined
 } from "@ant-design/icons";
-import { Avatar, Breadcrumb } from "antd";
+import { Avatar, Breadcrumb, message } from "antd";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer";
 import PersonalInfo from "../../components/Profile/PersonalInfo";
@@ -21,6 +21,7 @@ import ChangePasswordForm from "../../components/Profile/ChangePasswordForm";
 import ReportIssueForm from "../../components/Profile/ReportIssueForm";
 import LogoutTab from "../../components/Profile/LogoutTab";
 import GuideTab from "../../components/Profile/GuideTab";
+import api from "../../api/axiosInstance";
 
 const menuItems = [
     { key: "personal", label: "Thông tin cá nhân", icon: <UserOutlined /> },
@@ -34,16 +35,35 @@ const menuItems = [
 
 export default function ProfilePage() {
     const [selectedKey, setSelectedKey] = useState("personal");
+    const [formData, setFormData] = useState(null);
+
+    const res = localStorage.getItem("user");
+    const user = JSON.parse(res);
+    const accountId = user.account_id;
 
     useEffect(() => {
         document.title = "ATTEND 3D - Thông tin tài khoản";
-    }, [selectedKey]);
+
+        const fetchData = async () => {
+            try {
+                const res = await api.get(`/students/${accountId}/`);
+                setFormData(res.data);
+            } catch (err) {
+                console.error(err);
+                message.error("Không lấy được thông tin cá nhân");
+            }
+        };
+
+        if (accountId) {
+            fetchData();
+        }
+    }, [accountId]);
 
     const renderContent = () => {
         switch (selectedKey) {
             case "personal":
                 return (
-                    <PersonalInfo />
+                    <PersonalInfo formData={formData} setFormData={setFormData} accountId={accountId} />
                 );
             case "attendance":
 
@@ -104,8 +124,8 @@ export default function ProfilePage() {
                         <div className="w-full md:w-1/4 bg-white rounded-xl shadow p-4">
                             <div className="shadow rounded-lg p-4 text-gray-600 text-center mb-4">
                                 <Avatar size={64} icon={<UserOutlined />} className="mx-auto mb-2" />
-                                <div className="font-semibold text-lg">Nguyễn Nguyễn Phong</div>
-                                <div className="text-sm">0825025347</div>
+                                <div className="font-semibold text-lg">{formData?.fullname || "Đang tải..."}</div>
+                                <div className="text-sm">{ formData?.phone_number || "Đang tải..." }</div>
                             </div>
 
                             <ul className="space-y-2">

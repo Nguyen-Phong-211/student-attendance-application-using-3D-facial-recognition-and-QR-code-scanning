@@ -24,6 +24,7 @@ import Sidebar from '../../../components/Layout/Sidebar';
 import Navbar from '../../../components/Layout/Navbar';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import api from '../../../api/axiosInstance';
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
@@ -40,7 +41,7 @@ const LecturerCreate = () => {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        document.title = "ATTEND 3D - Create Lecturer";
+        document.title = "ATTEND 3D - Tạo tài khoản cho giảng viên";
     }, [t]);
 
     const edit = (record) => setEditingKey(record.key);
@@ -112,29 +113,21 @@ const LecturerCreate = () => {
         setLoading(true);
     
         try {
-            const token = localStorage.getItem("access_token");
-            const response = await fetch("http://127.0.0.1:8000/api/v1/accounts/bulk-create-lecturers/", {
-                method: "POST",
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ lecturers: selectedLecturers })
-            });
+            const response = await api.post("accounts/bulk-create-lecturers/",
+                { lecturers: selectedLecturers }
+            );
     
-            const data = await response.json();
+            const data = response.data;
     
-            if (response.ok) {
-                message.success(`Tạo tài khoản thành công cho ${data.created.length} giảng viên!`);
-            } else {
-                message.error("Có lỗi xảy ra khi tạo tài khoản.");
-            }
+            message.success(`Tạo tài khoản thành công cho ${data.created.length} giảng viên!`);
+            navigate(-1);
         } catch (error) {
-            message.error("Lỗi kết nối đến máy chủ.");
+            console.error("API Error:", error.response?.data || error.message);
+            message.error("Có lỗi xảy ra khi tạo tài khoản.");
         } finally {
             setLoading(false);
         }
-    };
+    };    
 
     const columns = [
         {
@@ -213,7 +206,7 @@ const LecturerCreate = () => {
                 <Content className="p-4 sm:p-6 md:p-8 bg-white overflow-auto">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                            <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className='w-[150px]'>
+                            <Button type='link' icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className='w-[150px]'>
                                 Quay lại
                             </Button>
                             <Title level={3} className="!mb-0 text-xl sm:text-2xl">Tạo tài khoản giảng viên</Title>
@@ -250,7 +243,7 @@ const LecturerCreate = () => {
                             columns={columns}
                             dataSource={lecturers}
                             pagination={{ pageSize: 10 }}
-                            scroll={{ x: 1000 }}
+                            scroll={{ x: 'max-content' }}
                             bordered
                         />
                     </div>

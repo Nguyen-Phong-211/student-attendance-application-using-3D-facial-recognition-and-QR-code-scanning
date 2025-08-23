@@ -131,6 +131,7 @@ export default function CourseRegistrationForm({
                     columns={columns}
                     pagination={false}
                     bordered
+                    scroll={{ x: "max-content" }}
                 />
             </Spin>
         </div>

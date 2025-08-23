@@ -24,6 +24,7 @@ import Sidebar from '../../../components/Layout/Sidebar';
 import Navbar from '../../../components/Layout/Navbar';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import api from '../../../api/axiosInstance';
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
@@ -188,25 +189,18 @@ const StudentCreate = () => {
         setLoading(true);
     
         try {
-            const token = localStorage.getItem("access_token");
-            const response = await fetch("http://127.0.0.1:8000/api/v1/accounts/bulk-create-students/", {
-                method: "POST",
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
+            const response = await api.post("accounts/bulk-create-students/", {
                 body: JSON.stringify({ students: selectedStudents })
             });
     
-            const data = await response.json();
+            const data = response.data;
+
+            message.success(`Tạo tài khoản thành công cho ${data.created.length} sinh viên!`);
+            navigate(-1);
     
-            if (response.ok) {
-                message.success(`Tạo tài khoản thành công cho ${data.created.length} sinh viên!`);
-            } else {
-                message.error("Có lỗi xảy ra khi tạo tài khoản.");
-            }
         } catch (error) {
-            message.error("Lỗi kết nối đến máy chủ.");
+            console.error("API Error:", error.response?.data || error.message);
+            message.error("Có lỗi xảy ra khi tạo tài khoản.");
         } finally {
             setLoading(false);
         }
@@ -225,7 +219,7 @@ const StudentCreate = () => {
                 <Content className="p-4 sm:p-6 md:p-8 bg-white overflow-auto">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                            <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className='w-[150px]'>
+                            <Button type='link' icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className='w-[150px]'>
                                 Quay lại
                             </Button>
                             <Title level={3} className="!mb-0 text-xl sm:text-2xl">Tạo tài khoản sinh viên</Title>
@@ -264,7 +258,7 @@ const StudentCreate = () => {
                             columns={columns}
                             dataSource={students}
                             pagination={{ pageSize: 10 }}
-                            scroll={{ x: 1000 }}
+                            scroll={{ x: 'max-content' }}
                             bordered
                         />
                     </div>

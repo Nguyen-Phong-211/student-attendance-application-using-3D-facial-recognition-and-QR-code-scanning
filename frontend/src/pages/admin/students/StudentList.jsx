@@ -11,6 +11,7 @@ import Highlighter from 'react-highlight-words';
 import Sidebar from '../../../components/Layout/Sidebar';
 import Navbar from '../../../components/Layout/Navbar';
 import * as XLSX from 'xlsx';
+import api from '../../../api/axiosInstance';
 
 const { Header } = Layout;
 
@@ -22,20 +23,15 @@ export default function StudentList() {
     const searchInput = useRef(null);
 
     useEffect(() => {
-        document.title = 'Danh sách sinh viên';
+        document.title = 'ATTEND3D - Danh sách sinh viên';
+
         fetchStudents();
     }, []);
 
     const fetchStudents = async () => {
         try {
-            const token = localStorage.getItem("access_token");
-            const response = await fetch('http://127.0.0.1:8000/api/v1/students/list-all', {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-            });
-            const data = await response.json();
+            const response = await api.get('students/list-all/');
+            const data = response.data;
     
             const transformed = data.map((student) => ({
                 key: student.student_id,
@@ -114,7 +110,7 @@ export default function StudentList() {
 
     const columns = [
         {
-            title: 'Mã số SV',
+            title: 'Mã số sinh viên',
             dataIndex: 'student_code',
             key: 'student_code',
             ...getColumnSearchProps('student_code')
@@ -143,11 +139,15 @@ export default function StudentList() {
             key: 'gender',
             filters: [
                 { text: 'Nam', value: 'Nam' },
-                { text: 'Nữ', value: 'Nữ' },
-                { text: 'Khác', value: 'Khác' }
+                { text: 'Nữ', value: 'Nữ' }
             ],
-            onFilter: (value, record) => record.gender === value
-        },
+            onFilter: (value, record) => record.gender === value,
+            render: (gender) => (
+                <Tag color={gender === '1' ? 'blue' : 'red'}>
+                    {gender === '1' ? 'Nam' : 'Nữ'}
+                </Tag>
+            )
+        },        
         {
             title: 'Ngày sinh',
             dataIndex: 'dob',
@@ -240,14 +240,14 @@ export default function StudentList() {
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
                         <h1 className="text-xl font-semibold">Danh sách sinh viên</h1>
                         <div className="flex flex-wrap gap-2">
-                            <Button className="w-full sm:w-auto" icon={<ReloadOutlined />} onClick={fetchStudents}>
+                            <Button onClick={fetchStudents} className="w-full sm:w-auto" icon={<ReloadOutlined />} >
                                 Làm mới
                             </Button>
                             <Button
                                 className="w-full sm:w-auto"
                                 type="primary"
                                 icon={<UserAddOutlined />}
-                                href="/admin/management/student/list/create"
+                                href="/admin/students/list/create"
                             >
                                 Thêm sinh viên
                             </Button>
@@ -267,7 +267,7 @@ export default function StudentList() {
                         rowKey="student_code"
                         bordered
                         pagination={{ pageSize: 10 }}
-                        scroll={{ x: 1000 }}
+                        scroll={{ x: 'max-content' }}
                     />
                 </main>
             </Layout>

@@ -11,26 +11,40 @@ export default function NotificationList() {
     const [loading, setLoading] = useState(false);
     const [notifications, setNotifications] = useState([]);
 
+    const user = JSON.parse(localStorage.getItem('user'));
+    const accountId = user?.account_id;
+
     useEffect(() => {
+        let isMounted = true;
+        let intervalId;
+    
         const fetchNotifications = async () => {
             try {
-                setLoading(true);
-                const res = await api.get('notifications/all/');
-                const data = res.data;
-                setNotifications(data);
+                const res = await api.get(`notifications/${accountId}/all/`);
+                if (isMounted) {
+                    setNotifications(res.data);
+                }
             } catch (error) {
                 message.error("Lỗi khi tải danh sách thông báo.");
             } finally {
-                setLoading(false);
+                if (isMounted) setLoading(false);
             }
         };
-
-        fetchNotifications();
-    }, []);
+    
+        if (accountId) {
+            fetchNotifications();
+            intervalId = setInterval(fetchNotifications, 5000); // 5s 1 lần
+        }
+    
+        return () => {
+            isMounted = false;
+            clearInterval(intervalId);
+        };
+    }, [accountId]);    
 
     const handleMarkAsRead = async () => {
         try {
-            const res = await api.post('notifications/mark-read/', { 
+            const res = await api.post(`notifications/${accountId}/mark-read/`, { 
                 notification_id: selectedRowKeys 
             });
     

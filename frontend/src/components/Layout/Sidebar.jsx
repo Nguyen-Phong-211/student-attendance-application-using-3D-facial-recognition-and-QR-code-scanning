@@ -27,14 +27,18 @@ const Sidebar = ({ collapsed, setCollapsed, t }) => {
     else if (path.startsWith('/admin/notifications')) setSelectedKey('2');
     else if (path.startsWith('/admin/schedule')) setSelectedKey('3');
 
-    else if (path.startsWith('/admin/management/student')) setSelectedKey('4-1');
-    else if (path.startsWith('/admin/management/lecturer')) setSelectedKey('4-2');
+    else if (path.startsWith('/admin/management/students')) setSelectedKey('4-1');
+    else if (path.startsWith('/admin/management/students/create')) setSelectedKey('4-1-1');
+
+    else if (path.startsWith('/admin/management/lecturers')) setSelectedKey('4-2');
+    else if (path.startsWith('/admin/management/lecturers')) setSelectedKey('4-2-1');
     
     else if (path.startsWith('/admin/management/account')) setSelectedKey('5-1');
     else if (path.startsWith('/admin/management/role')) setSelectedKey('5-2');
     else if (path.startsWith('/admin/management/permission')) setSelectedKey('5-3');
 
     else if (path.startsWith('/admin/students/list')) setSelectedKey('6-1');
+    else if (path.startsWith('/admin/students/list/create')) setSelectedKey('6-1-1');
     else if (path.startsWith('/admin/students/assign-class')) setSelectedKey('6-2');
     else if (path.startsWith('/admin/students/assign-subject')) setSelectedKey('6-3');
     else if (path.startsWith('/admin/students/device')) setSelectedKey('6-4');

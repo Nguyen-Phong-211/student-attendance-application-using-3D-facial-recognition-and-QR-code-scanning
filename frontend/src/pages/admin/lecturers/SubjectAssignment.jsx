@@ -31,12 +31,8 @@ export default function SubjectAssignment() {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        document.title = 'Gán lớp học cho giảng viên';
-        const token = localStorage.getItem("access_token");
-        if (!token) {
-            window.location.href = "/account/login";
-            return;
-        }
+        document.title = 'ATTEND 3D - Gán lớp học cho giảng viên';
+
         fetchAll();
     }, []);
 
@@ -67,31 +63,20 @@ export default function SubjectAssignment() {
 
     const onFinish = async (values) => {
         setLoading(true);
-        try {
-            const token = localStorage.getItem("access_token");
-            
-            const response = await fetch('http://127.0.0.1:8000/api/v1/lecturers/assignment-class/', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(values),
-            });
-
-            if (response.ok) {
-                message.success('Gán giảng viên thành công!');
-                form.resetFields();
-            } else {
-                const errorData = await response.json();
-                message.error(`Lỗi: ${errorData.message || 'Không thể gán giảng viên'}`);
-            }
+        try {    
+            await api.post('lecturers/assignment-class/',
+                values
+            );
+    
+            message.success('Gán giảng viên thành công!');
+            form.resetFields();
+    
         } catch (error) {
-            message.error('Có lỗi khi gửi yêu cầu');
+            message.error(error.response?.data?.message || 'Có lỗi khi gửi yêu cầu');
         } finally {
             setLoading(false);
         }
-    };
+    };    
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
@@ -120,6 +105,8 @@ export default function SubjectAssignment() {
                                     filterOption={(input, option) =>
                                         String(option?.children).toLowerCase().includes(input.toLowerCase())
                                     }
+                                    className='w-full custom-select'
+                                    size='large'
                                 >
                                     {lecturers.map(lecturer => (
                                         <Option key={lecturer.lecturer_id} value={lecturer.lecturer_id}>
@@ -132,7 +119,7 @@ export default function SubjectAssignment() {
                             {selectedLecturer && (
                                 <Descriptions column={1} bordered size="small" className="mt-4">
                                     <Descriptions.Item label="Họ tên">{selectedLecturer.fullname}</Descriptions.Item>
-                                    <Descriptions.Item label="Mã giảng viên">{"L"+selectedLecturer.lecturer_code}</Descriptions.Item>
+                                    <Descriptions.Item label="Mã giảng viên">{selectedLecturer.lecturer_code}</Descriptions.Item>
                                     <Descriptions.Item label="Email">{selectedLecturer.account?.email}</Descriptions.Item>
                                     <Descriptions.Item label="Số điện thoại">{selectedLecturer.account?.phone_number}</Descriptions.Item>
                                     <Descriptions.Item label="Khoa">{selectedLecturer.department?.department_name}</Descriptions.Item>
@@ -161,6 +148,8 @@ export default function SubjectAssignment() {
                                         filterOption={(input, option) =>
                                             String(option?.children).toLowerCase().includes(input.toLowerCase())
                                         }
+                                        className='w-full custom-select'
+                                        size='large'
                                     >
                                         {academicYears.map(year => (
                                             <Option key={year.academic_year_id} value={year.academic_year_id}>
@@ -188,6 +177,8 @@ export default function SubjectAssignment() {
                                         filterOption={(input, option) =>
                                             String(option?.children).toLowerCase().includes(input.toLowerCase())
                                         }
+                                        className='w-full custom-select'
+                                        size='large'
                                     >
                                         {semesters
                                             .filter(sem => sem.academic_year === selectedYear)
@@ -213,6 +204,8 @@ export default function SubjectAssignment() {
                                         filterOption={(input, option) =>
                                             String(option?.children).toLowerCase().includes(input.toLowerCase())
                                         }
+                                        className='w-full custom-select'
+                                        size='large'
                                     >
                                         {filteredClasses
                                             .filter(cls => cls.academic_year?.academic_year_id === selectedYear)
@@ -237,6 +230,8 @@ export default function SubjectAssignment() {
                                     filterOption={(input, option) =>
                                         String(option?.children).toLowerCase().includes(input.toLowerCase())
                                     }
+                                    className='w-full custom-select'
+                                    size='large'
                                 >
                                     {filteredSubjects
                                         .filter(sub => sub.academic_year?.academic_year_id === selectedYear && sub.department.department_id === selectedLecturer.department.department_id)
@@ -250,7 +245,7 @@ export default function SubjectAssignment() {
                         </Card>
 
                         <Form.Item className="mt-4">
-                            <Button type="primary" htmlType="submit" loading={loading}>Gán giảng viên</Button>
+                            <Button type="primary" htmlType="submit" loading={loading} size='large'>Gán giảng viên</Button>
                         </Form.Item>
                     </Form>
                 </main>
