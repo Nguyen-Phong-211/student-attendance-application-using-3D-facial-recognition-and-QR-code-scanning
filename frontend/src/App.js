@@ -42,7 +42,7 @@ import AppRoutes from "./routes/AppRoutes";
 import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 import { AuthProvider } from "./auth/AuthContext";
 
-const SITE_KEY = "6LcfimYrAAAAADA4cOKVbRBjWsmd4Z1LAfPwyEBm";
+const SITE_KEY = "6LdPmK8rAAAAAGTL-urcRNixXavC3wzJHV6vldec";
 
 const App = () => {
   return (

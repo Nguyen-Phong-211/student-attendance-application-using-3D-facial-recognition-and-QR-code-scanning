@@ -76,6 +76,20 @@
 git clone https://github.com/Nguyen-Phong-211/attend3d.git
 cd attend3d
 pip install -r requirements.txt
+
+python --version
+where python
+python -m venv venv
+python manage.py migrate
+venv\Scripts\activate
+python manage.py runserver
+cd frontend
+npm install --force
+
+npm install
+npm start
+
+localhost/127.0.0.1
 ```
 
 ### 2. Install and Start Redis
