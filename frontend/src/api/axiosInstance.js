@@ -1,7 +1,4 @@
 import axios from 'axios';
-import { v4 as uuidv4 } from "uuid";
-
-const randomId = uuidv4();
 
 const api = axios.create({
     baseURL: process.env.REACT_APP_API_URL,
@@ -35,7 +32,7 @@ api.interceptors.response.use(
         if (originalRequest._retry) return Promise.reject(error);
         if (shouldSkip(originalRequest.url)) return Promise.reject(error);
 
-        const onAuthPage = window.location.pathname.startsWith('/account/');
+        // const onAuthPage = window.location.pathname.startsWith('/account/');
 
         if (resp.status === 401) {
             originalRequest._retry = true;
@@ -54,12 +51,18 @@ api.interceptors.response.use(
                 isRefreshing = false;
                 refreshPromise = null;
 
-                if (onAuthPage) {
-                    return Promise.reject(e);
-                }
+                try {
+                    await raw.post("accounts/logout/");
+                } catch (_) {}
 
-                try { await raw.post('accounts/logout/', {}); } catch (_) { }
-                window.location.replace(`/account/login/${randomId}?session=expired`);
+                window.dispatchEvent(new CustomEvent("session-expired"));
+
+                // if (onAuthPage) {
+                //     return Promise.reject(e);
+                // }
+
+                // try { await raw.post('accounts/logout/', {}); } catch (_) { }
+                // window.location.replace(`/account/login/${randomId}?session=expired`);
                 return Promise.reject(e);
             }
         }
@@ -76,7 +79,6 @@ export const logout = async () => {
     } finally {
         localStorage.clear();
         sessionStorage.clear();
-        window.location.replace('/account/login/');
     }
 };
 

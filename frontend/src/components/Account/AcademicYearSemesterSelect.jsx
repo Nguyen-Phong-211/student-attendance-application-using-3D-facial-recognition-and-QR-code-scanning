@@ -3,7 +3,7 @@ import { Form, Select } from "antd";
 
 const { Option } = Select;
 
-export default function AcademicYearSemesterSelect({ academicYears, semesters, selectedAcademicYear, handleAcademicYearChange }) {
+export default function AcademicYearSemesterSelect({ academicYears, semesters, selectedAcademicYear, handleAcademicYearChange, handleSemesterChange }) {
     return (
         <>
             <Form.Item label="Năm học" name="academic_year" rules={[{ required: true, message: "Vui lòng chọn năm học!" }]}>
@@ -33,6 +33,7 @@ export default function AcademicYearSemesterSelect({ academicYears, semesters, s
                     allowClear
                     filterOption={(input, option) => option?.children?.toLowerCase().includes(input.toLowerCase())}
                     className="w-full custom-select"
+                    onChange={handleSemesterChange}
                 >
                     {Array.isArray(semesters) && semesters.map((semes) => semes.semester_id && (
                         <Option key={semes.semester_id} value={semes.semester_id}>

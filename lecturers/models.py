@@ -16,10 +16,6 @@ class Lecturer(models.Model):
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     gender = models.CharField(max_length=1)
     dob = models.DateField()
-    # avatar_url = models.TextField(null=True)
-    # Change
-    # phone_number = models.CharField(max_length=10, unique=True, null=True)
-    # End change
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

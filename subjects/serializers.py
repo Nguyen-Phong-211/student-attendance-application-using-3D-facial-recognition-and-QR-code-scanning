@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Subject, AcademicYear, Semester
+from .models import Subject, AcademicYear, Semester, Shift, LessonSlot
 from students.models import Department
 from students.serializers import DepartmentSerializer
 
@@ -45,3 +45,23 @@ class DisplaySubjectForRegistion(serializers.ModelSerializer):
     class Meta:
         model = Subject
         fields = ['subject_id', 'subject_name', 'theoretical_credits', 'practical_credits', 'total_credits', 'department', 'academic_year']
+
+# ======================= SHIFT ==============================
+class ShiftSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Shift
+        fields = ["shift_id", "shift_name", "start_time", "end_time", "status"]
+
+# ======================= LESSON SLOTS =======================
+class LessonSlotSerializer(serializers.ModelSerializer):
+    shift = ShiftSerializer(read_only=True)
+    class Meta:
+        model = LessonSlot
+        fields = ["slot_id", "slot_name", "start_time", "end_time", "duration_minutes", "shift"]
+
+# ======================= LESSON SLOTS BY SHIFT ===============
+class LessonSlotByShiftSerializer(serializers.ModelSerializer):
+    shift = ShiftSerializer(source="shift_id", read_only=True)
+    class Meta:
+        model = LessonSlot
+        fields = '__all__'

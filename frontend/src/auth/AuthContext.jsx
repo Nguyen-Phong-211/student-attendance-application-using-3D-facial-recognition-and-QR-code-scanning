@@ -34,6 +34,15 @@ export const AuthProvider = ({ children }) => {
         fetchMe();
     }, []);
 
+    useEffect(() => {
+        const handleSessionExpired = async () => {
+            await logout();
+        };
+    
+        window.addEventListener("session-expired", handleSessionExpired);
+        return () => window.removeEventListener("session-expired", handleSessionExpired);
+    }, []);    
+
     const login = async (payload) => {
         try {
             const res = await api.post("accounts/login/", payload, { withCredentials: true });

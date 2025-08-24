@@ -2,12 +2,17 @@ from rest_framework import serializers
 from students.models import Major
 from students.models import Subject, Department
 from subjects.models import AcademicYear
-from .models import Class
+from .models import Class, Schedule
 import random
-from subjects.serializers import AcademicYearSerializer
+from subjects.serializers import AcademicYearSerializer, SubjectSerializer, ShiftSerializer, LessonSlotSerializer
 from students.serializers import DepartmentSerializer
 from subjects.models import AcademicYear
 from students.models import Department
+from rooms.serializers import RoomSerializer, RoomScheduleSerializer
+from subjects.serializers import LessonSlotByShiftSerializer
+
+from lecturers.minimal_serializers import LecturerScheduleSerializer
+from lecturers.models import SubjectClass
 
 def generate_random_code():
     length = random.randint(10, 20)
@@ -62,3 +67,29 @@ class ClassUpdateSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+# ============================ Display schedule by subject_id ============================
+class ScheduleSerializer(serializers.ModelSerializer):
+    subject = SubjectSerializer(source='subject_id', read_only=True)
+    room = RoomSerializer(read_only=True)
+    slot = LessonSlotByShiftSerializer(read_only=True)
+    class_id = ClassSerializer(read_only=True)
+    lecturer = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Schedule
+        fields = [
+            'schedule_id', 'start_time', 'end_time', 'repeat_weekly',
+            'lesson_type', 'day_of_week',
+            'class_id', 'subject', 'room', 'slot', 'lecturer'
+        ]
+
+    def get_lecturer(self, obj):
+        subject_id = self.context.get("subject_id")
+
+        subject_classes = SubjectClass.objects.filter(
+            subject_id=subject_id
+        ).select_related('lecturer', 'subject')
+
+        lecturers = [sc.lecturer for sc in subject_classes if sc.lecturer]
+
+        return LecturerScheduleSerializer(lecturers, many=True).data if lecturers else None

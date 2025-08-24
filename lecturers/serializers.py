@@ -10,6 +10,7 @@ from accounts.serializers import AccountListSerializer, AccountInformationSerial
 from classes.models import Class
 from subjects.models import Semester, Subject
 from subjects.serializers import SubjectSerializer, SemesterSerializer
+from classes.serializers import ClassSerializer
 
 class LecturerListSerializer(serializers.ModelSerializer):
     account = AccountListSerializer(read_only=True)
@@ -68,8 +69,6 @@ class LecturerWithSubjectsSerializer(serializers.ModelSerializer):
     def get_subject_classes(self, obj):
         subject_classes_qs = SubjectClass.objects.filter(lecturer=obj)
         return SubjectClassSerializer(subject_classes_qs, many=True).data
-    
-    
 
 class LecturerAssignmentSerializer(serializers.Serializer):
     lecturer_id = serializers.IntegerField()
@@ -131,3 +130,15 @@ class LecturerWithAccountSerializer(serializers.ModelSerializer):
             'fullname',
             'account'
         ]
+
+# ====================================== SUBJECT CLASSES ======================================
+class SubjectClassSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubjectClass
+        fields = '__all__'
+
+# ================ LECTURER SCHEDULE ==========================================================
+class LecturerScheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lecturer
+        fields = ["lecturer_id", "fullname"]

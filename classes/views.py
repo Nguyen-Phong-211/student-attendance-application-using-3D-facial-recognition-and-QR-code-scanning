@@ -3,9 +3,9 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from students.models import Department
 from students.serializers import DepartmentSerializer
-from .models import Class
+from .models import Class, Schedule
 from students.models import Major
-from .serializers import MajorSerializer, ClassSerializer, ClassCreateSerializer, ClassUpdateSerializer
+from .serializers import MajorSerializer, ClassSerializer, ClassCreateSerializer, ClassUpdateSerializer, ScheduleSerializer
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework import status
@@ -17,6 +17,7 @@ from rest_framework.permissions import IsAuthenticated
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from .utils.request import get_client_ip, get_user_agent
+from lecturers.models import SubjectClass
 
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -114,3 +115,36 @@ class ClassUpdateAPIView(APIView):
             })
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# ======================= SCHEDULE ======================= #
+class ScheduleListAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, subject_id=None, semester_id=None):
+        if not subject_id or not semester_id:
+            return Response(
+                {"error": "subject_id và semester_id là bắt buộc"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        subject_classes = SubjectClass.objects.filter(
+            subject_id=subject_id,
+            semester_id=semester_id
+        ).select_related("lecturer", "class_id", "subject")
+
+        if not subject_classes.exists():
+            return Response([], status=status.HTTP_200_OK)
+
+        schedules = Schedule.objects.filter(
+            subject_id=subject_id
+        ).select_related("room", "slot__shift_id")
+
+        serializer = ScheduleSerializer(
+            schedules,
+            many=True,
+            context={
+                "subject_id": subject_id,
+                "semester_id": semester_id
+            }
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
