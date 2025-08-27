@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { message } from "antd";
+import { message, Spin } from "antd";
 import signupImage from "../../assets/general/signup.jpg";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
@@ -67,12 +67,13 @@ const Signup = () => {
                     {contextHolder}
                     <SignupForm
                         onFinish={onFinish}
-                        loading={loading}
                         apiErrors={apiErrors}
+                        loading={loading}
                         randomId={randomId}
                     />
                 </div>
             </div>
+            <Spin spinning={loading} fullscreen tip="Đang xử lý. Vui lòng chờ..." />
         </div>
     );
 };

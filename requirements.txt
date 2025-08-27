@@ -12,6 +12,7 @@ cryptography==45.0.4
 daphne==4.2.0
 Django==5.2.3
 django-cors-headers==4.7.0
+django-crontab==0.7.1
 djangorestframework==3.16.0
 djangorestframework_simplejwt==5.5.0
 hyperlink==21.0.0

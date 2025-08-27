@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { Typography, message } from "antd";
+import React, { useEffect, useState } from "react";
+import { Typography, message, Spin } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { v4 as uuidv4 } from "uuid";
@@ -14,6 +14,7 @@ const Login = () => {
     const navigate = useNavigate();
     const { executeRecaptcha } = useGoogleReCaptcha();
     const randomId = uuidv4();
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         document.title = "ATTEND 3D - Đăng nhập";
@@ -36,9 +37,12 @@ const Login = () => {
                         executeRecaptcha={executeRecaptcha}
                         navigate={navigate}
                         randomId={randomId}
+                        loading={loading}
+                        setLoading={setLoading}
                     />
                 </div>
             </div>
+            <Spin spinning={loading} fullscreen tip="Đang xử lý. Vui lòng chờ..." />
         </div>
     );
 };

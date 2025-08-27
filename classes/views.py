@@ -129,7 +129,9 @@ class ScheduleListAPIView(APIView):
 
         subject_classes = SubjectClass.objects.filter(
             subject_id=subject_id,
-            semester_id=semester_id
+            semester_id=semester_id,
+            subject__status='1',
+            class_id__status='1'
         ).select_related("lecturer", "class_id", "subject")
 
         if not subject_classes.exists():

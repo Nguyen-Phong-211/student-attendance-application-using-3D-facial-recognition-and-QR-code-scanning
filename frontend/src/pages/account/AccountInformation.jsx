@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Typography, Card, Button, Form, message, Steps } from "antd";
+import { Typography, Card, Button, Form, message, Steps, Spin } from "antd";
 import { RightOutlined, LeftOutlined, CheckOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axiosInstance";
@@ -25,6 +25,10 @@ export default function AccountInformation() {
     const [academicYears, setAcademicYears] = useState([]);
     const [semesters, setSemesters] = useState([]);
     const [selectedAcademicYear, setSelectedAcademicYear] = useState(null);
+
+    const [selectedSchedules, setSelectedSchedules] = useState({});
+    const [totalCredits, setTotalCredits] = useState(0);
+    const [loading, setLoading] = useState(false);
 
     const next = () => setCurrentStep((prev) => prev + 1);
     const prev = () => setCurrentStep((prev) => prev - 1);
@@ -130,11 +134,20 @@ export default function AccountInformation() {
     );
 
     const onFinish = async (values) => {
-        localStorage.setItem("allInforUser", JSON.stringify(values));
-        if (!user?.account_id) return message.error("Không tìm thấy thông tin tài khoản.");
-
+        if (totalCredits < 15) {
+            message.error("Bạn phải đăng ký ít nhất 15 tín chỉ!");
+            return;
+        }
+    
+        if (totalCredits > 23) {
+            message.error("Bạn không được đăng ký quá 23 tín chỉ!");
+            return;
+        }
+    
         try {
-            const payload = {
+            setLoading(true);
+    
+            const studentPayload = {
                 fullname: values.fullname,
                 student_code: values.student_code || values.studentcode,
                 gender: values.gender,
@@ -146,17 +159,69 @@ export default function AccountInformation() {
                 status: "1",
                 department: values.department,
             };
+    
+            const studentRes = await api.post("students/", studentPayload);
 
-            await api.post("students/", payload);
-            message.success("Cập nhật thông tin thành công!");
+            if (!studentRes.data?.student_id) {
+                message.error("Không lấy được sinh viên từ backend");
+                return;
+            }
+   
+            if (studentRes.data?.success === false) {
+                message.error(studentRes.data?.message || "Cập nhật sinh viên thất bại");
+                return;
+            }
+    
+            const studentId = studentRes.data?.student_id;
+            message.success(studentRes.data?.message || "Cập nhật thông tin sinh viên thành công!");
+    
+            if (values.avatar) {
+                const formData = new FormData();
+                formData.append("avatar", values.avatar);
+    
+                const avatarRes = await api.post(
+                    `accounts/${user.account_id}/update_avatar/`,
+                    formData,
+                    { headers: { "Content-Type": "multipart/form-data" } }
+                );
+    
+                if (avatarRes.data?.success === false) {
+                    message.error(avatarRes.data?.message || "Cập nhật avatar thất bại");
+                    return;
+                }
+    
+                message.success(avatarRes.data?.message || "Cập nhật avatar thành công!");
+            }
+    
+            const registrationRequests = Object.values(selectedSchedules).map((schedule) => ({
+                student: studentId,
+                subject: schedule.subject_id,
+                semester: values.semester,
+                reason: "Đăng ký môn học",
+            }));
+    
+            for (const req of registrationRequests) {
+                const regRes = await api.post("students/register-request/", req);
+    
+                if (regRes.data?.success === false) {
+                    message.error(regRes.data?.message || "Đăng ký môn học thất bại");
+                    return;
+                }
+            }
+
+            await new Promise((resolve) => setTimeout(resolve, 3000));
+    
+            message.success("Đăng ký môn học thành công!");
             navigate("/");
             window.location.reload();
-
+    
         } catch (err) {
             console.error("Submit error:", err);
-            message.error("Lỗi kết nối: " + (err.response?.data || err.message || err));
+            message.error(err.response?.data?.message || err.message || "Lỗi kết nối hệ thống");
+        } finally {
+            setLoading(false);
         }
-    };
+    };    
 
     return (
         <div className="min-h-screen bg-white text-gray-800 flex flex-col">
@@ -169,8 +234,8 @@ export default function AccountInformation() {
                                 <Step title="Đăng ký môn học" />
                             </Steps>
 
-                            <Form form={form} layout="vertical" onFinish={onFinish} autoComplete="off">
-                                {currentStep === 0 && (
+                            <Form form={form} layout="vertical" onFinish={onFinish} autoComplete="off" preserve={true}>
+                                <div style={{ display: currentStep === 0 ? "block" : "none" }}>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
                                             <UserForm form={form} />
@@ -180,28 +245,32 @@ export default function AccountInformation() {
                                                 <span className="text-red-500">*</span>&nbsp;<label>Trạng thái</label>&nbsp;
                                                 <StatusTag user={user} />
                                                 <div>
-                                                    <AvatarUpload />
+                                                    <Form.Item name="avatar">
+                                                        <AvatarUpload />
+                                                    </Form.Item>
                                                 </div>
                                             </div>
-
                                         </div>
                                     </div>
-                                )}
+                                </div>
 
-                                {currentStep === 1 && (
-                                    <CourseRegistrationForm 
-                                        form={form} 
-                                        departments={departments} 
-                                        majors={majors} 
-                                        selectedDepartment={selectedDepartment} 
+                                <div style={{ display: currentStep === 1 ? "block" : "none" }}>
+                                    <CourseRegistrationForm
+                                        form={form}
+                                        departments={departments}
+                                        majors={majors}
+                                        selectedDepartment={selectedDepartment}
                                         handleDepartmentChange={handleDepartmentChange}
-
                                         selectedAcademicYear={selectedAcademicYear}
                                         handleAcademicYearChange={handleAcademicYearChange}
                                         academicYears={academicYears}
                                         semesters={semesters}
+                                        selectedSchedules={selectedSchedules}
+                                        setSelectedSchedules={setSelectedSchedules}
+                                        totalCredits={totalCredits}
+                                        setTotalCredits={setTotalCredits}
                                     />
-                                )}
+                                </div>
 
                                 <Form.Item className="mt-6">
                                     {currentStep > 0 && (
@@ -215,7 +284,12 @@ export default function AccountInformation() {
                                             size="large"
                                             onClick={async () => {
                                                 try {
-                                                    await form.validateFields();
+                                                    await form.validateFields([
+                                                        "fullname",
+                                                        "dob",
+                                                        "gender",
+                                                        "student_code"
+                                                    ]);
                                                     next();
                                                 } catch (err) {
                                                     message.error("Vui lòng điền đầy đủ thông tin trước khi tiếp tục!");
@@ -231,12 +305,12 @@ export default function AccountInformation() {
                                         </Button>
                                     )}
                                 </Form.Item>
-
                             </Form>
                         </Card>
                     </div>
                 </main>
             </div>
+            <Spin spinning={loading} fullscreen tip="Đang xử lý. Vui lòng chờ..." />
         </div>
     );
 }

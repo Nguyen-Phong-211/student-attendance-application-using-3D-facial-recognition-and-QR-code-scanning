@@ -7,6 +7,11 @@ from django.forms.models import model_to_dict
 from attend3d.middleware.thread_local import get_current_request
 from accounts.models import Account
 import json
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from datetime import datetime
+from .models import SubjectRegistrationRequest, StudentSubject
+from subjects.models import Subject
 
 _old_instance_cache = {}
 
@@ -133,12 +138,12 @@ def account_post_save(sender, instance, created, **kwargs):
     )
 
     # Record notification for the user to be updated
-    Notification.objects.create(
-        title="Cập nhật thông tin tài khoản",
-        content="Thông tin tài khoản của bạn đã được cập nhật.",
-        created_by=user,
-        to_target=instance,
-    )
+    # Notification.objects.create(
+    #     title="Cập nhật thông tin tài khoản",
+    #     content="Thông tin tài khoản của bạn đã được cập nhật.",
+    #     created_by=user,
+    #     to_target=instance,
+    # )
 
 
 # ======================== STUDENT ===========================
@@ -173,3 +178,24 @@ def student_post_save(sender, instance, created, **kwargs):
         entity_name="Student",
         action_description="Hồ sơ sinh viên được tạo" if created else "Cập nhật thông tin sinh viên",
     )
+
+# ======================== STUDENT ===========================
+@receiver(post_save, sender=SubjectRegistrationRequest)
+def handle_registration_request(sender, instance, created, **kwargs):
+    if instance.status == "approved":
+        subject = Subject.objects.get(subject_id=instance.subject_id)
+
+        if subject.credits == 1:
+            total_sessions = 15
+        elif subject.credits == 2:
+            total_sessions = 15
+        else:
+            total_sessions = (subject.credits * 15) // 3
+
+        max_leave_days = int(total_sessions * 0.3)
+
+        StudentSubject.objects.get_or_create(
+            student=instance.student,
+            subject=subject,
+            defaults={"max_leave_days": max_leave_days}
+        )

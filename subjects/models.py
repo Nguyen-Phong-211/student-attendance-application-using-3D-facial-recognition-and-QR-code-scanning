@@ -32,6 +32,7 @@ class Subject(models.Model):
     practical_credits = models.IntegerField()
     total_credits = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
+    sessions_per_class = models.IntegerField(null=True)
     
     def save(self, *args, **kwargs):
         self.total_credits = (self.theoretical_credits or 0) + (self.practical_credits or 0)

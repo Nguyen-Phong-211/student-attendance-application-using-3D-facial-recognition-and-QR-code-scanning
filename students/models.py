@@ -125,11 +125,11 @@ class SubjectRegistrationRequest(models.Model):
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
     reason = models.TextField(null=True)
-    status = models.CharField(max_length=1, default='pending')
+    status = models.CharField(default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
     reviewed_at = models.DateTimeField(auto_now=True)
     is_over_credit_limit = models.BooleanField(default=False)
-    approved_by = models.ForeignKey('staffs.Staff', on_delete=models.CASCADE)
+    approved_by = models.ForeignKey('staffs.Staff', on_delete=models.CASCADE, null=True)
 
     class Meta:
         db_table = 'subject_registration_requests'
@@ -149,7 +149,7 @@ class SubjectRegistrationRequest(models.Model):
 class CreditLimit(models.Model):
     credit_limit_id = models.BigAutoField(primary_key=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    semester = models.ForeignKey(Semester, on_delete=models.CASCADE, null=True)
     min_credits = models.IntegerField()
     max_credits = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)

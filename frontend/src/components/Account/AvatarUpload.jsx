@@ -3,8 +3,13 @@ import { Upload, message } from 'antd';
 import { CloudUploadOutlined } from '@ant-design/icons';
 import ImgCrop from 'antd-img-crop';
 
-const AvatarUpload = ({ onFileSelected }) => {
-    const [fileList, setFileList] = useState([]);
+const AvatarUpload = ({ value, onChange }) => {
+    const [fileList, setFileList] = useState(value ? [{
+        uid: '-1',
+        name: value.name || 'avatar.png',
+        status: 'done',
+        url: value.url || URL.createObjectURL(value),
+    }] : []);
 
     const beforeUpload = (file) => {
         const isImage = file.type.startsWith('image/');
@@ -28,36 +33,36 @@ const AvatarUpload = ({ onFileSelected }) => {
         };
 
         setFileList([newFile]);
-        onFileSelected(file);
-
+        onChange?.(file);
         return false;
-    };
-
-    const onPreview = async (file) => {
-        let src = file.url;
-        if (!src) {
-            src = await new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file.originFileObj);
-                reader.onload = () => resolve(reader.result);
-            });
-        }
-        const image = new Image();
-        image.src = src;
-        const imgWindow = window.open(src);
-        imgWindow?.document.write(image.outerHTML);
     };
 
     return (
         <div style={{ marginBottom: 16 }}>
             <label>Ảnh đại diện (Tuỳ chọn):</label>
-            <ImgCrop rotationSlider>
+            <ImgCrop rotationSlider modalClassName='crop-modal'>
                 <Upload
                     listType="picture-card"
                     fileList={fileList}
                     beforeUpload={beforeUpload}
-                    onRemove={() => setFileList([])}
-                    onPreview={onPreview}
+                    onRemove={() => {
+                        setFileList([]);
+                        onChange?.(null);
+                    }}
+                    onPreview={async (file) => {
+                        let src = file.url;
+                        if (!src) {
+                            src = await new Promise((resolve) => {
+                                const reader = new FileReader();
+                                reader.readAsDataURL(file.originFileObj);
+                                reader.onload = () => resolve(reader.result);
+                            });
+                        }
+                        const image = new Image();
+                        image.src = src;
+                        const imgWindow = window.open(src);
+                        imgWindow?.document.write(image.outerHTML);
+                    }}
                     accept="image/*"
                     style={{ width: '100%', marginTop: 8 }}
                 >

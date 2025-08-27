@@ -3,7 +3,6 @@ from .models import Subject, AcademicYear, Semester, Shift, LessonSlot
 from students.models import Department
 from students.serializers import DepartmentSerializer
 
-
 class AcademicYearSerializer(serializers.ModelSerializer):
     class Meta:
         model = AcademicYear

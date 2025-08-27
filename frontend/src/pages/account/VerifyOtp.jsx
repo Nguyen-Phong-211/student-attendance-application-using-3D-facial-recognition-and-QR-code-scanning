@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, message, Typography } from "antd";
+import { Button, message, Typography, Spin } from "antd";
 import OtpInput from "../../components/Account/OtpInput";
 import Logo from "../../assets/general/face-recognition.png";
 import ImageOtp from "../../assets/general/otp.jpg";
@@ -138,6 +138,7 @@ const VerifyOtp = () => {
                     </Button>
                 </div>
             </div>
+            <Spin spinning={loading} fullscreen tip="Đang xử lý. Vui lòng chờ..." />
         </div>
     );
 };

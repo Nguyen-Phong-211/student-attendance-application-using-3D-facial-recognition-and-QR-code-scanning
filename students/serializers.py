@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Department, Major
-from .models import Student
+from .models import Student, SubjectRegistrationRequest
 import base64
 import uuid
 from django.core.files.base import ContentFile
@@ -183,3 +183,10 @@ class StudentUpdateSerializer(serializers.Serializer):
         student.save()
 
         return account
+
+# ========================= SubjectRegistrationRequest =========================
+class SubjectRegistrationRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubjectRegistrationRequest
+        fields = '__all__'
+        read_only_fields = ['status', 'created_at', 'reviewed_at', 'is_over_credit_limit', 'approved_by']

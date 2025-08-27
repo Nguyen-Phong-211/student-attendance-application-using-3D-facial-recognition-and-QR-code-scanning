@@ -12,7 +12,11 @@ export default function CourseRegistrationForm({
     selectedAcademicYear,
     handleAcademicYearChange,
     academicYears,
-    semesters
+    semesters,
+    totalCredits,
+    setTotalCredits,
+    selectedSchedules,
+    setSelectedSchedules
 }) {
     const [subjects, setSubjects] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -22,7 +26,7 @@ export default function CourseRegistrationForm({
     const [drawerVisible, setDrawerVisible] = useState(false);
     const [scheduleDetail, setScheduleDetail] = useState(null);
     const [selectedScheduleId, setSelectedScheduleId] = useState(null);
-
+    // const [selectedSchedules, setSelectedSchedules] = useState({}); 
     const [checkedSubjects, setCheckedSubjects] = useState({});
 
     useEffect(() => {
@@ -45,6 +49,14 @@ export default function CourseRegistrationForm({
 
         fetchSubjects();
     }, [selectedAcademicYear]);
+
+    useEffect(() => {
+        const total = Object.values(selectedSchedules).reduce(
+            (sum, item) => sum + (item.credits || 0),
+            0
+        );
+        setTotalCredits(total);
+    }, [selectedSchedules, setTotalCredits, totalCredits, selectedScheduleId]);  
 
     const handleSemesterChange = (value) => {
         setSelectedSemester(value);
@@ -171,10 +183,32 @@ export default function CourseRegistrationForm({
 
     const handleCheckboxChangeSchedule = (record, checked) => {
         if (checked) {
-            setSelectedScheduleId(record.schedule_id);
+            setSelectedSchedules(prev => ({
+                ...prev,
+                [selectedSubject.subject_id]: {
+                    subject_id: selectedSubject.subject_id,
+                    subject_name: selectedSubject.subject_name,
+                    scheduleId: record.schedule_id,
+                    credits: selectedSubject.total_credits
+                }
+            }));
+            setSelectedScheduleId(record.schedule_id);  
         } else {
-            setSelectedScheduleId(null);
+            setSelectedSchedules(prev => {
+                const updated = { ...prev };
+                delete updated[selectedSubject.subject_id];
+                return updated;
+            });
+            setSelectedScheduleId(null);   
         }
+    };      
+
+    const scheduleRowKey = (record) => {
+        const classId = record.class_id?.class_id ?? "noClass";
+        const slotId  = record.slot?.slot_id ?? record.slot?.slot_name ?? "noSlot";
+        const roomId  = record.room?.room_id ?? record.room?.room_name ?? "noRoom";
+        const lectId  = record.lecturer_id ?? "noLect";
+        return `${record.schedule_id}-${classId}-${slotId}-${roomId}-${lectId}`;
     };
 
     return (
@@ -218,7 +252,7 @@ export default function CourseRegistrationForm({
             >
                 {scheduleDetail ? (
                     <Table
-                        rowKey="schedule_id"
+                        rowKey={scheduleRowKey}
                         dataSource={Array.isArray(scheduleDetail) ? scheduleDetail : [scheduleDetail]}
                         bordered
                         pagination={false}
@@ -275,11 +309,11 @@ export default function CourseRegistrationForm({
                                 key: "select",
                                 render: (_, record) => (
                                     <Checkbox
-                                        checked={selectedScheduleId === record.schedule_id}
+                                        checked={selectedSchedules[selectedSubject.subject_id]?.scheduleId === record.schedule_id}
                                         onChange={(e) => handleCheckboxChangeSchedule(record, e.target.checked)}
                                     />
                                 )
-                            }                            
+                            }                       
                         ]}
                     />
                 ) : (

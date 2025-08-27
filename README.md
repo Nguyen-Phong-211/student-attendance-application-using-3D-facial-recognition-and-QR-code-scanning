@@ -133,6 +133,30 @@ python manage.py runserver but for react, you must still run npm start then you 
 File's changes are accounts/authentication.py (create), accounts/views.py, accounts/urls.py, attend3d/settings.py, frontend/src/utils/auth.js and frontend/src/api/axiosInstance.js
 ```
 
+### 5. DJANGO CRONTAB
+The project uses **django-crontab** to run periodic tasks (cron jobs) on the server. For example, automatically approving course registrations after 24 hours if they have not been processed by an administrator.
+
+```bash
+pip install django-crontab
+
+-- Set up in settings.py
+
+INSTALLED_APPS = [
+    ...
+    'django_crontab',
+]
+
+CRONJOBS = [
+    # Run every hour to check for subscriptions over 24 hours
+    ('0 * * * *', 'student.cron.auto_approve_registrations')
+]
+
+--
+python manage.py crontab add # add cronjob to system
+python manage.py crontab show # view current cronjob
+python manage.py crontab remove # remove cronjob
+```
+
 ## To run environment python
 source env/bin/activate
 

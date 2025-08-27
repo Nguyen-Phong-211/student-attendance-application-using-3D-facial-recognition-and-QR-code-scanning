@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'channels',
     'rest_framework_simplejwt',
     # 'daphne',
+    'django_crontab',
     
     'attend3d',
     'accounts',
@@ -245,3 +246,8 @@ CACHES = {
 }
 
 RECAPTCHA_SECRET_KEY = ''
+
+# ================================== DJANGO CRONJOBS ==================================
+CRONJOBS = [
+    ('0 * * * *', 'student.cron.auto_approve_requests'),
+]

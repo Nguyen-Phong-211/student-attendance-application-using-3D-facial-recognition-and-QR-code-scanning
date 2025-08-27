@@ -24,18 +24,24 @@ export default function AcademicYearSemesterSelect({ academicYears, semesters, s
                 </Select>
             </Form.Item>
 
-            <Form.Item label="Học kỳ" name="semester" rules={[{ required: true, message: "Vui lòng chọn học kỳ!" }]}>
+            <Form.Item
+                label="Học kỳ"
+                name="semester"
+                rules={[{ required: true, message: "Vui lòng chọn học kỳ!" }]}
+            >
                 <Select
                     showSearch
                     placeholder="Chọn học kỳ"
                     size="large"
                     disabled={!selectedAcademicYear}
                     allowClear
-                    filterOption={(input, option) => option?.children?.toLowerCase().includes(input.toLowerCase())}
+                    filterOption={(input, option) =>
+                        option?.children?.toLowerCase().includes(input.toLowerCase())
+                    }
                     className="w-full custom-select"
                     onChange={handleSemesterChange}
                 >
-                    {Array.isArray(semesters) && semesters.map((semes) => semes.semester_id && (
+                    {Array.isArray(semesters) && semesters.map(semes => (
                         <Option key={semes.semester_id} value={semes.semester_id}>
                             {semes.semester_name}
                         </Option>

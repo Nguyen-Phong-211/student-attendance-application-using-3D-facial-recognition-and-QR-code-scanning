@@ -4,7 +4,7 @@ import LoginFormItems from "./LoginFormItems";
 import LoginFooterLinks from "./LoginFooterLinks";
 import { useAuth } from "../../auth/AuthContext";
 
-const LoginForm = ({ messageApi, executeRecaptcha, navigate, randomId }) => {
+const LoginForm = ({ messageApi, executeRecaptcha, navigate, randomId, loading, setLoading }) => {
     const [form] = Form.useForm();
     const { login } = useAuth();
 
@@ -15,6 +15,7 @@ const LoginForm = ({ messageApi, executeRecaptcha, navigate, randomId }) => {
         }
 
         try {
+            setLoading(true);
             const captchaToken = await executeRecaptcha("login_action");
             if (!captchaToken) {
                 messageApi.error("Vui lòng xác minh reCAPTCHA.");
@@ -46,6 +47,8 @@ const LoginForm = ({ messageApi, executeRecaptcha, navigate, randomId }) => {
 
             messageApi.error(errMsg);
         }
+
+        setLoading(false);
     };
 
     return (
@@ -60,7 +63,7 @@ const LoginForm = ({ messageApi, executeRecaptcha, navigate, randomId }) => {
             <LoginFormItems />
             <LoginFooterLinks randomId={randomId} />
             <Form.Item>
-                <Button type="primary" htmlType="submit" block size="large">
+                <Button type="primary" htmlType="submit" block size="large" loading={loading}>
                     Đăng nhập
                 </Button>
             </Form.Item>

@@ -304,8 +304,16 @@ class LogoutView(APIView):
                 pass 
         
         response = JsonResponse({'message': 'Đăng xuất thành công'})
-        response.delete_cookie('access_token')
-        response.delete_cookie('refresh_token')
+        response.delete_cookie(
+            'access_token',
+            path='/',
+            samesite='Lax'
+        )
+        response.delete_cookie(
+            'refresh_token',
+            path='/',
+            samesite='Lax'
+        )
         
         return response
 # End logout
