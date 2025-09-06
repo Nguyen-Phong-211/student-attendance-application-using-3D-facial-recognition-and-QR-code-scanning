@@ -78,7 +78,7 @@ class StudentSubject(models.Model):
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
     registration_status = models.CharField(max_length=20, default='auto')
     created_at = models.DateTimeField(auto_now_add=True)
-    registered_by_account = models.ForeignKey("accounts.Account", on_delete=models.CASCADE, null=True)
+    # registered_by_account = models.ForeignKey("accounts.Account", on_delete=models.CASCADE, null=True)
     # Change
     subject_registration_request = models.ForeignKey("students.SubjectRegistrationRequest", on_delete=models.CASCADE, null=True)
     # End change
@@ -89,7 +89,7 @@ class StudentSubject(models.Model):
             models.Index(fields=['student_id']),
             models.Index(fields=['subject_id']),
             models.Index(fields=['semester_id']),
-            models.Index(fields=['registered_by_account_id']),
+            # models.Index(fields=['registered_by_account_id']),
             models.Index(fields=['subject_registration_request_id']),
         ]
         managed = True
@@ -129,7 +129,7 @@ class SubjectRegistrationRequest(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     reviewed_at = models.DateTimeField(auto_now=True)
     is_over_credit_limit = models.BooleanField(default=False)
-    approved_by = models.ForeignKey('staffs.Staff', on_delete=models.CASCADE, null=True)
+    approved_by = models.ForeignKey('accounts.Account', on_delete=models.CASCADE, null=True)
 
     class Meta:
         db_table = 'subject_registration_requests'

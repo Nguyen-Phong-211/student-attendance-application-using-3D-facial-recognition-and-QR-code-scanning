@@ -42,6 +42,7 @@ const Sidebar = ({ collapsed, setCollapsed, t }) => {
     else if (path.startsWith('/admin/students/assign-class')) setSelectedKey('6-2');
     else if (path.startsWith('/admin/students/assign-subject')) setSelectedKey('6-3');
     else if (path.startsWith('/admin/students/device')) setSelectedKey('6-4');
+    else if (path.startsWith('/admin/students/approve/list')) setSelectedKey('6-5');
 
     else if (path.startsWith('/admin/lecturers/list')) setSelectedKey('7-1');
     else if (path.startsWith('/admin/lecturers/assign-class')) setSelectedKey('7-2');
@@ -143,6 +144,7 @@ const Sidebar = ({ collapsed, setCollapsed, t }) => {
               { key: '6-2', label: (<a href='/admin/students/assign-class'><i className="fa-brands fa-atlassian me-2"></i> Gán lớp học</a>) },
               { key: '6-3', label: (<a href='/admin/students/assign-subject'><i className="fa-regular fa-font-awesome me-2"></i> Gán môn học</a>) },
               { key: '6-4', label: (<a href='/admin/students/device'><i className="fa-regular fa-hard-drive me-2"></i> Thiết bị điểm danh</a>) },
+              { key: '6-5', label: (<a href='/admin/students/approve/list'><i className="fa-regular fa-hard-drive me-2"></i> Duyệt danh sách môn học</a>) },
             ],
           },
           {

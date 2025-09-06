@@ -292,29 +292,19 @@ class MeView(APIView):
 # Logout
 class LogoutView(APIView):
     permission_classes = [AllowAny]
-    
+
     def post(self, request):
         refresh_token = request.COOKIES.get('refresh_token')
-        
         if refresh_token:
             try:
                 token = RefreshToken(refresh_token)
                 token.blacklist()
             except Exception:
-                pass 
-        
+                pass
+
         response = JsonResponse({'message': 'Đăng xuất thành công'})
-        response.delete_cookie(
-            'access_token',
-            path='/',
-            samesite='Lax'
-        )
-        response.delete_cookie(
-            'refresh_token',
-            path='/',
-            samesite='Lax'
-        )
-        
+        response.delete_cookie('access_token', path='/', samesite='Lax')
+        response.delete_cookie('refresh_token', path='/', samesite='Lax')
         return response
 # End logout
 

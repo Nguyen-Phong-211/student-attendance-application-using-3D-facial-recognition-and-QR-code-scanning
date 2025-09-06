@@ -173,7 +173,7 @@ export default function AccountInformation() {
             }
     
             const studentId = studentRes.data?.student_id;
-            message.success(studentRes.data?.message || "Cập nhật thông tin sinh viên thành công!");
+            // message.success(studentRes.data?.message || "Cập nhật thông tin sinh viên thành công!");
     
             if (values.avatar) {
                 const formData = new FormData();
@@ -190,7 +190,7 @@ export default function AccountInformation() {
                     return;
                 }
     
-                message.success(avatarRes.data?.message || "Cập nhật avatar thành công!");
+                // message.success(avatarRes.data?.message || "Cập nhật avatar thành công!");
             }
     
             const registrationRequests = Object.values(selectedSchedules).map((schedule) => ({
@@ -208,10 +208,11 @@ export default function AccountInformation() {
                     return;
                 }
             }
-
-            await new Promise((resolve) => setTimeout(resolve, 3000));
     
             message.success("Đăng ký môn học thành công!");
+
+            await new Promise((resolve) => setTimeout(resolve, 3000));
+
             navigate("/");
             window.location.reload();
     

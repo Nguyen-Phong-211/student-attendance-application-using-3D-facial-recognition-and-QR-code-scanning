@@ -40,6 +40,7 @@ export default function ProfilePage() {
     const res = localStorage.getItem("user");
     const user = JSON.parse(res);
     const accountId = user.account_id;
+    const avatarUrl = user.avatar;
 
     useEffect(() => {
         document.title = "ATTEND 3D - Thông tin tài khoản";
@@ -82,7 +83,7 @@ export default function ProfilePage() {
 
             case "report":
                 return (
-                    <ReportIssueForm    />
+                    <ReportIssueForm />
                 );
 
             case "guide":
@@ -123,9 +124,17 @@ export default function ProfilePage() {
                     <div className="flex flex-col md:flex-row gap-6">
                         <div className="w-full md:w-1/4 bg-white rounded-xl shadow p-4">
                             <div className="shadow rounded-lg p-4 text-gray-600 text-center mb-4">
-                                <Avatar size={64} icon={<UserOutlined />} className="mx-auto mb-2" />
+                                {avatarUrl ? (
+                                    <img
+                                        src={avatarUrl}
+                                        alt="Avatar"
+                                        className="w-16 h-16 object-cover rounded-full mx-auto mb-2"
+                                    />
+                                ) : (
+                                    <Avatar size={64} icon={<UserOutlined />} className="mx-auto mb-2" />
+                                )}
                                 <div className="font-semibold text-lg">{formData?.fullname || "Đang tải..."}</div>
-                                <div className="text-sm">{ formData?.phone_number || "Đang tải..." }</div>
+                                <div className="text-sm">{formData?.phone_number || "Đang tải..."}</div>
                             </div>
 
                             <ul className="space-y-2">

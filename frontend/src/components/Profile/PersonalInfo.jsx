@@ -8,8 +8,11 @@ const { Title } = Typography;
 
 export default function PersonalInfo({ formData, setFormData, accountId }) {
     const [isEditing, setIsEditing] = useState(false);
-
     const [form] = Form.useForm();
+
+    const res = localStorage.getItem("user");
+    const user = JSON.parse(res);
+    const avatarUrl = user.avatar;
 
     useEffect(() => {
         const fetchData = async () => {
@@ -32,7 +35,7 @@ export default function PersonalInfo({ formData, setFormData, accountId }) {
                 dob: values.dob ? values.dob.format("YYYY-MM-DD") : null,
             });
             message.success("Cập nhật thành công");
-            
+
             const res = await api.get(`/students/${accountId}/`);
             setFormData(res.data);
 
@@ -61,7 +64,15 @@ export default function PersonalInfo({ formData, setFormData, accountId }) {
         <div className="bg-white rounded-xl p-8 border">
             <Title level={4}>Thông tin cá nhân</Title>
             <div className="flex flex-col items-center mt-4">
-                <Avatar size={80} icon={<UserOutlined />} className="mb-4" />
+                {avatarUrl ? (
+                    <img
+                        src={avatarUrl}
+                        alt="Avatar"
+                        className="w-[100px] h-[100px] object-cover rounded-full mx-auto mb-4"
+                    />
+                ) : (
+                    <Avatar size={64} icon={<UserOutlined />} className="mx-auto mb-4" />
+                )}
 
                 {!isEditing ? (
                     <div className="w-full max-w-lg space-y-4 mt-4">

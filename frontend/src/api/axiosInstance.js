@@ -22,6 +22,18 @@ const shouldSkip = (url = '') => {
     );
 };
 
+export const logout = async () => {
+    try {
+        await raw.post("accounts/logout/"); // server xóa cookie
+    } catch (err) {
+        console.error("Logout error:", err);
+    } finally {
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.replace("/account/login"); // chuyển về login page
+    }
+};
+
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
@@ -50,10 +62,11 @@ api.interceptors.response.use(
             } catch (e) {
                 isRefreshing = false;
                 refreshPromise = null;
+                await logout();
 
-                try {
-                    await raw.post("accounts/logout/");
-                } catch (_) {}
+                // try {
+                //     await raw.post("accounts/logout/");
+                // } catch (_) {}
 
                 window.dispatchEvent(new CustomEvent("session-expired"));
 
@@ -70,16 +83,5 @@ api.interceptors.response.use(
         return Promise.reject(error);
     }
 );
-
-export const logout = async () => {
-    try {
-        await raw.post('accounts/logout/', {});
-    } catch (err) {
-        console.error('Logout error:', err);
-    } finally {
-        localStorage.clear();
-        sessionStorage.clear();
-    }
-};
 
 export default api;

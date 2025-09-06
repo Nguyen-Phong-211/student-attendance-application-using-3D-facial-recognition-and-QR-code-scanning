@@ -109,7 +109,7 @@ class Command(BaseCommand):
             ))
 
         # days: 1 = Monday ... 6 = Saturday, optional 7
-        valid_days = list(range(1, 8 if include_sunday else 7))
+        valid_days = list(range(2, 8 if include_sunday else 7))
 
         # phân loại phòng: lab = A5.* hoặc room_type == 'Thực hành'
         lab_rooms = [r for r in rooms if (getattr(r, "room_type", "") == "Thực hành") or str(getattr(r, "room_name", "")).startswith("A5.")]

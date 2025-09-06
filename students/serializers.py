@@ -184,9 +184,32 @@ class StudentUpdateSerializer(serializers.Serializer):
 
         return account
 
-# ========================= SubjectRegistrationRequest =========================
+# ========================= SUBJECT REGISTRATION REQUEST =========================
 class SubjectRegistrationRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubjectRegistrationRequest
         fields = '__all__'
         read_only_fields = ['status', 'created_at', 'reviewed_at', 'is_over_credit_limit', 'approved_by']
+
+# ========================= SCHEDULE =========================
+class StudentScheduleSerializer(serializers.Serializer):
+    student_id = serializers.IntegerField()
+    student_name = serializers.CharField()
+    subject_id = serializers.IntegerField()
+    subject_name = serializers.CharField()
+    class_id = serializers.IntegerField()
+    class_name = serializers.CharField()
+    subject_class_id = serializers.IntegerField()
+    lecturer_name = serializers.CharField(allow_null=True)
+    schedule_id = serializers.IntegerField()
+    day_of_week = serializers.IntegerField()
+    weekday_name = serializers.CharField()
+    slot_name = serializers.CharField()
+    lesson_start = serializers.TimeField()
+    lesson_end = serializers.TimeField()
+    occurrence_start = serializers.DateTimeField()
+    occurrence_end = serializers.DateTimeField()
+    room_name = serializers.CharField()
+    latitude = serializers.DecimalField(max_digits=10, decimal_places=5)
+    longitude = serializers.DecimalField(max_digits=10, decimal_places=5)
+    lesson_type = serializers.CharField()
