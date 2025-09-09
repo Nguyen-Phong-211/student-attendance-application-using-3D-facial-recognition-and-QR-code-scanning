@@ -1,8 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
+
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Quicksand', sans-serif !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -19,4 +18,23 @@ code {
 
 .custom-select.ant-select-focused .ant-select-selector {
   box-shadow: none !important;
+}
+
+.ant-typography,
+.ant-breadcrumb,
+.ant-btn,
+.ant-menu,
+.ant-input,
+.ant-select,
+.ant-tabs,
+.ant-card-head,
+.ant-table-wrapper,
+.ant-table,
+.ant-radio-group,
+.ant-radio-button-wrapper,
+.ant-select-dropdown,
+.ant-picker-panel,
+.ant-tabs-content-holder,
+.ant-card-body {
+  font-family: 'Quicksand', sans-serif !important;
 }

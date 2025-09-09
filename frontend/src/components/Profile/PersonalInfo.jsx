@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Avatar, Button, Input, Typography, Select, DatePicker, message, Form } from "antd";
+import { Avatar, Button, Input, Typography, Select, DatePicker, message, Form, Alert } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import api from "../../api/axiosInstance";
@@ -20,13 +20,19 @@ export default function PersonalInfo({ formData, setFormData, accountId }) {
                 const res = await api.get(`/students/${accountId}/`);
                 setFormData(res.data);
             } catch (err) {
-                console.error(err);
-                message.error("Không lấy được thông tin cá nhân");
+                if (err.response?.status === 404) {
+                    setFormData(null);
+                } else {
+                    console.error(err);
+                    message.error("Không lấy được thông tin cá nhân");
+                }
             }
         };
-
-        fetchData();
-    }, [accountId, setFormData]);
+    
+        if (accountId) {
+            fetchData();
+        }
+    }, [accountId, setFormData]);    
 
     const handleUpdate = async (values) => {
         try {
@@ -57,8 +63,81 @@ export default function PersonalInfo({ formData, setFormData, accountId }) {
     };
 
     if (!formData) {
-        return <div>Đang tải thông tin...</div>;
-    }
+        return (
+            <div className="bg-white rounded-xl p-8 border">
+                <Alert
+                    message="Chưa có thông tin. Vui lòng cập nhật"
+                    type="warning"
+                    showIcon
+                    className="mb-4"
+                />
+                {!isEditing ? (
+                    <Button
+                        type="primary"
+                        size="large"
+                        className="rounded-full px-6"
+                        onClick={() => setIsEditing(true)}
+                    >
+                        Cập nhật ngay
+                    </Button>
+                ) : (
+                    <Form
+                        layout="vertical"
+                        onFinish={handleUpdate}
+                        form={form}
+                        autoComplete="off"
+                    >
+                        <Form.Item
+                            name="fullname"
+                            label="Họ và tên"
+                            rules={[{ required: true, message: "Vui lòng nhập họ tên!" }]}
+                        >
+                            <Input size="large" style={{ borderWidth: 1.5, boxShadow: 'none' }} />
+                        </Form.Item>
+    
+                        <Form.Item
+                            name="phone_number"
+                            label="Số điện thoại"
+                            rules={[{ required: true, message: "Vui lòng nhập số điện thoại!" }]}
+                        >
+                            <Input size="large" style={{ borderWidth: 1.5, boxShadow: 'none' }} />
+                        </Form.Item>
+    
+                        <Form.Item
+                            name="email"
+                            label="Email"
+                            rules={[{ required: true, message: "Vui lòng nhập email!" }, { type: "email" }]}
+                        >
+                            <Input size="large" style={{ borderWidth: 1.5, boxShadow: 'none' }} />
+                        </Form.Item>
+    
+                        <Form.Item
+                            name="gender"
+                            label="Giới tính"
+                            rules={[{ required: true, message: "Vui lòng chọn giới tính!" }]}
+                        >
+                            <Select size="large" className="w-full custom-select">
+                                <Select.Option value="1">Nam</Select.Option>
+                                <Select.Option value="0">Nữ</Select.Option>
+                            </Select>
+                        </Form.Item>
+    
+                        <Form.Item
+                            name="dob"
+                            label="Ngày sinh"
+                            rules={[{ required: true, message: "Vui lòng chọn ngày sinh!" }]}
+                        >
+                            <DatePicker format="YYYY-MM-DD" size="large" style={{ width: "100%", borderWidth: 1.5, boxShadow: 'none' }} />
+                        </Form.Item>
+    
+                        <Button type="primary" size="large" onClick={() => form.submit()}>
+                            Lưu thông tin
+                        </Button>
+                    </Form>
+                )}
+            </div>
+        );
+    }    
 
     return (
         <div className="bg-white rounded-xl p-8 border">

@@ -6,5 +6,9 @@ export const logout = () => {
         sessionStorage.clear();
 
         window.location.href = '/account/login';
+        const currentPath = window.location.pathname + window.location.search;
+        const loginUrl = `/account/login?redirect=${encodeURIComponent(currentPath)}`;
+
+        window.location.replace(loginUrl);
     });
 };

@@ -1,46 +1,35 @@
 import React, { useState, useEffect } from "react";
-import {
-    Button,
-    Avatar,
-    Dropdown,
-    message,
-    Popover,
-    Badge,
-} from "antd";
-import {
-    HomeOutlined,
-    CheckCircleOutlined,
-    PhoneOutlined,
-    ScanOutlined,
-    SettingOutlined,
-    MenuOutlined,
-    UserOutlined,
-    LoginOutlined,
-    BarChartOutlined,
-    PlusCircleOutlined,
-    WechatWorkOutlined,
-    AuditOutlined,
-    LogoutOutlined,
-    UserSwitchOutlined,
-    ScheduleOutlined,
-    BellOutlined,
-} from "@ant-design/icons";
+import { Button, Avatar, Dropdown, message, Popover, Badge, Drawer, Menu, Modal } from "antd";
+import { HomeOutlined, PhoneOutlined, ScanOutlined, SettingOutlined, MenuOutlined, UserOutlined, LoginOutlined, BarChartOutlined, PlusCircleOutlined, WechatWorkOutlined, AuditOutlined, LogoutOutlined, UserSwitchOutlined, ScheduleOutlined, BellOutlined, } from "@ant-design/icons";
 
 import Logo from "../../assets/general/face-recognition.png";
-import DesktopMenu from "./DesktopMenu";
 import i18n from "i18next";
 import { useTranslation } from "react-i18next";
-import api from '../../api/axiosInstance';
-import { v4 as uuidv4 } from 'uuid';
+import api from "../../api/axiosInstance";
 import { logout } from "../../utils/auth";
+import { useLocation } from "react-router-dom";
 
 export default function Header() {
-    const [, setOpenDrawer] = useState(false);
+    const [openDrawer, setOpenDrawer] = useState(false);
     const { t } = useTranslation();
-
+    const [selectedKeys, setSelectedKeys] = useState([]);
     const [user, setUser] = useState(null);
     const [notifications, setNotifications] = useState([]);
-    const randomId = uuidv4();
+    const location = useLocation();
+
+    useEffect(() => {
+        const path = location.pathname;
+        if (path === "/") setSelectedKeys(["home"]);
+        else if (path.startsWith("/timetable")) setSelectedKeys(["timetable"]);
+        else if (path.startsWith("/add-face")) setSelectedKeys(["add-face"]);
+        else if (path.startsWith("/general-setting")) setSelectedKeys(["general-setting"]);
+        else if (path.startsWith("/attendance-statistics")) setSelectedKeys(["statistic"]);
+        else if (path.startsWith("/contact")) setSelectedKeys(["contact"]);
+        else if (path.startsWith("/profile")) setSelectedKeys(["profile"]);
+        else if (path.startsWith("/add-event/add-reminder")) setSelectedKeys(["add-reminder"]);
+        else if (path.startsWith("/add-event/request-leave")) setSelectedKeys(["request-leave"]);
+        else setSelectedKeys([]);
+    }, [location]);
 
     useEffect(() => {
         let intervalId;
@@ -69,47 +58,44 @@ export default function Header() {
         return () => clearInterval(intervalId);
     }, [user?.account_id]);
 
+    const handleLogout = () => {
+        Modal.confirm({
+            title: "Xác nhận đăng xuất",
+            content: "Bạn có chắc chắn muốn đăng xuất không?",
+            okText: "Đăng xuất",
+            cancelText: "Hủy",
+            onOk: async () => {
+                try {
+                    await logout();
+                    message.success("Đăng xuất thành công");
+                    window.location.href = "/account/login";
+                } catch (err) {
+                    message.error("Có lỗi khi đăng xuất");
+                }
+            },
+        });
+    };
+
     const items = [
         {
             key: "home",
             icon: <HomeOutlined />,
-            label: (
-                <a href="/" className="text-base">
-                    {t("home")}
-                </a>
-            ),
-        },
-        {
-            key: "attendance",
-            icon: <CheckCircleOutlined />,
-            label: (
-                <a href="/attendance" className="text-base">
-                    {t("attendance")}
-                </a>
-            ),
+            label: <a href="/">{t("home")}</a>,
         },
         {
             key: "timetable",
             icon: <ScheduleOutlined />,
-            label: (
-                <a href="/timetable" className="text-base">
-                    {t("timetable")}
-                </a>
-            ),
+            label: <a href="/timetable">{t("timetable")}</a>,
         },
         {
             key: "user",
             icon: <UserOutlined />,
-            label: <span className="text-base">{t("setting")}</span>,
+            label: t("setting"),
             children: !user
                 ? [
                     {
                         key: "login-prompt",
-                        label: (
-                            <a href="/account/login">
-                                Đăng nhập để thực hiện các chức năng
-                            </a>
-                        ),
+                        label: <a href="/account/login">Đăng nhập để thực hiện các chức năng</a>,
                         icon: <LoginOutlined />,
                     },
                 ]
@@ -117,11 +103,7 @@ export default function Header() {
                     {
                         key: "admin",
                         label: (
-                            <a
-                                href="/admin/dashboard"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
+                            <a href="/admin/dashboard" target="_blank" rel="noopener noreferrer">
                                 Admin
                             </a>
                         ),
@@ -134,21 +116,17 @@ export default function Header() {
                     },
                     {
                         key: "event",
-                        label: <span>{t("create_event")}</span>,
+                        label: t("create_event"),
                         icon: <PlusCircleOutlined />,
                         children: [
                             {
                                 key: "add-reminder",
-                                label: (
-                                    <a href="/add-event/add-reminder">{t("create_reminder")}</a>
-                                ),
+                                label: <a href="/add-event/add-reminder">{t("create_reminder")}</a>,
                                 icon: <WechatWorkOutlined />,
                             },
                             {
                                 key: "request-leave",
-                                label: (
-                                    <a href="/add-event/request-leave">{t("request_leave")}</a>
-                                ),
+                                label: <a href="/add-event/request-leave">{t("request_leave")}</a>,
                                 icon: <AuditOutlined />,
                             },
                         ],
@@ -160,23 +138,17 @@ export default function Header() {
                     },
                     {
                         key: "statistic",
-                        label: (
-                            <a href="/attendance-statistics">{t("attendance_stat")}</a>
-                        ),
+                        label: <a href="/attendance-statistics">{t("attendance_stat")}</a>,
                         icon: <BarChartOutlined />,
                     },
                     {
                         key: "contact",
-                        label: (
-                            <a href="/contact">
-                                {t("contact")}
-                            </a>
-                        ),
+                        label: <a href="/contact">{t("contact")}</a>,
                         icon: <PhoneOutlined />,
                     },
                     {
                         key: "logout",
-                        onClick: logout,
+                        onClick: handleLogout,
                         label: <span style={{ color: "red" }}>{t("logout")}</span>,
                         icon: <LogoutOutlined style={{ color: "red" }} />,
                     },
@@ -185,8 +157,8 @@ export default function Header() {
         {
             key: "language",
             label: (
-                <span className="text-base">
-                    <i className="fa-solid fa-language"></i>&nbsp;&nbsp;{t("language")}
+                <span>
+                    <i className="fa-solid fa-language font-bold"></i>&nbsp;&nbsp;{t("language")}
                 </span>
             ),
             children: [
@@ -248,7 +220,7 @@ export default function Header() {
                 <p className="text-sm text-gray-500">Không có thông báo.</p>
             )}
             <a
-                href={`/profile/${randomId}?tab=notifications`}
+                href={`/notifications/all`}
                 className="block text-center mt-2 text-blue-500 hover:underline text-sm"
             >
                 Xem tất cả
@@ -264,47 +236,48 @@ export default function Header() {
         },
         {
             key: "logout",
-            label: <a href="accounts/logout/" onClick={logout}>Đăng xuất</a>,
-            icon: <LogoutOutlined />,
+            label: (
+                <span onClick={handleLogout} style={{ color: "red" }}>
+                    {t("logout")}
+                </span>
+            ),
+            icon: <LogoutOutlined style={{ color: "red" }} />,
         },
     ];
 
     return (
-        <header className="flex justify-between items-center py-6 border-b border-gray-200 w-full">
-            <div className="flex items-center space-x-4">
-                <a
-                    href="/"
-                    className="flex items-center space-x-3 hover:opacity-90 transition"
-                >
-                    <img src={Logo} alt="Logo" className="h-10 w-10 object-contain" />
-                    <span className="text-2xl font-bold text-gray-800 tracking-wide">
-                        FACE <span>CLASS</span>
+        <header className="flex justify-between items-center py-4 px-4 md:px-10 border-b border-gray-200 w-full">
+            <div className="flex items-center space-x-3">
+                <a href="/" className="flex items-center space-x-2 hover:opacity-90 transition">
+                    <img src={Logo} alt="Logo" className="h-8 w-8 object-contain" />
+                    <span className="text-xl md:text-2xl font-extrabold text-gray-800 tracking-wide">
+                        FACE <span className="text-blue-600">CLASS</span>
                     </span>
                 </a>
             </div>
 
-            <div className="hidden md:flex flex-grow justify-between items-center ml-10">
-                <DesktopMenu
+            <div className="hidden md:flex flex-grow justify-between items-center ml-10 font-bold">
+                <Menu
+                    mode="horizontal"
                     items={items}
+                    selectedKeys={selectedKeys}
                     onClick={({ key }) => {
                         if (key === "vi" || key === "en") {
                             i18n.changeLanguage(key);
+                        } else {
+                            setSelectedKeys([key]);
                         }
                     }}
+                    className="flex-1 bg-transparent border-b-0 font-bold"
                 />
 
-                <div className="space-x-4 flex-shrink-0">
+                <div className="space-x-4 flex-shrink-0 flex items-center">
                     {!user ? (
-                        <Button
-                            icon={<LoginOutlined />}
-                            type="primary"
-                            size="large"
-                            href="/account/login"
-                        >
+                        <Button icon={<LoginOutlined />} type="primary" size="middle" href="/account/login">
                             {t("login")}
                         </Button>
                     ) : (
-                        <div className="flex items-center space-x-4">
+                        <>
                             <Popover
                                 content={notificationContent}
                                 title="Thông báo"
@@ -317,25 +290,41 @@ export default function Header() {
                                 </Badge>
                             </Popover>
 
-                            <Dropdown
-                                trigger={["hover"]}
-                                placement="bottomRight"
-                                menu={{ items: userMenuItems }}
-                            >
+                            <Dropdown trigger={["hover"]} placement="bottomRight" menu={{ items: userMenuItems }}>
                                 <div className="flex items-center gap-2 cursor-pointer">
                                     {user?.avatar ? (
-                                        <img src={user?.avatar} alt="Avatar" height={40} width={40} />
-                                    ) : <Avatar icon={<UserOutlined />} />}
+
+                                        <img
+                                            src={user?.avatar}
+                                            alt="Avatar"
+                                            className="h-10 w-10 rounded-full object-cover"
+                                        />
+                                    ) : (
+                                        <Avatar icon={<UserOutlined />} />
+                                    )}
                                 </div>
                             </Dropdown>
-                        </div>
+                        </>
                     )}
                 </div>
             </div>
 
             <div className="md:hidden">
-                <Button icon={<MenuOutlined />} onClick={() => setOpenDrawer(true)} />
+                <Button icon={<MenuOutlined />} type="text" onClick={() => setOpenDrawer(true)} />
             </div>
+
+            <Drawer title="Menu" className="font-bold" placement="right" onClose={() => setOpenDrawer(false)} open={openDrawer}>
+                <Menu
+                    mode="inline"
+                    items={items}
+                    onClick={({ key }) => {
+                        if (key === "vi" || key === "en") {
+                            i18n.changeLanguage(key);
+                        }
+                        setOpenDrawer(false);
+                    }}
+                />
+            </Drawer>
         </header>
     );
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Layout, Form, Select, Button, message, Typography, Card, Descriptions
+    Layout, Form, Select, Button, message, Typography, Card, Descriptions, Spin
 } from 'antd';
 import Sidebar from '../../../components/Layout/Sidebar';
 import Navbar from '../../../components/Layout/Navbar';
@@ -250,6 +250,7 @@ export default function SubjectAssignment() {
                     </Form>
                 </main>
             </Layout>
+            <Spin spinning={loading} fullscreen tip="Đang xử lý. Vui lòng chờ..." />
         </Layout>
     );
 }

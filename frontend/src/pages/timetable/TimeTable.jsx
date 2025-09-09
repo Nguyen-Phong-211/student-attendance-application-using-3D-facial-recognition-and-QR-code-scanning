@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
-import Header from "../../components/Header/Header";
 import { useTranslation } from "react-i18next";
 import { Card, Breadcrumb, Tabs, Calendar, Tag, Table, Typography, Spin, Button, Space, Radio, Popconfirm } from "antd";
 import { HomeOutlined, ScheduleOutlined, ClockCircleOutlined, SelectOutlined, UserOutlined, PushpinOutlined, FireOutlined } from "@ant-design/icons";
-import Footer from "../../components/Footer";
+import Footer from "../../components/Layout/Footer";
 import api from "../../api/axiosInstance";
 import TimerCountdown from "../../components/TimerCountdown";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import Header from "../../components/Layout/Header";
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -373,9 +373,8 @@ export default function TimeTablePage() {
                     <div className="w-full px-2 mb-6">
                         <Breadcrumb
                             items={[
-                                { href: "/", title: <HomeOutlined /> },
-                                { href: "/timetable", title: <><ScheduleOutlined /> <span>{t("timetable")}</span></> },
-                                { title: t("timetable") },
+                                { href: "/", title: <><HomeOutlined /> <span>{"Trang chủ"}</span></> },
+                                { href: "/timetable", title: <><ScheduleOutlined /> <span>{"Lịch học"}</span></> },
                             ]}
                         />
                     </div>

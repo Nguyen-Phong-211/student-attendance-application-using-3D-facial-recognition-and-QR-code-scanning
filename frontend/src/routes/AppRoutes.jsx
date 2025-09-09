@@ -3,7 +3,6 @@ import { Route, Routes } from "react-router-dom";
 import Login from "../pages/account/Login"; //
 import Signup from "../pages/account/Signup"; //
 import Home from "../pages/home/Home";
-import Attendance from "../pages/attendance/Attendance";
 import Contact from "../pages/contact/Contact";
 import AddFace from "../pages/add-face/AddFace";
 import RegisterFace from "../pages/add-face/RegisterFace";
@@ -54,7 +53,6 @@ const AppRoutes = () => {
             <Route path="/account/signup/*" element={<Signup />} />
             <Route path="/account/verify-otp/*" element={<VerifyOtp />} />
             <Route path="/" element={ <ProtectedRoute> <Home /> </ProtectedRoute> } />
-            <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/add-face" element={<ProtectedRoute><AddFace /></ProtectedRoute>} />
             <Route path="/add-face/register-face" element={<ProtectedRoute><RegisterFace /></ProtectedRoute>} />

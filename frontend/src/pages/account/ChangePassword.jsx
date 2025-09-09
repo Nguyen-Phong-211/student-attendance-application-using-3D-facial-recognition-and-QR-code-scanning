@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Typography, Card, Breadcrumb, Input, Form, Button } from "antd";
-import Header from "../../components/Header/Header";
+// import Header from "../../components/Header/Header";
 import { HomeOutlined, TeamOutlined } from '@ant-design/icons';
 
 const { Title } = Typography;
@@ -15,7 +15,7 @@ export default function ContactPage() {
         <div className="min-h-screen bg-white text-gray-800 flex flex-col">
             <div className="w-full mx-auto px-6 flex-grow">
 
-                <Header />
+                {/* <Header /> */}
 
                 <main className="mt-10 flex flex-col items-center">
                     <div className="w-full px-4">

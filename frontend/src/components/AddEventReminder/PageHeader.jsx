@@ -7,14 +7,14 @@ export default function PageHeader() {
         <div className="w-full px-4">
             <Breadcrumb
                 items={[
-                    { href: '/', title: <HomeOutlined /> },
+                    { href: "/", title: <><HomeOutlined /> <span>{"Trang chủ"}</span></> },
                     {
-                        href: '/add-event/add-reminder',
+                        href: '#',
                         title: <>
                             <PlusCircleOutlined /> <span>Tạo sự kiện</span>
                         </>
                     },
-                    { title: 'Tạo nhắc điểm danh' },
+                    { href: '/add-event/add-reminder', title: 'Tạo nhắc nhở điểm danh' },
                 ]}
             />
         </div>

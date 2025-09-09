@@ -9,10 +9,10 @@ import {
     Space,
     Badge
 } from "antd";
-import Header from "../../components/Header/Header";
+import Header from "../../components/Layout/Header";
 import { HomeOutlined, PlusCircleOutlined, DiffOutlined, SearchOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
-import Footer from "../../components/Footer";
+import Footer from "../../components/Layout/Footer";
 
 const { Title, Paragraph } = Typography;
 

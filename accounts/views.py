@@ -407,7 +407,7 @@ def bulk_create_students(request):
             title=f"Bạn đã tạo tài khoản cho sinh viên {name}",
             content=f"Sinh viên {name} đã có tài khoản trong hệ thống.",
             created_by=request.user,
-            to_target=account.account_id
+            to_target=account
         )
         
         AuditLog.objects.create(
@@ -519,7 +519,7 @@ def bulk_create_lecturers(request):
             title=f"Bạn hàng tạo tài khoản cho giảng viên {name}",
             content=f"Giảng viên {name} hàng có tài khoản trong hệ thống.",
             created_by=request.user,
-            to_target=account.account_id
+            to_target=account
         )
         
         AuditLog.objects.create(

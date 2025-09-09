@@ -1,34 +1,25 @@
 import React, { useEffect, useState } from "react";
 import {
     UserOutlined,
-    HistoryOutlined,
-    NotificationOutlined,
     QuestionCircleOutlined,
-    BugOutlined,
     LogoutOutlined,
     RightOutlined,
     HomeOutlined,
     SnippetsOutlined,
     UnlockOutlined
 } from "@ant-design/icons";
-import { Avatar, Breadcrumb, message } from "antd";
-import Header from "../../components/Header/Header";
-import Footer from "../../components/Footer";
+import { Avatar, Breadcrumb, message, Alert } from "antd";
+import Footer from "../../components/Layout/Footer";
 import PersonalInfo from "../../components/Profile/PersonalInfo";
-import AttendanceHistory from "../../components/Profile/AttendanceHistory";
-import NotificationList from "../../components/Profile/NotificationList";
 import ChangePasswordForm from "../../components/Profile/ChangePasswordForm";
-import ReportIssueForm from "../../components/Profile/ReportIssueForm";
 import LogoutTab from "../../components/Profile/LogoutTab";
 import GuideTab from "../../components/Profile/GuideTab";
 import api from "../../api/axiosInstance";
+import Header from "../../components/Layout/Header";
 
 const menuItems = [
     { key: "personal", label: "Thông tin cá nhân", icon: <UserOutlined /> },
-    { key: "attendance", label: "Lịch sử điểm danh", icon: <HistoryOutlined /> },
-    { key: "notification", label: "Thông báo", icon: <NotificationOutlined /> },
     { key: "changePassword", label: "Đổi mật khẩu", icon: <UnlockOutlined /> },
-    { key: "report", label: "Báo cáo lỗi", icon: <BugOutlined /> },
     { key: "guide", label: "Hướng dẫn sử dụng", icon: <QuestionCircleOutlined /> },
     { key: "logout", label: "Đăng xuất", icon: <LogoutOutlined />, danger: true },
 ];
@@ -66,26 +57,10 @@ export default function ProfilePage() {
                 return (
                     <PersonalInfo formData={formData} setFormData={setFormData} accountId={accountId} />
                 );
-            case "attendance":
-
-                return (
-                    <AttendanceHistory />
-                );
-
-            case "notification":
-                return (
-                    <NotificationList />
-                );
             case "changePassword":
                 return (
                     <ChangePasswordForm />
                 );
-
-            case "report":
-                return (
-                    <ReportIssueForm />
-                );
-
             case "guide":
                 return (
                     <GuideTab />
@@ -107,7 +82,7 @@ export default function ProfilePage() {
                     <div className="w-full px-2 md:px-4 mb-4">
                         <Breadcrumb
                             items={[
-                                { href: "/", title: <HomeOutlined /> },
+                                { href: "/", title: <><HomeOutlined /> <span>{"Trang chủ"}</span></> },
                                 {
                                     href: "/profile",
                                     title: (
@@ -117,7 +92,6 @@ export default function ProfilePage() {
                                         </>
                                     ),
                                 },
-                                { title: "Thông tin tài khoản" },
                             ]}
                         />
                     </div>
@@ -133,8 +107,19 @@ export default function ProfilePage() {
                                 ) : (
                                     <Avatar size={64} icon={<UserOutlined />} className="mx-auto mb-2" />
                                 )}
-                                <div className="font-semibold text-lg">{formData?.fullname || "Đang tải..."}</div>
-                                <div className="text-sm">{formData?.phone_number || "Đang tải..."}</div>
+                                {formData ? (
+                                    <>
+                                        <div className="font-semibold text-lg">{formData.fullname || "Đang tải..."}</div>
+                                        <div className="text-sm">{formData.phone_number || "Đang tải..."}</div>
+                                    </>
+                                ) : (
+                                    <Alert
+                                        message="Chưa có thông tin. Vui lòng cập nhật"
+                                        type="warning"
+                                        showIcon
+                                        className="mb-4 mt-4"
+                                    />
+                                )}
                             </div>
 
                             <ul className="space-y-2">

@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import 'dayjs/locale/vi';
-import { Breadcrumb, Card, Typography, Button, message } from "antd";
-import Header from "../../components/Header/Header";
-import { HomeOutlined, PlusCircleOutlined, CameraOutlined } from '@ant-design/icons';
+import { Card, Typography, Button, message } from "antd";
+import { useNavigate } from "react-router-dom";
+import { CameraOutlined, LeftOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 
 const { Title, Paragraph } = Typography;
@@ -10,6 +10,7 @@ const { Title, Paragraph } = Typography;
 export default function RegisterPage() {
 
     const { t } = useTranslation();
+    const navigate = useNavigate();
 
     useEffect(() => {
         document.title = "ATTEND 3D - " + t('Face Registration');
@@ -52,20 +53,23 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 text-gray-800 flex flex-col">
+        <div className="min-h-screen text-gray-800 flex flex-col">
             <div className="w-full mx-auto px-6 flex-grow">
-                <Header />
-
                 <main className="mt-10">
-                    <div className="w-full max-w-6xl px-4">
-                        <Breadcrumb
-                            items={[
-                                { href: '/', title: <HomeOutlined /> },
-                                { href: '/add-face', title: <><PlusCircleOutlined /> <span>Đăng ký khuôn mặt</span></> },
-                                { href: '/add-face/register', title: <><PlusCircleOutlined /> <span>Đăng ký</span></> },
-                                { title: 'Đăng ký' },
-                            ]}
-                        />
+                    <div className="w-full px-2 mb-6">
+                        <Button
+                            type="link"
+                            icon={<LeftOutlined />}
+                            onClick={() => {
+                                if (window.history.state && window.history.state.idx > 0) {
+                                    navigate(-1);
+                                } else {
+                                    navigate("/add-face");
+                                }
+                            }}
+                        >
+                            Quay lại
+                        </Button>
                     </div>
 
                     <div className="flex justify-center mt-10 px-4">
@@ -103,12 +107,6 @@ export default function RegisterPage() {
                     </div>
                 </main>
             </div>
-
-            <footer className="bg-gray-100 mt-0 py-2 px-5">
-                <div className="text-center text-sm text-gray-500">
-                    © {new Date().getFullYear()} EDU FACE ID. All rights reserved.
-                </div>
-            </footer>
         </div>
     );
 }

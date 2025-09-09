@@ -1,8 +1,11 @@
-import axios from 'axios';
+import axios from "axios";
 
+// ====================
+// axios configuration
+// ====================
 const api = axios.create({
     baseURL: process.env.REACT_APP_API_URL,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { "Content-Type": "application/json" },
     withCredentials: true,
 });
 
@@ -11,28 +14,52 @@ const raw = axios.create({
     withCredentials: true,
 });
 
-let isRefreshing = false;
-let refreshPromise = null;
+// ====================
+// Helpers
+// ====================
 
-const shouldSkip = (url = '') => {
+// URLs that bypass interceptors
+const shouldSkip = (url = "") => {
     return (
-        url.includes('accounts/login/') ||
-        url.includes('accounts/logout/') ||
-        url.includes('accounts/refresh-token/')
+        url.includes("accounts/login/") ||
+        url.includes("accounts/logout/") ||
+        url.includes("accounts/refresh-token/")
     );
 };
 
-export const logout = async () => {
+// Force delete cookies (even if the server can't)
+const clearAuthCookies = () => {
+    document.cookie =
+        "access_token=; Path=/;";
+    document.cookie =
+        "refresh_token=; Path=/;";
+};
+
+// Logout
+export const logout = async (force = false) => {
     try {
-        await raw.post("accounts/logout/"); // server xóa cookie
+        if (!force) {
+            await raw.post("accounts/logout/");
+        }
     } catch (err) {
         console.error("Logout error:", err);
     } finally {
+        clearAuthCookies();
         localStorage.clear();
         sessionStorage.clear();
-        window.location.replace("/account/login"); // chuyển về login page
+
+        const currentPath = window.location.pathname + window.location.search;
+        const loginUrl = `/account/login?next=${encodeURIComponent(currentPath)}`;
+
+        window.location.replace(loginUrl);
     }
 };
+
+// ====================
+// Interceptor handles 401
+// ====================
+let isRefreshing = false;
+let refreshPromise = null;
 
 api.interceptors.response.use(
     (response) => response,
@@ -44,16 +71,16 @@ api.interceptors.response.use(
         if (originalRequest._retry) return Promise.reject(error);
         if (shouldSkip(originalRequest.url)) return Promise.reject(error);
 
-        // const onAuthPage = window.location.pathname.startsWith('/account/');
-
         if (resp.status === 401) {
             originalRequest._retry = true;
 
             try {
+                // Refresh only once for multiple requests
                 if (!isRefreshing) {
                     isRefreshing = true;
-                    refreshPromise = raw.post('accounts/refresh-token/', {});
+                    refreshPromise = raw.post("accounts/refresh-token/", {});
                 }
+
                 await refreshPromise;
                 isRefreshing = false;
                 refreshPromise = null;
@@ -62,20 +89,13 @@ api.interceptors.response.use(
             } catch (e) {
                 isRefreshing = false;
                 refreshPromise = null;
+
+                // refresh fail → logout always
                 await logout();
 
-                // try {
-                //     await raw.post("accounts/logout/");
-                // } catch (_) {}
-
+                // notify other components
                 window.dispatchEvent(new CustomEvent("session-expired"));
 
-                // if (onAuthPage) {
-                //     return Promise.reject(e);
-                // }
-
-                // try { await raw.post('accounts/logout/', {}); } catch (_) { }
-                // window.location.replace(`/account/login/${randomId}?session=expired`);
                 return Promise.reject(e);
             }
         }

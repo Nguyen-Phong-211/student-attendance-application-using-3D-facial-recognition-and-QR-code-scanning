@@ -1,12 +1,13 @@
 import React from 'react';
-import Header from '../Header/Header';
-import Footer from '../Footer';
+import Footer from "../Layout/Footer";
+import Header from "../../components/Layout/Header";
 
 export default function LayoutWrapper({ children }) {
+
     return (
         <div className="min-h-screen bg-white text-gray-800 flex flex-col">
-            <div className="w-full mx-auto px-6 flex-grow">
-                <Header />
+            <Header />
+            <div className="w-full mt-0 mx-auto px-6 flex-grow">
                 {children}
             </div>
             <Footer />

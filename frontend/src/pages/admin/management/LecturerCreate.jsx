@@ -8,6 +8,7 @@ import {
     message,
     Layout,
     Typography,
+    Spin
 } from 'antd';
 import {
     UploadOutlined,
@@ -249,6 +250,7 @@ const LecturerCreate = () => {
                     </div>
                 </Content>
             </Layout>
+            <Spin spinning={loading} fullscreen tip="Đang xử lý. Vui lòng chờ..." />
         </Layout>
     );
 };
