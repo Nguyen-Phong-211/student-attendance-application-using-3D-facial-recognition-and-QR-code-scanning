@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, Breadcrumb, Tabs, Calendar, Tag, Table, Typography, Spin, Button, Space, Radio, Popconfirm } from "antd";
-import { HomeOutlined, ScheduleOutlined, ClockCircleOutlined, SelectOutlined, UserOutlined, PushpinOutlined, FireOutlined } from "@ant-design/icons";
+import { HomeOutlined, ScheduleOutlined, ClockCircleOutlined, SelectOutlined, UserOutlined, PushpinOutlined, FireOutlined, HarmonyOSOutlined } from "@ant-design/icons";
 import Footer from "../../components/Layout/Footer";
 import api from "../../api/axiosInstance";
 import TimerCountdown from "../../components/TimerCountdown";
@@ -24,6 +24,7 @@ export default function TimeTablePage() {
 
     const [openId, setOpenId] = useState(null);
     const [selectedMethod, setSelectedMethod] = useState(null);
+    const [currentTime, setCurrentTime] = useState(dayjs().tz("Asia/Ho_Chi_Minh"));
 
     useEffect(() => {
         document.title = "ATTEND 3D - " + t("timetable");
@@ -47,6 +48,14 @@ export default function TimeTablePage() {
         }
     };
 
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentTime(dayjs().tz("Asia/Ho_Chi_Minh"));
+        }, 1000 * 120);
+
+        return () => clearInterval(interval);
+    }, []);
+
     const getShift = (time) => {
         const hour = parseInt(time.split(":")[0]);
         if (hour < 12) return "morning";
@@ -56,13 +65,13 @@ export default function TimeTablePage() {
 
     const buildWeekSchedule = (data) => {
         const days = {
-            1: "Monday",
-            2: "Tuesday",
-            3: "Wednesday",
-            4: "Thursday",
-            5: "Friday",
-            6: "Saturday",
-            7: "Sunday",
+            2: "Monday",
+            3: "Tuesday",
+            4: "Wednesday",
+            5: "Thursday",
+            6: "Friday",
+            7: "Saturday",
+            8: "Sunday",
         };
 
         // Khởi tạo
@@ -79,6 +88,7 @@ export default function TimeTablePage() {
                 weekSchedule[shift][dayName].push({
                     subject: item.subject_name,
                     slotName: item.slot_name,
+                    className: item.class_name,
                     lessonType: item.lesson_type,
                     time: `${item.lesson_start} - ${item.lesson_end}`,
                     lectureName: item.lecturer_name,
@@ -96,6 +106,18 @@ export default function TimeTablePage() {
     const weekSchedule = buildWeekSchedule(scheduleData);
 
     const WeekView = () => {
+        const startOfWeek = currentTime.startOf("week").add(1, "day");
+
+        const dayColumns = [
+            { key: "Monday", label: "Thứ 2" },
+            { key: "Tuesday", label: "Thứ 3" },
+            { key: "Wednesday", label: "Thứ 4" },
+            { key: "Thursday", label: "Thứ 5" },
+            { key: "Friday", label: "Thứ 6" },
+            { key: "Saturday", label: "Thứ 7" },
+            { key: "Sunday", label: "Chủ nhật" },
+        ];
+
         const columns = [
             {
                 title: "Ca học",
@@ -106,20 +128,21 @@ export default function TimeTablePage() {
                 fixed: "left",
                 className: "bg-gray-50 font-semibold",
             },
-            { title: "Thứ 2", dataIndex: "Monday", key: "Monday", align: "center" },
-            { title: "Thứ 3", dataIndex: "Tuesday", key: "Tuesday", align: "center" },
-            { title: "Thứ 4", dataIndex: "Wednesday", key: "Wednesday", align: "center" },
-            { title: "Thứ 5", dataIndex: "Thursday", key: "Thursday", align: "center" },
-            { title: "Thứ 6", dataIndex: "Friday", key: "Friday", align: "center" },
-            { title: "Thứ 7", dataIndex: "Saturday", key: "Saturday", align: "center" },
-            { title: "Chủ nhật", dataIndex: "Sunday", key: "Sunday", align: "center" },
+            ...dayColumns.map((day, idx) => {
+                const dateLabel = startOfWeek.add(idx, "day").format("DD/MM/YYYY");
+                return {
+                    title: `${day.label} (${dateLabel})`,
+                    dataIndex: day.key,
+                    key: day.key,
+                    align: "center",
+                };
+            }),
         ];
 
         const handleConfirm = () => {
             console.log("Chọn hình thức cho lesson", openId, ":", selectedMethod);
             setOpenId(null);
             setSelectedMethod(null);
-            // TODO: gọi API hoặc chuyển trang điểm danh tương ứng
         };
 
         const handleCancel = () => {
@@ -134,10 +157,11 @@ export default function TimeTablePage() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 190, textAlign: "left" }}>
                     {data.map((item, idx) => {
                         // parse occurrence_start — convert to local time if it's UTC
-                        const start = dayjs.tz(item.occurrence_start, "YYYY-MM-DD HH:mm:ss", "Asia/Ho_Chi_Minh");
-                        const end = dayjs.tz(item.occurrence_end, "YYYY-MM-DD HH:mm:ss", "Asia/Ho_Chi_Minh");
+                        const start = dayjs.utc(item.occurrence_start).tz("Asia/Ho_Chi_Minh");
+                        const end = dayjs.utc(item.occurrence_end).tz("Asia/Ho_Chi_Minh");
                         const endCountdown = start.add(10, "minute");
-                        const now = dayjs().tz("Asia/Ho_Chi_Minh");
+                        const now = currentTime;
+                        const diffHours = start.diff(now, "hour");
 
                         const uniqueId = `${item.subject}-${item.slotName}-${item.occurrence_start}`;
                         let isExpired = false;
@@ -148,23 +172,34 @@ export default function TimeTablePage() {
                             </Text>
                         );
 
-                        if (now.isBefore(start)) {
-                            countdownNode = (
-                                <Text type="warning" style={{ fontSize: 12, fontWeight: 700 }}>
-                                    Chưa đến giờ điểm danh
-                                </Text>
-                            );
-                        } else if (now.isAfter(end)) {
-                            isExpired = true;
+                        if (now.isAfter(end)) {
+                            // 1. Đã qua giờ học
                             countdownNode = (
                                 <Text type="danger" style={{ fontSize: 12, fontWeight: 700 }}>
                                     Hết giờ điểm danh
                                 </Text>
                             );
+                        } else if (now.isBefore(start)) {
+                            if (diffHours >= 24) {
+                                // 2. Chưa tới ngày học
+                                countdownNode = (
+                                    <Text type="warning" style={{ fontSize: 12, fontWeight: 700 }}>
+                                        Chưa đến giờ điểm danh
+                                    </Text>
+                                );
+                            } else {
+                                // 3. Trong vòng 24h trước giờ học
+                                countdownNode = (
+                                    <Text style={{ fontSize: 12, fontWeight: 700 }}>
+                                        Còn lại {start.diff(now, "minute")} phút nữa điểm danh
+                                    </Text>
+                                );
+                            }
                         } else if (now.isAfter(start) && now.isBefore(endCountdown)) {
+                            // 4. Trong giờ học, trong 10p đầu
                             countdownNode = <TimerCountdown end={endCountdown} />;
                         } else {
-                            isExpired = true;
+                            // 5. Hết hạn điểm danh
                             countdownNode = (
                                 <Text type="danger" style={{ fontSize: 12, fontWeight: 700 }}>
                                     Hết giờ điểm danh
@@ -188,6 +223,10 @@ export default function TimeTablePage() {
 
                                 <div style={{ fontSize: 12 }}>
                                     <PushpinOutlined /> {item.slot_name || item.slotName}
+                                </div>
+
+                                <div style={{ fontSize: 12 }}>
+                                    <HarmonyOSOutlined /> Lớp: {item.class_name || item.className}
                                 </div>
 
                                 <div style={{ fontSize: 12 }}>
@@ -306,10 +345,10 @@ export default function TimeTablePage() {
             return (
                 <div style={{ display: "flex", flexDirection: "column", gap: 4, minHeight: 60 }}>
                     {listData.map((item, index) => {
-                        const start = dayjs.tz(item.occurrence_start, "YYYY-MM-DD HH:mm:ss", "Asia/Ho_Chi_Minh");
-                        const end = dayjs.tz(item.occurrence_end, "YYYY-MM-DD HH:mm:ss", "Asia/Ho_Chi_Minh");
+                        const start = dayjs.utc(item.occurrence_start).tz("Asia/Ho_Chi_Minh");
+                        const end = dayjs.utc(item.occurrence_end).tz("Asia/Ho_Chi_Minh");
                         const endCountdown = start.add(10, "minute");
-                        const now = dayjs().tz("Asia/Ho_Chi_Minh");
+                        const now = currentTime;
 
                         let contentNode;
 

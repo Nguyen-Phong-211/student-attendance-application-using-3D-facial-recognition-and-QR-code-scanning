@@ -273,103 +273,181 @@ class StudentScheduleView(APIView):
             return Response({"detail": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
         student_id = student.student_id
 
-        # 2. Raw SQL Query (CTE)
         query = """
         WITH week AS (
-          SELECT date_trunc('week', CURRENT_DATE)::date AS week_start,
-                 (date_trunc('week', CURRENT_DATE) + interval '7 day')::date AS week_end
+            SELECT date_trunc('week', CURRENT_DATE)::date AS week_start
         ),
-        base AS (
-          SELECT 
-              st.student_id,
-              st.fullname AS student_name,
-              subj.subject_id,
-              subj.subject_name,
-              c.class_id,
-              c.class_name,
-              sc.subject_class_id,
-              l.fullname AS lecturer_name,
-              s.schedule_id,
-              s.day_of_week,
-              ls.slot_name,
-              ls.start_time AS lesson_start,
-              ls.end_time   AS lesson_end,
-              s.repeat_weekly,
-              s.start_time  AS schedule_start,
-              s.end_time    AS schedule_end,
-              s.lesson_type,
-              r.room_name,
-              s.latitude,
-              s.longitude,
-              w.week_start
-          FROM student_subjects ss
-          JOIN students st            ON ss.student_id = st.student_id
-          JOIN subjects subj          ON ss.subject_id = subj.subject_id
-          JOIN subject_classes sc     ON sc.subject_id = subj.subject_id
-                                     AND sc.semester_id = ss.semester_id
-          JOIN classes c              ON sc.class_id_id = c.class_id
-          JOIN schedules s            ON s.subject_id_id = subj.subject_id
-          JOIN lesson_slots ls        ON s.slot_id = ls.slot_id
-          JOIN rooms r                ON s.room_id = r.room_id
-          LEFT JOIN lecturers l       ON sc.lecturer_id = l.lecturer_id
-          CROSS JOIN week w
-          WHERE ss.student_id = %s AND st.status = '1' AND r.status = '1'
-            AND (
-                 s.repeat_weekly = '1'
-                 OR (s.start_time >= w.week_start AND s.start_time < w.week_start + interval '7 day')
-            )
+
+        student_classes AS (
+            SELECT cs.class_id_id AS class_id
+            FROM class_students cs
+            WHERE cs.student_id = %s
+            AND cs.is_active = '1'
         ),
-        events AS (
-          SELECT
-            *,
-            CASE 
-              WHEN repeat_weekly = '1' THEN
-                (week_start::timestamp
-                 + ((COALESCE(day_of_week, EXTRACT(ISODOW FROM schedule_start)::int) - 1) || ' day')::interval
-                 + lesson_start::time)
-              ELSE schedule_start
-            END AS occurrence_start,
-            CASE 
-              WHEN repeat_weekly = '1' THEN
-                (week_start::timestamp
-                 + ((COALESCE(day_of_week, EXTRACT(ISODOW FROM schedule_start)::int) - 1) || ' day')::interval
-                 + lesson_end::time)
-              ELSE schedule_end
-            END AS occurrence_end
-          FROM base
+
+        student_subjects_sem AS (
+            SELECT ss.subject_id, ss.semester_id
+            FROM student_subjects ss
+            WHERE ss.student_id = %s
+        ),
+
+        subject_classes_filtered AS (
+            SELECT sc.subject_class_id, sc.subject_id, sc.class_id_id AS class_id, sc.lecturer_id
+            FROM subject_classes sc
+            WHERE sc.class_id_id IN (SELECT class_id FROM student_classes)
+        ),
+
+        schedules_filtered AS (
+            SELECT s.*, ls.slot_name, r.room_name, l.fullname AS lecturer_name
+            FROM schedules s
+            JOIN lesson_slots ls ON s.slot_id = ls.slot_id
+            JOIN rooms r ON s.room_id = r.room_id
+            JOIN subjects AS subj ON subj.subject_id = s.subject_id_id
+            JOIN lecturer_subjects AS lsubj ON lsubj.subject_id = subj.subject_id
+            LEFT JOIN lecturers l ON l.lecturer_id = lsubj.lecturer_id
+            WHERE s.class_id_id IN (SELECT class_id FROM student_classes)
         )
-        SELECT 
-          student_id, student_name,
-          subject_id, subject_name,
-          class_id, class_name, subject_class_id,
-          lecturer_name,
-          schedule_id, 
-          day_of_week,
-          CASE day_of_week
-               WHEN 1 THEN 'Thứ 2'
-               WHEN 2 THEN 'Thứ 3'
-               WHEN 3 THEN 'Thứ 4'
-               WHEN 4 THEN 'Thứ 5'
-               WHEN 5 THEN 'Thứ 6'
-               WHEN 6 THEN 'Thứ 7'
-               WHEN 7 THEN 'Chủ nhật'
-          END AS weekday_name,
-          slot_name,
-          lesson_start, lesson_end,
-          occurrence_start, occurrence_end,
-          room_name,
-          latitude,
-          longitude,
-          lesson_type
-        FROM events
-        ORDER BY occurrence_start;
+
+        SELECT DISTINCT ON (s.schedule_id)
+            st.student_id,
+            st.fullname AS student_name,
+            subj.subject_id,
+            subj.subject_name,
+            c.class_id,
+            c.class_name,
+            sc.subject_class_id,
+            s.lecturer_name,
+            s.schedule_id,
+            s.day_of_week,
+            s.slot_name,
+            s.start_time::time AS lesson_start,
+            s.end_time::time AS lesson_end,
+            CASE 
+                WHEN s.repeat_weekly = '1' THEN
+                    w.week_start::timestamp 
+                    + ((COALESCE(s.day_of_week, EXTRACT(ISODOW FROM s.start_time)::int) - 1) || ' day')::interval
+                    + s.start_time::time
+                ELSE s.start_time
+            END AS occurrence_start,
+
+            CASE 
+                WHEN s.repeat_weekly = '1' THEN
+                    w.week_start::timestamp 
+                    + ((COALESCE(s.day_of_week, EXTRACT(ISODOW FROM s.start_time)::int) - 1) || ' day')::interval
+                    + s.end_time::time
+                ELSE s.end_time
+            END AS occurrence_end,
+            s.room_name,
+            s.latitude,
+            s.longitude,
+            s.lesson_type
+        FROM student_subjects_sem ss
+        JOIN students st ON st.student_id = %s AND st.status = '1'
+        JOIN subjects subj ON ss.subject_id = subj.subject_id
+        JOIN subject_classes_filtered sc ON sc.class_id = ANY(SELECT class_id FROM student_classes)
+        JOIN classes c ON c.class_id = sc.class_id
+        JOIN schedules_filtered s ON s.class_id_id = sc.class_id
+        CROSS JOIN week w
+        ORDER BY s.schedule_id, occurrence_start;
         """
 
         with connection.cursor() as cursor:
-            cursor.execute(query, [student_id])
+            cursor.execute(query, [student_id, student_id, student_id])
             columns = [col[0] for col in cursor.description]
             results = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
         # 3. Serialize the returned data
         serializer = StudentScheduleSerializer(results, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # 2. Raw SQL Query (CTE)
+        # query = """
+        # WITH week AS (
+        #   SELECT date_trunc('week', CURRENT_DATE)::date AS week_start,
+        #          (date_trunc('week', CURRENT_DATE) + interval '7 day')::date AS week_end
+        # ),
+        # base AS (
+        #   SELECT 
+        #       st.student_id,
+        #       st.fullname AS student_name,
+        #       subj.subject_id,
+        #       subj.subject_name,
+        #       c.class_id,
+        #       c.class_name,
+        #       sc.subject_class_id,
+        #       l.fullname AS lecturer_name,
+        #       s.schedule_id,
+        #       s.day_of_week,
+        #       ls.slot_name,
+        #       ls.start_time AS lesson_start,
+        #       ls.end_time   AS lesson_end,
+        #       s.repeat_weekly,
+        #       s.start_time  AS schedule_start,
+        #       s.end_time    AS schedule_end,
+        #       s.lesson_type,
+        #       r.room_name,
+        #       s.latitude,
+        #       s.longitude,
+        #       w.week_start
+        #   FROM student_subjects ss
+        #   JOIN students st            ON ss.student_id = st.student_id
+        #   JOIN subjects subj          ON ss.subject_id = subj.subject_id
+        #   JOIN subject_classes sc     ON sc.subject_id = subj.subject_id
+        #                              AND sc.semester_id = ss.semester_id
+        #   JOIN classes c              ON sc.class_id_id = c.class_id
+        #   JOIN schedules s            ON s.subject_id_id = subj.subject_id
+        #   JOIN lesson_slots ls        ON s.slot_id = ls.slot_id
+        #   JOIN rooms r                ON s.room_id = r.room_id
+        #   LEFT JOIN lecturers l       ON sc.lecturer_id = l.lecturer_id
+        #   CROSS JOIN week w
+        #   WHERE ss.student_id = %s AND st.status = '1' AND r.status = '1'
+        #     AND (
+        #          s.repeat_weekly = '1'
+        #          OR (s.start_time >= w.week_start AND s.start_time < w.week_start + interval '7 day')
+        #     )
+        # ),
+        # events AS (
+        #   SELECT
+        #     *,
+        #     CASE 
+        #       WHEN repeat_weekly = '1' THEN
+        #         (week_start::timestamp
+        #          + ((COALESCE(day_of_week, EXTRACT(ISODOW FROM schedule_start)::int) - 1) || ' day')::interval
+        #          + lesson_start::time)
+        #       ELSE schedule_start
+        #     END AS occurrence_start,
+        #     CASE 
+        #       WHEN repeat_weekly = '1' THEN
+        #         (week_start::timestamp
+        #          + ((COALESCE(day_of_week, EXTRACT(ISODOW FROM schedule_start)::int) - 1) || ' day')::interval
+        #          + lesson_end::time)
+        #       ELSE schedule_end
+        #     END AS occurrence_end
+        #   FROM base
+        # )
+        # SELECT 
+        #   student_id, student_name,
+        #   subject_id, subject_name,
+        #   class_id, class_name, subject_class_id,
+        #   lecturer_name,
+        #   schedule_id, 
+        #   day_of_week,
+        #   CASE day_of_week
+        #        WHEN 1 THEN 'Thứ 2'
+        #        WHEN 2 THEN 'Thứ 3'
+        #        WHEN 3 THEN 'Thứ 4'
+        #        WHEN 4 THEN 'Thứ 5'
+        #        WHEN 5 THEN 'Thứ 6'
+        #        WHEN 6 THEN 'Thứ 7'
+        #        WHEN 7 THEN 'Chủ nhật'
+        #   END AS weekday_name,
+        #   slot_name,
+        #   lesson_start, lesson_end,
+        #   occurrence_start, occurrence_end,
+        #   room_name,
+        #   latitude,
+        #   longitude,
+        #   lesson_type
+        # FROM events
+        # ORDER BY occurrence_start;
+        # """

@@ -26,6 +26,19 @@ class UnreadNotificationListView(generics.ListAPIView):
             .filter(to_target_id=account_id, is_read='0')
             .order_by('-created_at')
         )
+
+# ======================== Filter notifications (read) by account_id ========================
+class ReadNotificationListView(generics.ListAPIView):
+    serializer_class = NotificationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        account_id = self.request.user.account_id
+        return (
+            Notification.objects
+            .filter(to_target_id=account_id, is_read='1')
+            .order_by('-created_at')
+        )
     
 # ======================== Mark notifications as read ========================
 @api_view(['POST'])
@@ -35,6 +48,9 @@ def mark_notifications_as_read(request, account_id):
         return Response({"error": "Permission denied"}, status=403)
 
     ids = request.data.get("notification_id", [])
+
+    if isinstance(ids, int):
+        ids = [ids]
 
     Notification.objects.filter(
         pk__in=ids,

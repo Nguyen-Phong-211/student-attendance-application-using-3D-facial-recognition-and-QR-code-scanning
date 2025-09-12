@@ -108,11 +108,16 @@ class Command(BaseCommand):
                 "Hãy chắc chắn model LecturerSubject tồn tại hoặc sửa import."
             ))
 
-        # days: 1 = Monday ... 6 = Saturday, optional 7
-        valid_days = list(range(2, 8 if include_sunday else 7))
+        # days: 2 = Monday, 3 = Tuesday, ..., 7 = Sunday, 8 = Sunday
+        valid_days = list(range(2, 8)) if not include_sunday else list(range(2, 9))
 
         # phân loại phòng: lab = A5.* hoặc room_type == 'Thực hành'
-        lab_rooms = [r for r in rooms if (getattr(r, "room_type", "") == "Thực hành") or str(getattr(r, "room_name", "")).startswith("A5.")]
+        lab_prefixes = ("A5.", "B5.", "B6.", "B7.", "B8.")
+        lab_rooms = [
+            r for r in rooms
+            if getattr(r, "room_type", "") == "Thực hành"
+            or str(getattr(r, "room_name", "")).startswith(lab_prefixes)
+        ]
         theory_rooms = [r for r in rooms if r not in lab_rooms]
 
         # preload subject_class mapping (subject_id, class_id) -> lecturer_id (nếu có)
@@ -284,8 +289,11 @@ class Command(BaseCommand):
 
                 # determine lesson_type from room (or fallback)
                 room_name = str(getattr(room, "room_name", "") or "")
-                room_type = getattr(room, "room_type", "") or ("Thực hành" if room_name.startswith("A5.") else "Lý thuyết")
-                lesson_type = "Thực hành" if (room_type == "Thực hành" or room_name.startswith("A5.")) else "Lý thuyết"
+                room_type = getattr(room, "room_type", "")
+                if room_type == "Thực hành" or room_name.startswith(lab_prefixes):
+                    lesson_type = "Thực hành"
+                else:
+                    lesson_type = "Lý thuyết"
 
                 # Create schedule
                 if not dry_run:

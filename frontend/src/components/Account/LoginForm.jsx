@@ -1,5 +1,6 @@
 import React from "react";
 import { Form, Button } from "antd";
+import { ContactsOutlined } from "@ant-design/icons";
 import LoginFormItems from "./LoginFormItems";
 import LoginFooterLinks from "./LoginFooterLinks";
 import { useAuth } from "../../auth/AuthContext";
@@ -75,6 +76,11 @@ const LoginForm = ({ messageApi, executeRecaptcha, navigate, randomId, loading, 
                     className="text-blue-600 hover:underline"
                 >
                     Đăng ký
+                </a>
+            </div>
+            <div className="text-gray-600 text-center mt-4 border-[1.5px] rounded-[10px] border-gray-200 py-2 hover:bg-gray-100">
+                <a href="mailto:zephyrnguyen.vn@gmail.com">
+                    <ContactsOutlined /> Liên hệ quản trị viên nếu quên mật khẩu.
                 </a>
             </div>
         </Form>

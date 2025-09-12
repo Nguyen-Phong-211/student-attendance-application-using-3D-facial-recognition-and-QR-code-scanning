@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.contrib.auth.hashers import make_password
 from .models import Account 
 from accounts.models import Role 
-from .serializers import AccountSerializer, AccountResetPassword, AccountResetPasswordLecturer, AccountListSerializer
+from .serializers import AccountSerializer, AccountResetPassword, AccountResetPasswordLecturer, AccountListSerializer, RequestOTPChangePasswordSerializer, VerifyOTPChangePasswordSerializer
 from django.middleware.csrf import get_token
 import traceback
 from django.core.mail import send_mail
@@ -294,7 +294,7 @@ class LogoutView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        refresh_token = request.COOKIES.get('refresh_token')
+        refresh_token = request.COOKIES.get("refresh_token")
         if refresh_token:
             try:
                 token = RefreshToken(refresh_token)
@@ -302,9 +302,17 @@ class LogoutView(APIView):
             except Exception:
                 pass
 
-        response = JsonResponse({'message': 'Đăng xuất thành công'})
-        response.delete_cookie('access_token', path='/', samesite='Lax')
-        response.delete_cookie('refresh_token', path='/', samesite='Lax')
+        response = JsonResponse({"message": "Đăng xuất thành công"})
+        response.delete_cookie(
+            "access_token",
+            path="/",
+            samesite="Lax"
+        )
+        response.delete_cookie(
+            "refresh_token",
+            path="/",
+            samesite="Lax"
+        )
         return response
 # End logout
 
@@ -592,3 +600,26 @@ class GetAllAccountsView(APIView):
         accounts = Account.objects.all()
         serializer = AccountListSerializer(accounts, many=True)
         return Response(serializer.data)
+
+# ================== CHANGE PASSWORD ================== #
+class RequestOTPChangePasswordView(APIView):
+    """
+    POST: gửi OTP qua email
+    """
+    def post(self, request):
+        serializer = RequestOTPChangePasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"detail": "OTP đã được gửi."}, status=status.HTTP_200_OK)
+
+
+class VerifyOTPChangePasswordView(APIView):
+    """
+    POST: xác thực OTP và đổi password
+    """
+    def post(self, request):
+        serializer = VerifyOTPChangePasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"detail": "Đổi mật khẩu thành công."}, status=status.HTTP_200_OK)
+# ================== END CHANGE PASSWORD ================== #

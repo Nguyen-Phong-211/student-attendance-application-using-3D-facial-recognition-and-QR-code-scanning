@@ -7,7 +7,7 @@ export const logout = () => {
 
         window.location.href = '/account/login';
         const currentPath = window.location.pathname + window.location.search;
-        const loginUrl = `/account/login?redirect=${encodeURIComponent(currentPath)}`;
+        const loginUrl = `/account/login?next=${encodeURIComponent(currentPath)}`;
 
         window.location.replace(loginUrl);
     });

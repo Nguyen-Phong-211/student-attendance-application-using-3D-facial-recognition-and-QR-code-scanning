@@ -4,6 +4,7 @@ import Login from "../pages/account/Login"; //
 import Signup from "../pages/account/Signup"; //
 import Home from "../pages/home/Home";
 import Contact from "../pages/contact/Contact";
+import Notification from "../pages/notification/Notification";
 import AddFace from "../pages/add-face/AddFace";
 import RegisterFace from "../pages/add-face/RegisterFace";
 import AddReminder from "../pages/add-event/AddReminder";
@@ -54,6 +55,7 @@ const AppRoutes = () => {
             <Route path="/account/verify-otp/*" element={<VerifyOtp />} />
             <Route path="/" element={ <ProtectedRoute> <Home /> </ProtectedRoute> } />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/notifications/all" element={<ProtectedRoute><Notification /></ProtectedRoute>} />
             <Route path="/add-face" element={<ProtectedRoute><AddFace /></ProtectedRoute>} />
             <Route path="/add-face/register-face" element={<ProtectedRoute><RegisterFace /></ProtectedRoute>} />
             <Route path="/add-event/add-reminder" element={<ProtectedRoute><AddReminder /></ProtectedRoute>} />

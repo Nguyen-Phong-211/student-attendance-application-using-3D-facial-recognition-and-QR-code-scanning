@@ -203,7 +203,7 @@ class StudentScheduleSerializer(serializers.Serializer):
     lecturer_name = serializers.CharField(allow_null=True)
     schedule_id = serializers.IntegerField()
     day_of_week = serializers.IntegerField()
-    weekday_name = serializers.CharField()
+    # weekday_name = serializers.CharField()
     slot_name = serializers.CharField()
     lesson_start = serializers.TimeField()
     lesson_end = serializers.TimeField()

@@ -138,15 +138,15 @@ export default function AccountInformation() {
             message.error("Bạn phải đăng ký ít nhất 15 tín chỉ!");
             return;
         }
-    
+
         if (totalCredits > 23) {
             message.error("Bạn không được đăng ký quá 23 tín chỉ!");
             return;
         }
-    
+
         try {
             setLoading(true);
-    
+
             const studentPayload = {
                 fullname: values.fullname,
                 student_code: values.student_code || values.studentcode,
@@ -159,70 +159,82 @@ export default function AccountInformation() {
                 status: "1",
                 department: values.department,
             };
-    
+
             const studentRes = await api.post("students/", studentPayload);
 
             if (!studentRes.data?.student_id) {
                 message.error("Không lấy được sinh viên từ backend");
                 return;
             }
-   
+
             if (studentRes.data?.success === false) {
                 message.error(studentRes.data?.message || "Cập nhật sinh viên thất bại");
                 return;
             }
-    
+
             const studentId = studentRes.data?.student_id;
-            // message.success(studentRes.data?.message || "Cập nhật thông tin sinh viên thành công!");
-    
+
             if (values.avatar) {
                 const formData = new FormData();
                 formData.append("avatar", values.avatar);
-    
+
                 const avatarRes = await api.post(
                     `accounts/${user.account_id}/update_avatar/`,
                     formData,
                     { headers: { "Content-Type": "multipart/form-data" } }
                 );
-    
+
                 if (avatarRes.data?.success === false) {
                     message.error(avatarRes.data?.message || "Cập nhật avatar thất bại");
                     return;
                 }
-    
+
                 // message.success(avatarRes.data?.message || "Cập nhật avatar thành công!");
             }
-    
+
             const registrationRequests = Object.values(selectedSchedules).map((schedule) => ({
                 student: studentId,
                 subject: schedule.subject_id,
                 semester: values.semester,
                 reason: "Đăng ký môn học",
             }));
-    
+
             for (const req of registrationRequests) {
-                const regRes = await api.post("students/register-request/", req);
-    
-                if (regRes.data?.success === false) {
-                    message.error(regRes.data?.message || "Đăng ký môn học thất bại");
+                try {
+                    const regRes = await api.post("students/register-request/", req);
+
+                    if (regRes.data?.success === false) {
+                        message.error(regRes.data?.message || "Đăng ký môn học thất bại");
+                        return;
+                    }
+                } catch (err) {
+                    if (err.response?.status === 400) {
+                        message.error(
+                            err.response?.data?.detail ||
+                            Object.values(err.response?.data || {})[0] ||
+                            "Đăng ký môn học bị từ chối do trùng giờ hoặc phòng đầy"
+                        );
+                    } else {
+                        message.error("Lỗi kết nối hệ thống");
+                    }
                     return;
                 }
             }
-    
+
             message.success("Đăng ký môn học thành công!");
 
             await new Promise((resolve) => setTimeout(resolve, 3000));
 
             navigate("/");
             window.location.reload();
-    
+
         } catch (err) {
             console.error("Submit error:", err);
             message.error(err.response?.data?.message || err.message || "Lỗi kết nối hệ thống");
         } finally {
             setLoading(false);
         }
-    };    
+    };
 
     return (
         <div className="min-h-screen bg-white text-gray-800 flex flex-col">

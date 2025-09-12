@@ -101,7 +101,7 @@ export default function HomePage() {
         { name: "Xin nghỉ phép", img: LeaveIcon, path: "/add-event/request-leave/request" },
 
         { name: "Thống kê", img: DashboardIcon, path: "/attendance-statistics" },
-        { name: `Thông báo (${notifications.length})`, img: NotificationIcon, path: "/notifications" },
+        { name: `Thông báo (${notifications.length})`, img: NotificationIcon, path: "/notifications/all" },
         { name: "Nhắc nhở điểm danh", img: ReminderIcon, path: "/add-event/add-reminder" },
 
         { name: "Liên hệ", img: ContactIcon, path: "/contact" },

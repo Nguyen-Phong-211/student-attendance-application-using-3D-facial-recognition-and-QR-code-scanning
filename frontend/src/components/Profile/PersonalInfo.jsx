@@ -205,9 +205,8 @@ export default function PersonalInfo({ formData, setFormData, accountId }) {
                             <Form.Item
                                 name="student_code"
                                 label="Mã số sinh viên"
-                                rules={[{ required: true, message: "Vui lòng nhập mã số sinh viên!" }]}
                             >
-                                <Input size="large" style={{ borderWidth: 1.5, boxShadow: "none" }} minLength={8} />
+                                <Input size="large" disabled style={{ borderWidth: 1.5, boxShadow: "none" }} minLength={8} />
                             </Form.Item>
 
                             <Form.Item
@@ -271,7 +270,7 @@ export default function PersonalInfo({ formData, setFormData, accountId }) {
                     <Button
                         type="primary"
                         size="large"
-                        className="mt-6 rounded-full px-6"
+                        className="mt-4 rounded-full px-6"
                         onClick={() => form.submit()}
                     >
                         Cập nhật

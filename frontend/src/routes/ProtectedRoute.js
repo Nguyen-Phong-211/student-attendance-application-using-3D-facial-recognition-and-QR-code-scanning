@@ -14,7 +14,7 @@ const ProtectedRoute = ({ children }) => {
   if (!user) {
     return (
       <Navigate
-        to={`/account/login?redirect=${encodeURIComponent(location.pathname)}`}
+        to={`/account/login?next=${encodeURIComponent(location.pathname)}`}
         replace
       />
     );
