@@ -28,7 +28,7 @@ const LoginForm = ({ messageApi, executeRecaptcha, navigate, randomId, loading, 
             messageApi.success("Đăng nhập thành công!");
 
             const params = new URLSearchParams(window.location.search);
-            const redirect = params.get("redirect");
+            const redirect = params.get("next");
 
             if (redirect) {
                 navigate(redirect);

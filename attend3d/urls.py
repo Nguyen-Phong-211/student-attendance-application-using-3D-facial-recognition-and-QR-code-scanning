@@ -34,7 +34,7 @@ urlpatterns = [
     path('api/v1/lecturers/', include('lecturers.urls')),
     path('api/v1/', include('classes.urls')),
     path('api/v1/', include('students.urls')),
-    
+    path('api/v1/leaves/', include('leaves.urls')),
     # 
     path('api/v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

@@ -95,12 +95,12 @@ export default function HomePage() {
         { name: "Giới thiệu", img: IntroductionIcon, path: "/introduction" },
         { name: "Lịch học", img: ScheduleIcon, path: "/timetable" },
         { name: "Nhiệm vụ & Check in", img: ToDoListIcon, path: "/to-do-list/today" },
-        { name: "Điểm danh QR Code", img: QRCodeIcon, path: "/attendance-qr" },
-        { name: "Đăng ký khuôn mặt", img: ScanFaceIcon, path: "/add-face" },
-        { name: "Lịch sử điểm danh", img: HistoryIcon, path: "/attendance-history" },
+        { name: "Điểm danh QR Code", img: QRCodeIcon, path: "attendance/attendance-qr" },
+        { name: "Đăng ký khuôn mặt", img: ScanFaceIcon, path: "attendance/add-face" },
+        { name: "Lịch sử điểm danh", img: HistoryIcon, path: "attendance/attendance-history" },
         { name: "Xin nghỉ phép", img: LeaveIcon, path: "/add-event/request-leave/request" },
 
-        { name: "Thống kê", img: DashboardIcon, path: "/attendance-statistics" },
+        { name: "Thống kê", img: DashboardIcon, path: "/attendance/statistics" },
         { name: `Thông báo (${notifications.length})`, img: NotificationIcon, path: "/notifications/all" },
         { name: "Nhắc nhở điểm danh", img: ReminderIcon, path: "/add-event/add-reminder" },
 

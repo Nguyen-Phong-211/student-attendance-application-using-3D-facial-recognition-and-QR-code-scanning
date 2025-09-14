@@ -12,11 +12,17 @@ from notifications.models import Notification
 from datetime import date
 import re
 
+# ==================================================
+# Get data department model
+# ==================================================
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
         fields = ['department_id', 'department_name']
 
+# ==================================================
+# Get data student model
+# ==================================================
 class StudentSerializer(serializers.ModelSerializer):
     avatar_base64 = serializers.CharField(write_only=True, required=False)
     account_id = serializers.IntegerField(write_only=True, required=False)
@@ -54,12 +60,16 @@ class StudentSerializer(serializers.ModelSerializer):
 
         student = Student.objects.create(**validated_data)
         return student
-    
+# ==================================================
+# Get data department
+# ==================================================
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
         fields = ['department_id', 'department_name', 'department_code']
-        
+# ==================================================
+# Get data major model
+# ==================================================
 class MajorSerializer(serializers.ModelSerializer):
     department = DepartmentSerializer()
     
@@ -71,13 +81,17 @@ class MajorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Major
         fields = ['major_id', 'major_name', 'major_code', 'department', 'department_id']
-        
+# ==================================================
+# Get list data student
+# ==================================================
 class StudentGetListSerializer(serializers.ModelSerializer):
     account = AccountListSerializer(read_only=True)
     class Meta:
         model = Student 
         fields = ['student_id', 'student_code', 'fullname', 'account']
-
+# ==================================================
+# Get list data student. Admin function
+# ==================================================
 class AllStudentGetListSerializer(serializers.ModelSerializer):
     account = AccountListSerializer()
     major = MajorSerializer()
@@ -85,7 +99,9 @@ class AllStudentGetListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student 
         fields = '__all__'
-        
+# ==================================================
+# Create student account.
+# ==================================================
 class StudentCreateSerializer(serializers.Serializer):
     fullname = serializers.CharField()
     phone_number = serializers.CharField()
@@ -141,7 +157,9 @@ class StudentCreateSerializer(serializers.Serializer):
     
         return student
 
-# Update information
+# ==================================================
+# Update student account.
+# ==================================================
 class StudentUpdateSerializer(serializers.Serializer):
     fullname = serializers.CharField(required=True)
     student_code = serializers.CharField(required=True)
@@ -172,7 +190,7 @@ class StudentUpdateSerializer(serializers.Serializer):
         account.email = validated_data.get("email", account.email)
         account.save()
 
-        # update student (OneToOne với account)
+        # update student (OneToOne with account)
         student = account.student  
         student.fullname = validated_data.get("fullname", student.fullname)
         student.student_code = validated_data.get("student_code", student.student_code)
@@ -184,14 +202,18 @@ class StudentUpdateSerializer(serializers.Serializer):
 
         return account
 
-# ========================= SUBJECT REGISTRATION REQUEST =========================
+# ==================================================
+# Get data subject registration request
+# ==================================================
 class SubjectRegistrationRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubjectRegistrationRequest
         fields = '__all__'
         read_only_fields = ['status', 'created_at', 'reviewed_at', 'is_over_credit_limit', 'approved_by']
 
-# ========================= SCHEDULE =========================
+# ==================================================
+# Get data schedule for student
+# ==================================================
 class StudentScheduleSerializer(serializers.Serializer):
     student_id = serializers.IntegerField()
     student_name = serializers.CharField()
@@ -203,7 +225,6 @@ class StudentScheduleSerializer(serializers.Serializer):
     lecturer_name = serializers.CharField(allow_null=True)
     schedule_id = serializers.IntegerField()
     day_of_week = serializers.IntegerField()
-    # weekday_name = serializers.CharField()
     slot_name = serializers.CharField()
     lesson_start = serializers.TimeField()
     lesson_end = serializers.TimeField()
@@ -213,3 +234,26 @@ class StudentScheduleSerializer(serializers.Serializer):
     latitude = serializers.DecimalField(max_digits=10, decimal_places=5)
     longitude = serializers.DecimalField(max_digits=10, decimal_places=5)
     lesson_type = serializers.CharField()
+    repeat_weekly = serializers.CharField()
+    status_schedule = serializers.CharField()
+    semeter_start_date = serializers.DateField()
+    semester_end_date = serializers.DateField()
+# ==================================================
+# Get data student for leave request function
+# ==================================================
+class StudentLeaveRequestSerializer(serializers.ModelSerializer):
+    classes = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Student
+        fields = ['student_id', 'fullname', 'student_code', 'department_name', 'classes']
+    
+    def get_student(self, obj):
+        from classes.serializers import ClassLeaveRequestSerializer
+        return ClassLeaveRequestSerializer(obj.classes).data
+# ==================================================
+# Get data subjects of student following by semecter
+# ==================================================
+class StudentSubjectBySemesterSerializer(serializers.Serializer):
+    subject_id = serializers.IntegerField()
+    subject_name = serializers.CharField()

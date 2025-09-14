@@ -37,13 +37,19 @@ class Class(models.Model):
 
 class ClassStudent(models.Model):
     class_student_id = models.BigAutoField(primary_key=True)
-    class_id = models.ForeignKey(Class, on_delete=models.CASCADE)
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    class_id = models.ForeignKey(
+        Class, on_delete=models.CASCADE, related_name='class_students'
+    )
+    student = models.ForeignKey(
+        Student, on_delete=models.CASCADE, related_name='class_students'
+    )
     is_active = models.CharField(max_length=1, default='0')
     created_at = models.DateTimeField(auto_now_add=True)
     registration_status = models.CharField(max_length=20, default='auto')
-    registered_by_account = models.ForeignKey('accounts.Account', on_delete=models.CASCADE)
-    
+    registered_by_account = models.ForeignKey(
+        'accounts.Account', on_delete=models.CASCADE, related_name='registered_classes'
+    )
+
     class Meta:
         db_table = 'class_students'
         indexes = [
@@ -51,7 +57,6 @@ class ClassStudent(models.Model):
             models.Index(fields=['student_id']),
             models.Index(fields=['registered_by_account_id'])
         ]
-        managed = True
         verbose_name = 'Class Student'
         verbose_name_plural = 'Class Students'
 
@@ -73,6 +78,7 @@ class Schedule(models.Model):
     slot = models.ForeignKey("subjects.LessonSlot", on_delete=models.CASCADE)
     lesson_type = models.CharField(max_length=50)
     day_of_week = models.IntegerField(null=True)
+    status = models.CharField(max_length=1, default='1', null=True)
 
     class Meta:
         db_table = 'schedules'

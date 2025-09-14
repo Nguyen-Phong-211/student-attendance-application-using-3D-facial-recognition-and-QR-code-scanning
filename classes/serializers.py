@@ -4,7 +4,7 @@ from students.models import Subject, Department
 from subjects.models import AcademicYear
 from .models import Class, Schedule
 import random
-from subjects.serializers import AcademicYearSerializer, SubjectSerializer, ShiftSerializer, LessonSlotSerializer
+from subjects.serializers import AcademicYearSerializer, SubjectSerializer, ShiftSerializer, LessonSlotSerializer, SubjectLeaveRequestSerializer
 from students.serializers import DepartmentSerializer
 from subjects.models import AcademicYear
 from students.models import Department
@@ -14,15 +14,22 @@ from subjects.serializers import LessonSlotByShiftSerializer
 from lecturers.minimal_serializers import LecturerScheduleSerializer
 from lecturers.models import SubjectClass
 
+# ==================================================
+# Function generate random code
+# ==================================================
 def generate_random_code():
     length = random.randint(10, 20)
     return ''.join(str(random.randint(0, 9)) for _ in range(length))
-
+# ==================================================
+# Get data major model
+# ==================================================
 class MajorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Major
         fields = ['major_id', 'major_name', 'department']
-        
+# ==================================================
+# Get data class model with academic year and department
+# ==================================================
 class ClassSerializer(serializers.ModelSerializer):
     # academic_year = serializers.CharField(source='academic_year.academic_year_name')
     academic_year = AcademicYearSerializer()
@@ -31,7 +38,9 @@ class ClassSerializer(serializers.ModelSerializer):
         model = Class 
         fields = ['class_id', 'class_name', 'academic_year', 'department', 'class_code', 'status', 'created_at']
         
+# ==================================================
 # Create a class
+# ==================================================
 class ClassCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Class
@@ -42,7 +51,9 @@ class ClassCreateSerializer(serializers.ModelSerializer):
         validated_data['class_code'] = generate_random_code()
         return super().create(validated_data)
 
+# ==================================================
 # Update a class
+# ==================================================
 class ClassUpdateSerializer(serializers.ModelSerializer):
     academic_year_code = serializers.CharField(write_only=True)
     department_code = serializers.CharField(write_only=True)
@@ -67,7 +78,9 @@ class ClassUpdateSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-# ============================ Display schedule by subject_id ============================
+# ==================================================
+# Get data schedule by class
+# ==================================================
 class ScheduleSerializer(serializers.ModelSerializer):
     subject = SubjectSerializer(source='subject_id', read_only=True)
     room = RoomSerializer(read_only=True)
@@ -93,3 +106,17 @@ class ScheduleSerializer(serializers.ModelSerializer):
         lecturers = [sc.lecturer for sc in subject_classes if sc.lecturer]
 
         return LecturerScheduleSerializer(lecturers, many=True).data if lecturers else None
+# ==================================================
+# Get data classes for leave request function
+# ==================================================
+class ClassLeaveRequestSerializer(serializers.ModelSerializer):
+    subject = SubjectLeaveRequestSerializer(read_only=True)
+    lecturer = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Class
+        fields = ['class_id', 'class_name', 'academic_year_id', 'subject', 'lecturer']
+
+    def get_lecturer(self, obj):
+        from lecturers.serializers import LecturerLeaveRequestSerializer
+        return LecturerLeaveRequestSerializer(obj.lecturer).data

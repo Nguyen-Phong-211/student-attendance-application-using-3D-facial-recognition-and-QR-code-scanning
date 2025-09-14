@@ -1,7 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
-from .serializers import StudentSerializer, DepartmentSerializer, MajorSerializer, AllStudentGetListSerializer, StudentCreateSerializer, StudentUpdateSerializer, SubjectRegistrationRequestSerializer, StudentScheduleSerializer
+from .serializers import (
+    StudentSerializer, DepartmentSerializer, MajorSerializer, 
+    AllStudentGetListSerializer, StudentCreateSerializer, StudentUpdateSerializer, 
+    SubjectRegistrationRequestSerializer, StudentScheduleSerializer, StudentSubjectBySemesterSerializer
+)
 from .models import Department, Major
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
@@ -13,14 +17,17 @@ from audit.models import AuditLog
 from django.shortcuts import get_object_or_404
 from accounts.models import Account
 from classes.models import Schedule
-
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.db import connection
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from subjects.models import Subject
 
+# ==================================================
+# Get client ip
+# ==================================================
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
@@ -28,7 +35,9 @@ def get_client_ip(request):
     else:
         ip = request.META.get('REMOTE_ADDR')
     return ip
-
+# ==================================================
+# Create student
+# ==================================================
 class CreateStudentView(APIView):
     permission_classes = [permissions.IsAuthenticated] 
 
@@ -45,24 +54,32 @@ class CreateStudentView(APIView):
             'success': False,
             'errors': serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
-    
+# ==================================================
+# Get list department
+# ==================================================
 class DepartmentListAPIView(generics.ListAPIView):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
     permission_classes = [permissions.IsAuthenticated]
-    
+# ==================================================
+# Get list major
+# ==================================================
 class MajorListAPIView(APIView):
     def get(self, request):
         majors = Major.objects.select_related('department').all()
         serializer = MajorSerializer(majors, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+# ==================================================
+# Get list student
+# ==================================================
 class StudentListView(APIView):
     def get(self, request):
         students = Student.objects.select_related('account').all()
         serializer = StudentGetListSerializer(students, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+# ==================================================
+# Get list all student
+# ==================================================
 class AllStudentGetListView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
@@ -71,7 +88,9 @@ class AllStudentGetListView(APIView):
         ).all()
         serializer = AllStudentGetListSerializer(students, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+# ==================================================
+# Create student account 
+# ==================================================
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_student(request):
@@ -152,7 +171,9 @@ def create_student(request):
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# ==================================================
 # Update major
+# ==================================================
 class MajorUpdateAPIView(APIView):
     def put(self, request, pk):
         major = get_object_or_404(Major, pk=pk)
@@ -163,8 +184,9 @@ class MajorUpdateAPIView(APIView):
             serializer.save()
             return Response({"message": "Cập nhật thành công", "data": serializer.data})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# update student
+# ==================================================
+# Update student
+# ==================================================
 class StudentUpdateAPIView(APIView):
     def get(self, request, account_id):
         try:
@@ -207,7 +229,9 @@ class StudentUpdateAPIView(APIView):
             return Response({"message": "Thêm sinh viên thành công"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# ========================= REGISTRATION REQUESTS CREATE =========================
+# ==================================================
+# Register subjection request
+# ==================================================
 class SubjectRegistrationRequestCreateView(generics.CreateAPIView):
     serializer_class = SubjectRegistrationRequestSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -217,16 +241,16 @@ class SubjectRegistrationRequestCreateView(generics.CreateAPIView):
         subject = serializer.validated_data['subject']
         semester = serializer.validated_data['semester']
 
-        # Lấy schedule của môn đăng ký mới
+        # Get schedule of subject to register
         new_schedules = Schedule.objects.filter(subject_id=subject)
 
-        # Lấy các môn đã đăng ký trong cùng kỳ
+        # Get existing schedules of student in the same semester
         existing_subjects = StudentSubject.objects.filter(
             student=student,
             semester=semester
         ).select_related('subject')
 
-        # 1. Kiểm tra trùng giờ
+        # 1. Check conflict schedule
         for existing in existing_subjects:
             existing_schedules = Schedule.objects.filter(subject_id=existing.subject)
             for s1 in new_schedules:
@@ -235,10 +259,10 @@ class SubjectRegistrationRequestCreateView(generics.CreateAPIView):
                         if s1.start_time < s2.end_time and s1.end_time > s2.start_time:
                             raise ValidationError(f"Môn {subject} trùng giờ với {existing.subject}")
 
-        # 2. Kiểm tra số lượng slot theo phòng
+        # 2. Check room capacity for each schedule
         for schedule in new_schedules:
             room = schedule.room
-            # Đếm số sinh viên đã đăng ký môn này
+            # Count registered students for this subject in the same semester
             registered_count = StudentSubject.objects.filter(
                 subject=schedule.subject_id,
                 semester=semester,
@@ -250,10 +274,12 @@ class SubjectRegistrationRequestCreateView(generics.CreateAPIView):
                     f"Phòng {room.room_name} cho môn {subject} đã đầy ({registered_count}/{room.capacity} sinh viên)"
                 )
 
-        # Nếu ok, lưu request
+        # 3. If no error, save
         serializer.save(student=student)
 
-# ========================= REGISTRATION REQUESTS VIEW =========================
+# ==================================================
+# View submitted course registration requests
+# ==================================================
 class SubjectRegistrationRequestListView(generics.ListAPIView):
     """
     API for students to view submitted course registration requests
@@ -264,7 +290,9 @@ class SubjectRegistrationRequestListView(generics.ListAPIView):
     def get_queryset(self):
         return SubjectRegistrationRequest.objects.filter(student=self.request.user.student)
 
-# ========================= SCHEDULE =========================
+# ==================================================
+# View student schedule in a week
+# ==================================================
 class StudentScheduleView(APIView):
     def get(self, request, account_id):
         # 1. Get student_id from account_id
@@ -286,8 +314,8 @@ class StudentScheduleView(APIView):
         ),
 
         student_subjects_sem AS (
-            SELECT ss.subject_id, ss.semester_id
-            FROM student_subjects ss
+            SELECT ss.subject_id, ss.semester_id, semes.semester_name, semes.start_date, semes.end_date
+            FROM student_subjects ss JOIN semesters semes ON ss.semester_id = semes.semester_id
             WHERE ss.student_id = %s
         ),
 
@@ -305,7 +333,7 @@ class StudentScheduleView(APIView):
             JOIN subjects AS subj ON subj.subject_id = s.subject_id_id
             JOIN lecturer_subjects AS lsubj ON lsubj.subject_id = subj.subject_id
             LEFT JOIN lecturers l ON l.lecturer_id = lsubj.lecturer_id
-            WHERE s.class_id_id IN (SELECT class_id FROM student_classes)
+            WHERE s.class_id_id IN (SELECT class_id FROM student_classes) AND s.status = '1'
         )
 
         SELECT DISTINCT ON (s.schedule_id)
@@ -315,7 +343,11 @@ class StudentScheduleView(APIView):
             subj.subject_name,
             c.class_id,
             c.class_name,
+            ss.start_date AS semeter_start_date,
+            ss.end_date AS semester_end_date,
             sc.subject_class_id,
+            s.status AS status_schedule,
+            s.repeat_weekly,
             s.lecturer_name,
             s.schedule_id,
             s.day_of_week,
@@ -351,6 +383,7 @@ class StudentScheduleView(APIView):
         ORDER BY s.schedule_id, occurrence_start;
         """
 
+        # 2. Query
         with connection.cursor() as cursor:
             cursor.execute(query, [student_id, student_id, student_id])
             columns = [col[0] for col in cursor.description]
@@ -359,95 +392,25 @@ class StudentScheduleView(APIView):
         # 3. Serialize the returned data
         serializer = StudentScheduleSerializer(results, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+# ==================================================
+# Get data subjects of student following by semecter view
+# ==================================================
+class StudentSubjectBySemesterView(APIView):
+    """
+    API to get list of student subjects by semester_id using account_id
+    """
+    def get(self, request, account_id, semester_id):
+        # Get student from account_id
+        student = Student.objects.filter(account_id=account_id).first()
+        if not student:
+            return Response({"detail": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        # 2. Raw SQL Query (CTE)
-        # query = """
-        # WITH week AS (
-        #   SELECT date_trunc('week', CURRENT_DATE)::date AS week_start,
-        #          (date_trunc('week', CURRENT_DATE) + interval '7 day')::date AS week_end
-        # ),
-        # base AS (
-        #   SELECT 
-        #       st.student_id,
-        #       st.fullname AS student_name,
-        #       subj.subject_id,
-        #       subj.subject_name,
-        #       c.class_id,
-        #       c.class_name,
-        #       sc.subject_class_id,
-        #       l.fullname AS lecturer_name,
-        #       s.schedule_id,
-        #       s.day_of_week,
-        #       ls.slot_name,
-        #       ls.start_time AS lesson_start,
-        #       ls.end_time   AS lesson_end,
-        #       s.repeat_weekly,
-        #       s.start_time  AS schedule_start,
-        #       s.end_time    AS schedule_end,
-        #       s.lesson_type,
-        #       r.room_name,
-        #       s.latitude,
-        #       s.longitude,
-        #       w.week_start
-        #   FROM student_subjects ss
-        #   JOIN students st            ON ss.student_id = st.student_id
-        #   JOIN subjects subj          ON ss.subject_id = subj.subject_id
-        #   JOIN subject_classes sc     ON sc.subject_id = subj.subject_id
-        #                              AND sc.semester_id = ss.semester_id
-        #   JOIN classes c              ON sc.class_id_id = c.class_id
-        #   JOIN schedules s            ON s.subject_id_id = subj.subject_id
-        #   JOIN lesson_slots ls        ON s.slot_id = ls.slot_id
-        #   JOIN rooms r                ON s.room_id = r.room_id
-        #   LEFT JOIN lecturers l       ON sc.lecturer_id = l.lecturer_id
-        #   CROSS JOIN week w
-        #   WHERE ss.student_id = %s AND st.status = '1' AND r.status = '1'
-        #     AND (
-        #          s.repeat_weekly = '1'
-        #          OR (s.start_time >= w.week_start AND s.start_time < w.week_start + interval '7 day')
-        #     )
-        # ),
-        # events AS (
-        #   SELECT
-        #     *,
-        #     CASE 
-        #       WHEN repeat_weekly = '1' THEN
-        #         (week_start::timestamp
-        #          + ((COALESCE(day_of_week, EXTRACT(ISODOW FROM schedule_start)::int) - 1) || ' day')::interval
-        #          + lesson_start::time)
-        #       ELSE schedule_start
-        #     END AS occurrence_start,
-        #     CASE 
-        #       WHEN repeat_weekly = '1' THEN
-        #         (week_start::timestamp
-        #          + ((COALESCE(day_of_week, EXTRACT(ISODOW FROM schedule_start)::int) - 1) || ' day')::interval
-        #          + lesson_end::time)
-        #       ELSE schedule_end
-        #     END AS occurrence_end
-        #   FROM base
-        # )
-        # SELECT 
-        #   student_id, student_name,
-        #   subject_id, subject_name,
-        #   class_id, class_name, subject_class_id,
-        #   lecturer_name,
-        #   schedule_id, 
-        #   day_of_week,
-        #   CASE day_of_week
-        #        WHEN 1 THEN 'Thứ 2'
-        #        WHEN 2 THEN 'Thứ 3'
-        #        WHEN 3 THEN 'Thứ 4'
-        #        WHEN 4 THEN 'Thứ 5'
-        #        WHEN 5 THEN 'Thứ 6'
-        #        WHEN 6 THEN 'Thứ 7'
-        #        WHEN 7 THEN 'Chủ nhật'
-        #   END AS weekday_name,
-        #   slot_name,
-        #   lesson_start, lesson_end,
-        #   occurrence_start, occurrence_end,
-        #   room_name,
-        #   latitude,
-        #   longitude,
-        #   lesson_type
-        # FROM events
-        # ORDER BY occurrence_start;
-        # """
+        # Get list of student subjects
+        subjects_qs = Subject.objects.filter(
+            studentsubject__student=student,
+            studentsubject__semester_id=semester_id,
+            status='1'  # Active subjects only
+        ).values('subject_id', 'subject_name')
+
+        serializer = StudentSubjectBySemesterSerializer(subjects_qs, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

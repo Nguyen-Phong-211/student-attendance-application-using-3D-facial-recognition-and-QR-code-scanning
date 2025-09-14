@@ -12,20 +12,34 @@ from subjects.models import Semester, Subject
 from subjects.serializers import SubjectSerializer, SemesterSerializer
 from classes.serializers import ClassSerializer
 
+# ==================================================
+# Get data gerneral lecturer for list function
+# ==================================================
 class LecturerListSerializer(serializers.ModelSerializer):
     account = AccountListSerializer(read_only=True)
     department = DepartmentSerializer(read_only=True)
     class Meta: 
         model = Lecturer
         fields = ['lecturer_id', 'fullname', 'gender', 'dob', 'lecturer_code', 'account', 'department']
-        
+
+# ==================================================
+# Get data lecturer for leave request function
+# ==================================================
+class LecturerLeaveRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lecturer
+        fields = ['lecturer_id', 'fullname']
+# ==================================================
+# Get data all lecturer. Admin function
+# ==================================================
 class AllLecturerSerializer(serializers.ModelSerializer):
     account = AccountListSerializer(read_only=True)
-    # department = DepartmentSerializer(read_only=True)
     class Meta:
         model = Lecturer
         fields = '__all__'
-        
+# ==================================================
+# Get data subject class model for register subject
+# ==================================================
 class SubjectClassSerializer(serializers.ModelSerializer):
     subject = SubjectSerializer()
     class_id = serializers.SerializerMethodField()
@@ -40,7 +54,10 @@ class SubjectClassSerializer(serializers.ModelSerializer):
             'class_name': obj.class_id.class_name,
             'class_code': obj.class_id.class_code
         }
-        
+# ==================================================
+# Get data lecturer with subject
+# ==================================================
+# For example: If lecturer_id is 1, it will return all subjects of lecturer_id 1
 class LecturerWithSubjectsSerializer(serializers.ModelSerializer):
     account = AccountListSerializer(read_only=True)
     department = DepartmentSerializer(read_only=True)
@@ -69,7 +86,9 @@ class LecturerWithSubjectsSerializer(serializers.ModelSerializer):
     def get_subject_classes(self, obj):
         subject_classes_qs = SubjectClass.objects.filter(lecturer=obj)
         return SubjectClassSerializer(subject_classes_qs, many=True).data
-
+# ==================================================
+# Assign subject to lecturer. Admin function
+# ==================================================
 class LecturerAssignmentSerializer(serializers.Serializer):
     lecturer_id = serializers.IntegerField()
     subject_ids = serializers.ListField(child=serializers.IntegerField())
@@ -120,8 +139,10 @@ class LecturerAssignmentSerializer(serializers.Serializer):
             "lecturer_subject_ids": lecturer_subject_ids,
             "subject_class_ids": subject_class_ids
         }
-
-# 
+# ==================================================
+# Get data lecturer with account information
+# ==================================================
+# For example: If lecturer_id is 1, it will return a account of lecturer_id 1
 class LecturerWithAccountSerializer(serializers.ModelSerializer):
     account = AccountInformationSerializer(read_only=True)
     class Meta:
@@ -130,14 +151,17 @@ class LecturerWithAccountSerializer(serializers.ModelSerializer):
             'fullname',
             'account'
         ]
-
-# ====================================== SUBJECT CLASSES ======================================
+# ==================================================
+# Get data subject class model
+# ==================================================
 class SubjectClassSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubjectClass
         fields = '__all__'
 
-# ================ LECTURER SCHEDULE ==========================================================
+# ==================================================
+# Get data lecturer for schedule function
+# ==================================================
 class LecturerScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lecturer

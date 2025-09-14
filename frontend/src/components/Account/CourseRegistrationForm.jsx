@@ -256,7 +256,7 @@ export default function CourseRegistrationForm({
                         dataSource={Array.isArray(scheduleDetail) ? scheduleDetail : [scheduleDetail]}
                         bordered
                         pagination={false}
-                        scroll={{ x: "max-content" }}
+                        scroll={{ x: true }}
                         columns={[
                             {
                                 title: "Lớp",

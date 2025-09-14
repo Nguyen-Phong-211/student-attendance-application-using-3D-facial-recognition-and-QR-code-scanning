@@ -53,8 +53,8 @@ class LecturerSubject(models.Model):
     
 class SubjectClass(models.Model):
     subject_class_id = models.BigAutoField(primary_key=True)
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
-    class_id = models.ForeignKey("classes.Class", on_delete=models.CASCADE)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='subject_classes')
+    class_id = models.ForeignKey("classes.Class", on_delete=models.CASCADE, related_name='subject_classes')
     lecturer = models.ForeignKey("lecturers.Lecturer", on_delete=models.CASCADE)
     semester = models.ForeignKey("subjects.Semester", on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đơn Xin Nghỉ Học</title>
+    <style>
+        body {
+            font-family: "Times New Roman", serif;
+            font-size: 12pt;
+            line-height: 1.6;
+            margin: 0 auto;
+            max-width: 100% !important;
+            padding: 2cm 2.5cm;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        td {
+            vertical-align: top;
+            text-align: center;
+        }
+        .header-left {
+            font-weight: bold;
+        }
+        .header-right {
+            font-weight: bold;
+        }
+        .horizontal-rule {
+            border-top: 1px solid black;
+            width: 65%;
+            margin: 4px auto;
+        }
+        .title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 13px;
+            text-transform: uppercase;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        .recipient {
+            font-weight: bold;
+            margin-bottom: 10px;
+            margin-left: 40px;
+        }
+        .content p {
+            text-indent: 40px;
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+      	.content span {
+      		margin-left: 40px;
+      	}
+        .info-line {
+            text-indent: 40px;
+            margin-bottom: 8px;
+        }
+        .signature-section {
+            margin-top: 20px;
+        }
+        .signature-right {
+            float: right;
+            width: 45%;
+            text-align: center;
+        }
+        .signature-title {
+            font-weight: bold;
+        }
+        .signature-note {
+            font-style: italic;
+            margin-top: 0;
+        }
+        .signature-name {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .location-date {
+            text-align: right;
+            font-style: italic;
+      		font-size: 11px;
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+      .info-table {
+          width: 100%;
+          text-align: left;
+          border-collapse: collapse;
+      	  margin-left: 40px;
+      }
+
+      .info-table th {
+          text-align: left;
+          padding-right: 15px;
+      }
+    </style>
+</head>
+<body style="font-size: 11px">
+
+    <table>
+        <tr>
+            <td class="header-left" style="width: 50%; font-size: 10px">
+                <p>TRƯỜNG ĐẠI HỌC CÔNG NGHIỆP TPHCM</p>
+                <p>Khoa {{ department_name }}</p>
+                <div class="horizontal-rule"></div>
+            </td>
+            <td class="header-right" style="width: 50%; font-size: 10px">
+                <p>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
+                <p>Độc lập - Tự do - Hạnh phúc</p>
+                <div class="horizontal-rule"></div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="location-date">
+        <p>TP. Hồ Chí Minh, ngày {{ today.day }} tháng {{ today.month }} năm {{ today.year }}</p>
+    </div>
+
+    <h1 class="title">ĐƠN XIN NGHỈ HỌC</h1>
+
+    <div class="recipient">
+        <span>Kính gửi: Giảng viên phụ trách môn {{ subject_name }}</span> <br>
+        <span>Thầy/Cô: {{ lecturer_name }}</span>
+    </div>
+
+    <div class="content">
+        <table class="info-table">
+            <tbody>
+                <tr>
+                    <th>Họ và tên:</th>
+                    <td>{{ fullname }}</td>
+                    <th>Mã số sinh viên:</th>
+                    <td>{{ student_code }}</td>
+                </tr>
+                <tr>
+                    <th>Năm học:</th>
+                    <td>{{ academic_year }}</td>
+                    <th>Học kỳ:</th>
+                    <td>{{ semester }}</td>
+                </tr>
+                <tr>
+                    <th>Lớp:</th>
+                    <td>{{ class_name }}</td>
+                    <th>Khoa:</th>
+                    <td>{{ department_name }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <span>Em làm đơn này kính xin phép Thầy/Cô cho em được nghỉ buổi học môn <b>{{ subject_name }}</b>.</span> <br>
+        <span>Thời gian xin nghỉ: từ ngày <b>{{ from_date }}</b> đến hết ngày <b>{{ to_date }}</b>.</span>
+        <p>Lý do: <b>{{ reason }}</b>.</p>
+        <span>Em cam kết sẽ tự học bù, hoàn thành đầy đủ các bài tập và nội dung học tập trong thời gian nghỉ. Kính mong Thầy/Cô xem xét và chấp thuận.</span>
+        <p>Em xin chân thành cảm ơn!</p>
+    </div>
+
+    <div class="signature-section clearfix">
+        <div class="signature-right">
+            <p class="signature-title">NGƯỜI LÀM ĐƠN</p>
+            <p class="signature-note">(Ký và ghi rõ họ tên)</p>
+            <p class="signature-name">{{ fullname }}</p>
+        </div>
+    </div>
+
+</body>
+</html>

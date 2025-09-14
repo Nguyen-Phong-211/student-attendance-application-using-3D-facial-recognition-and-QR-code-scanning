@@ -84,6 +84,13 @@ export default function TimeTablePage() {
         data.forEach((item) => {
             const dayName = days[item.day_of_week];
             const shift = getShift(item.lesson_start);
+            const semesterStart = dayjs(item.semester_start_date);
+            const semesterEnd = dayjs(item.semester_end_date);
+
+            if (currentTime.isBefore(semesterStart, "day") || currentTime.isAfter(semesterEnd, "day")) {
+                return;
+            }
+            
             if (dayName && weekSchedule[shift]) {
                 weekSchedule[shift][dayName].push({
                     subject: item.subject_name,
@@ -95,10 +102,14 @@ export default function TimeTablePage() {
                     roomName: item.room_name,
                     color: "blue",
                     occurrence_start: item.occurrence_start,
-                    occurrence_end: item.occurrence_end
+                    occurrence_end: item.occurrence_end,
+                    repeat_weekly: item.repeat_weekly,
+                    semester_start_date: item.semester_start_date,
+                    semester_end_date: item.semester_end_date,
                 });
             }
         });
+        
 
         return weekSchedule;
     };
@@ -329,29 +340,63 @@ export default function TimeTablePage() {
 
         return (
             <div className="overflow-x-auto">
-                <Table columns={columns} dataSource={dataSource} pagination={false} bordered scroll={{ x: "max-content" }} size="middle" />
+                <Table columns={columns} dataSource={dataSource} pagination={false} bordered scroll={{ x: true }} size="middle" />
             </div>
         );
     };
 
     const MonthView = () => {
         const getListData = (value) => {
+            const jsDay = value.day(); // 0 = CN, 1 = T2, ..., 6 = T7
+            const weekday = jsDay === 0 ? 8 : jsDay + 1;
             const dateStr = value.format("YYYY-MM-DD");
-            return scheduleData.filter((item) => item.occurrence_start.startsWith(dateStr));
+
+            return scheduleData.filter((item) => {
+                const semesterStart = dayjs(item.semester_start_date);
+                const semesterEnd = dayjs(item.semester_end_date);
+
+                // If the date box is showing outside of the school time, ignore it.
+                if (value.isBefore(semesterStart, "day") || value.isAfter(semesterEnd, "day")) {
+                    return false;
+                }
+
+                if (parseInt(item.repeat_weekly, 10) === 1) {
+                    return parseInt(item.day_of_week, 10) === weekday;
+                }
+
+                const localDate = dayjs
+                    .utc(item.occurrence_start)
+                    .tz("Asia/Ho_Chi_Minh")
+                    .format("YYYY-MM-DD");
+
+                return localDate === dateStr;
+            });
         };
 
         const dateCellRender = (value) => {
             const listData = getListData(value);
+
             return (
                 <div style={{ display: "flex", flexDirection: "column", gap: 4, minHeight: 60 }}>
                     {listData.map((item, index) => {
-                        const start = dayjs.utc(item.occurrence_start).tz("Asia/Ho_Chi_Minh");
-                        const end = dayjs.utc(item.occurrence_end).tz("Asia/Ho_Chi_Minh");
+                        let start, end;
+
+                        if (parseInt(item.repeat_weekly, 10) === 1) {
+                            // Get time from DB, attach to current date of calendar
+                            const [sh, sm] = item.lesson_start.split(":");
+                            const [eh, em] = item.lesson_end.split(":");
+
+                            start = value.hour(parseInt(sh)).minute(parseInt(sm)).second(0).millisecond(0);
+                            end = value.hour(parseInt(eh)).minute(parseInt(em)).second(0).millisecond(0);
+                        } else {
+                            start = dayjs.utc(item.occurrence_start).tz("Asia/Ho_Chi_Minh");
+                            end = dayjs.utc(item.occurrence_end).tz("Asia/Ho_Chi_Minh");
+                        }
+
                         const endCountdown = start.add(10, "minute");
                         const now = currentTime;
 
                         let contentNode;
-
                         if (now.isBefore(start)) {
                             contentNode = (
                                 <Text type="warning" style={{ fontSize: 12, fontWeight: 500 }}>
@@ -379,10 +424,8 @@ export default function TimeTablePage() {
                         }
 
                         return (
-                            <div
-                                key={index}
-                            >
-                                <FireOutlined /> {" "} {contentNode}
+                            <div key={index}>
+                                <FireOutlined /> {contentNode}
                             </div>
                         );
                     })}
@@ -392,9 +435,7 @@ export default function TimeTablePage() {
 
         return (
             <div className="mt-4">
-                <Calendar
-                    cellRender={dateCellRender}
-                />
+                <Calendar cellRender={dateCellRender} />
             </div>
         );
     };
@@ -421,7 +462,14 @@ export default function TimeTablePage() {
                         title={<Title level={4} style={{ margin: 0 }}>{t("timetable")}</Title>}
                         className="rounded-lg"
                     >
-                        <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key)} tabBarGutter={32} type="line" size="large" items={items} />
+                        <Tabs 
+                            activeKey={activeTab} 
+                            onChange={(key) => setActiveTab(key)} 
+                            tabBarGutter={32} 
+                            type="line" 
+                            size="large" 
+                            items={items}
+                        />
                     </Card>
                 </main>
             </div>

@@ -111,7 +111,7 @@ export default function Header() {
                     },
                     {
                         key: "add-face",
-                        label: <a href="/add-face">{t("add_face")}</a>,
+                        label: <a href="attendance/add-face">{t("add_face")}</a>,
                         icon: <ScanOutlined />,
                     },
                     {
@@ -138,7 +138,7 @@ export default function Header() {
                     },
                     {
                         key: "statistic",
-                        label: <a href="/attendance-statistics">{t("attendance_stat")}</a>,
+                        label: <a href="/attendance/statistics">{t("attendance_stat")}</a>,
                         icon: <BarChartOutlined />,
                     },
                     {

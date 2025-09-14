@@ -29,7 +29,7 @@ export default function AddFacePage() {
                         <Breadcrumb
                             items={[
                                 { href: '/', title: <><HomeOutlined /> <span>{ "Trang chủ" }</span></> },
-                                { href: '/add-face', title: <><PlusCircleOutlined /> <span>{ "Đăng ký khuôn mặt" }</span></> }
+                                { href: 'add-face', title: <><PlusCircleOutlined /> <span>{ "Đăng ký khuôn mặt" }</span></> }
                             ]}
                         />
                     </div>
