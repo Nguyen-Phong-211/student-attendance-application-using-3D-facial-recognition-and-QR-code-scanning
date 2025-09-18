@@ -32,9 +32,19 @@ class LeaveRequest(models.Model):
         Lecturer,
         on_delete=models.SET_NULL,
         null=True,
-        blank=True
+        blank=True,
+        related_name="approved_leave_requests"
     )
+
     reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    to_target = models.ForeignKey(
+        Lecturer,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="targeted_leave_requests" 
+    )
 
     academic_year = models.ForeignKey(
         "subjects.AcademicYear",

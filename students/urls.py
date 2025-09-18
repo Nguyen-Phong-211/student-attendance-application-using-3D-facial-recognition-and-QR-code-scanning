@@ -3,7 +3,8 @@ from .views import (
     CreateStudentView, DepartmentListAPIView, MajorListAPIView, 
     StudentListView, AllStudentGetListView, create_student, 
     MajorUpdateAPIView, StudentUpdateAPIView, SubjectRegistrationRequestCreateView, 
-    SubjectRegistrationRequestListView, StudentScheduleView, StudentSubjectBySemesterView
+    SubjectRegistrationRequestListView, StudentScheduleView, StudentSubjectBySemesterView,
+    get_student_semester
 )
 
 urlpatterns = [
@@ -22,5 +23,10 @@ urlpatterns = [
         'students/subjects/by-semester/<int:account_id>/<int:semester_id>/',
         StudentSubjectBySemesterView.as_view(),
         name='student-subjects'
+    ),
+    path(
+        'students/semester/academic-year/<int:account_id>/',
+        get_student_semester,
+        name='get-student-semester'
     ),
 ]

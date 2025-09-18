@@ -12,6 +12,7 @@ import os
 import tempfile
 from django.utils import timezone
 import random
+from lecturers.models import Lecturer
 
 # ==================================================
 # Get data to show leave request form
@@ -49,7 +50,11 @@ class LeaveRequestSerializer(serializers.Serializer):
 # ==================================================
 class SaveLeaveRequestSerializer(serializers.ModelSerializer):
     leave_data = serializers.JSONField(write_only=True, required=False)
-
+    to_target = serializers.PrimaryKeyRelatedField(
+        queryset=Lecturer.objects.all(),
+        required=True
+    )
+    attachment_url = serializers.SerializerMethodField()
     class Meta:
         model = LeaveRequest
         fields = [
@@ -61,14 +66,20 @@ class SaveLeaveRequestSerializer(serializers.ModelSerializer):
             "to_date",
             "status",
             "rejected_reason",
-            "attachment",
+            "attachment_url", 
             "approved_by",
             "reviewed_at",
             "academic_year",
             "semester",
             "leave_data",
+            "to_target",
         ]
-        read_only_fields = ["status", "attachment"]
+        read_only_fields = ["status"]
+
+    def get_attachment_url(self, obj):
+        if obj.attachment:
+            return obj.attachment.url
+        return None
 
     def create(self, validated_data):
         leave_data = validated_data.pop("leave_data", None)

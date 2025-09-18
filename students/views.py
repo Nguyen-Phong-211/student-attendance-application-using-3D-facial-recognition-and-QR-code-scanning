@@ -4,7 +4,8 @@ from rest_framework import status, permissions
 from .serializers import (
     StudentSerializer, DepartmentSerializer, MajorSerializer, 
     AllStudentGetListSerializer, StudentCreateSerializer, StudentUpdateSerializer, 
-    SubjectRegistrationRequestSerializer, StudentScheduleSerializer, StudentSubjectBySemesterSerializer
+    SubjectRegistrationRequestSerializer, StudentScheduleSerializer, StudentSubjectBySemesterSerializer,
+    StudentSemesterAcademicYearSerializer
 )
 from .models import Department, Major
 from rest_framework import generics
@@ -24,6 +25,7 @@ from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from subjects.models import Subject
+from rest_framework.permissions import AllowAny
 
 # ==================================================
 # Get client ip
@@ -414,3 +416,45 @@ class StudentSubjectBySemesterView(APIView):
 
         serializer = StudentSubjectBySemesterSerializer(subjects_qs, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+# ==================================================
+# Get student, semester and academic year by account_id
+# ==================================================
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_student_semester(request, account_id):
+    """
+    Lấy student, semester, academic year theo account_id
+    """
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT DISTINCT
+                st.student_id,
+                st.fullname,
+                ss.semester_id,
+                sem.semester_name,
+                ay.academic_year_id,
+                ay.academic_year_name
+            FROM students st
+            JOIN accounts acc ON acc.account_id = st.account_id
+            JOIN student_subjects ss ON st.student_id = ss.student_id
+            JOIN semesters sem ON ss.semester_id = sem.semester_id
+            JOIN academic_years ay ON sem.academic_year_id = ay.academic_year_id
+            WHERE acc.account_id = %s AND sem.status = '1'
+        """, [account_id])
+
+        rows = cursor.fetchall()
+
+    data = [
+        {
+            "student_id": row[0],
+            "fullname": row[1],
+            "semester_id": row[2],
+            "semester_name": row[3],
+            "academic_year_id": row[4],
+            "academic_year_name": row[5],
+        }
+        for row in rows
+    ]
+
+    serializer = StudentSemesterAcademicYearSerializer(data, many=True)
+    return Response(serializer.data)

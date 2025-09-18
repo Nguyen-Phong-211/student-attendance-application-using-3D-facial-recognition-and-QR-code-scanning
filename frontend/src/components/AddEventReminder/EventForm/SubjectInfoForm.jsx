@@ -1,37 +1,53 @@
 import React from "react";
 import { Form, Input, Select, Typography } from "antd";
+import { useWatch } from 'antd/es/form/Form';
 
 const { Title } = Typography;
 
-export default function SubjectInfoForm() {
-    const academicYear = [
-        { label: '2022-2023 - Học kỳ 1', value: '1' },
-        { label: '2022-2023 - Học kỳ 2', value: '2' },
-        { label: '2023-2024 - Học kỳ 1', value: '3' },
-        { label: '2023-2024 - Học kỳ 2', value: '4' },
-    ];
+export default function SubjectInfoForm({ form, subjects, academicYears, semesters }) {
 
-    const optionsSublect = [
-        { label: 'Toán cao cấp', value: '1' },
-        { label: 'Vật lý đại cương', value: '2' },
-        { label: 'Phân tích thiết kế hệ thống', value: '3' },
-        { label: 'Nhập môn lập trình', value: '4' }
-    ];
+    const selectedAcademicYear = useWatch('academicYear', form);
+    const selectedSemester = useWatch('semester', form);
+    const filteredSubjects = subjects;
 
     return (
         <div className="p-4">
             <Title level={4}>Thông tin môn học</Title>
 
             <Form.Item
-                label="Năm học và học kỳ"
+                label="Năm học"
                 rules={[{ required: true, message: 'Vui lòng chọn năm học và học kỳ!' }]}
                 name={'academicYear'}
                 className="mt-5"
+                hidden
             >
                 <Select
-                    options={academicYear}
-                    allowClear
+                    options={academicYears.map(item => ({
+                        label: `${item.academic_year_name}`,
+                        value: item.academic_year_id
+                    }))}
                     placeholder="Chọn năm học"
+                    size="large"
+                    className="w-full custom-select"
+                />
+            </Form.Item>
+
+            <Form.Item
+                label="Học kỳ"
+                rules={[{ required: true, message: 'Vui lòng chọn học kỳ!' }]}
+                name={'semester'}
+                className="mt-5"
+                hidden
+            >
+                <Select
+                    options={semesters.map(item => ({
+                        label: item.semester_name,
+                        value: item.semester_id
+                    }))}
+                    placeholder={
+                        selectedAcademicYear ? "Chọn học kỳ" : "Vui lòng chọn năm học trước"
+                    }
+                    disabled={!selectedAcademicYear}
                     size="large"
                     className="w-full custom-select"
                 />
@@ -45,10 +61,22 @@ export default function SubjectInfoForm() {
             >
                 <Select
                     allowClear
-                    options={optionsSublect}
-                    placeholder="Chọn tên môn học"
+                    options={filteredSubjects.map(item => ({
+                        label: `${item.subject_name}`,
+                        value: item.subject_id
+                    }))}
+                    placeholder={
+                        selectedSemester
+                            ? "Chọn môn học"
+                            : "Vui lòng chọn năm học trước"
+                    }
+                    disabled={!selectedSemester}
                     size="large"
                     className="w-full custom-select"
+                    showSearch
+                    filterOption={(input, option) =>
+                        (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                    }
                 />
             </Form.Item>
 
@@ -67,7 +95,7 @@ export default function SubjectInfoForm() {
 
             <Form.Item
                 label="Phòng học"
-                name="location"
+                name="roomName"
                 rules={[{ required: false }]}
             >
                 <Input
@@ -80,7 +108,7 @@ export default function SubjectInfoForm() {
 
             <Form.Item
                 label="Tiết học"
-                name="timeStudy"
+                name="slotName"
                 rules={[{ required: false }]}
             >
                 <Input

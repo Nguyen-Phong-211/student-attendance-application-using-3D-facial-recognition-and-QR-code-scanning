@@ -89,17 +89,27 @@ api.interceptors.response.use(
             } catch (e) {
                 isRefreshing = false;
                 refreshPromise = null;
+                
+                try {
+                    await raw.post("accounts/logout/");
+                } catch (err) {
+                    console.error("Force logout error:", err);
+                } finally {
+                    clearAuthCookies();
+                    localStorage.clear();
+                    sessionStorage.clear();
 
-                // refresh fail → logout always
-                await logout();
+                    // notify other components
+                    window.dispatchEvent(new CustomEvent("session-expired"));
 
-                // notify other components
-                window.dispatchEvent(new CustomEvent("session-expired"));
+                    const currentPath = window.location.pathname + window.location.search;
+                    const loginUrl = `/account/login?next=${encodeURIComponent(currentPath)}`;
+                    window.location.replace(loginUrl);
+                }
 
                 return Promise.reject(e);
             }
         }
-
         return Promise.reject(error);
     }
 );

@@ -5,7 +5,7 @@ import Signup from "../pages/account/Signup"; //
 import Home from "../pages/home/Home";
 import Contact from "../pages/contact/Contact";
 import Notification from "../pages/notification/Notification";
-// import Introduction from "../pages/introduction/Introduction";
+import Introduction from "../pages/introduction/Introduction";
 import ToDoList from "../pages/to-do-list/ToDoList";
 import AddFace from "../pages/add-face/AddFace";
 import RegisterFace from "../pages/add-face/RegisterFace";
@@ -22,7 +22,7 @@ import VerifyOtp from "../pages/account/VerifyOtp"; //
 import ProtectedRoute from "../routes/ProtectedRoute";
 import ErrorPage from "../components/404";
 import AttendanceStatistics from "../pages/attendance/AttendanceStatistics";
-// import AttendanceHistory from "../pages/attendance/AttendanceHistory";
+import AttendanceHistory from "../pages/attendance/AttendanceHistory";
 import TimeTable from "../pages/timetable/TimeTable";
 import Profile from "../pages/profile/Profile";
 
@@ -59,7 +59,7 @@ const AppRoutes = () => {
             <Route path="/" element={ <ProtectedRoute> <Home /> </ProtectedRoute> } />
             <Route path="/contact" element={<Contact />} />
             <Route path="/notifications/all" element={<ProtectedRoute><Notification /></ProtectedRoute>} />
-            {/* <Route path="/introduction" element={<ProtectedRoute><Introduction /></ProtectedRoute>} /> */}
+            <Route path="/introduction" element={<ProtectedRoute><Introduction /></ProtectedRoute>} />
             <Route path="/to-do-list/today" element={<ProtectedRoute><ToDoList /></ProtectedRoute>} />
             <Route path="attendance/add-face" element={<ProtectedRoute><AddFace /></ProtectedRoute>} />
             <Route path="/add-face/register-face" element={<ProtectedRoute><RegisterFace /></ProtectedRoute>} />
@@ -70,7 +70,7 @@ const AppRoutes = () => {
             <Route path="/general-setting" element={<GeneralSetting />} />
             <Route path="/account/information/update/*" element={<ProtectedRoute><AccountInformation /></ProtectedRoute>} />
             <Route path="/attendance/statistics" element={<ProtectedRoute><AttendanceStatistics /></ProtectedRoute>} />
-            {/* <Route path="/attendance/attendance-history" element={<ProtectedRoute><AttendanceHistory /></ProtectedRoute>} /> */}
+            <Route path="/attendance/attendance-history" element={<ProtectedRoute><AttendanceHistory /></ProtectedRoute>} />
             <Route path="/timetable" element={<ProtectedRoute><TimeTable /></ProtectedRoute>} />
             <Route path="/profile/*" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="*" element={<ErrorPage />} />

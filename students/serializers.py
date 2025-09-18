@@ -257,3 +257,13 @@ class StudentLeaveRequestSerializer(serializers.ModelSerializer):
 class StudentSubjectBySemesterSerializer(serializers.Serializer):
     subject_id = serializers.IntegerField()
     subject_name = serializers.CharField()
+# ==================================================
+# Get student, semester and academic year by account_id
+# ==================================================
+class StudentSemesterAcademicYearSerializer(serializers.Serializer):
+    student_id = serializers.IntegerField()
+    fullname = serializers.CharField()
+    semester_id = serializers.IntegerField()
+    semester_name = serializers.CharField()
+    academic_year_id = serializers.IntegerField()
+    academic_year_name = serializers.CharField()

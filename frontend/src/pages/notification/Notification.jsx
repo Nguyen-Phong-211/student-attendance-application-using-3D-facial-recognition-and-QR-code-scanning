@@ -187,7 +187,7 @@ export default function NotificationPage() {
                                     rowKey="notification_id"
                                     dataSource={notifications}
                                     columns={columns}
-                                    pagination={false}
+                                    pagination={true}
                                     scroll={{ x: true }}
                                 />
                             )}

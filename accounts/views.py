@@ -60,18 +60,28 @@ class RefreshTokenView(APIView):
         try:
             refresh = RefreshToken(refresh_token)
             new_access_token = str(refresh.access_token)
-
-            # Get user from refresh token
-            user_id = refresh['user_id']
-            user = Account.objects.get(id=user_id)
-
-            # Create new refresh
-            new_refresh = RefreshToken.for_user(user)
-            new_refresh_token = str(new_refresh)
+            new_refresh_token = str(refresh)
 
             response = JsonResponse({'message': 'Token refreshed successfully'})
-            response.set_cookie('access_token', new_access_token, httponly=True, samesite='Lax')
-            response.set_cookie('refresh_token', new_refresh_token, httponly=True, samesite='Lax')
+            response.set_cookie(
+                'access_token',
+                new_access_token,
+                httponly=True,
+                samesite='Lax',
+                secure=False,
+                max_age=15 * 60,
+                path='/'
+            )
+
+            response.set_cookie(
+                'refresh_token',
+                new_refresh_token,
+                httponly=True,
+                samesite='Lax',
+                secure=False,
+                max_age=30 * 24 * 60 * 60,
+                path='/'
+            )
             return response
 
         except Exception:
@@ -170,8 +180,8 @@ def verify_otp(request):
                 'role_id': getattr(account.role, 'role_id', None),
                 'user_type': account.user_type,
             },
-            "refresh_token": str(refresh),
-            "access_token": access_token
+            # "refresh_token": str(refresh),
+            # "access_token": access_token
         }, status=201)
     else:
         return Response({'error': serializer.errors}, status=400)
@@ -254,9 +264,9 @@ class LoginView(APIView):
                 key='access_token',
                 value=access_token,
                 httponly=True,
-                secure=False,
+                secure=False, # True if using HTTPS
                 samesite='Lax',
-                # max_age=3600,
+                max_age=15 * 60,
                 path='/'
             )
 
@@ -265,9 +275,9 @@ class LoginView(APIView):
                 key='refresh_token',
                 value=refresh_token,
                 httponly=True,
-                secure=False,
+                secure=False, # True if using HTTPS
                 samesite='Lax',
-                # max_age=7 * 24 * 3600,
+                max_age=30 * 24 * 60 * 60,
                 path='/'
             )
 

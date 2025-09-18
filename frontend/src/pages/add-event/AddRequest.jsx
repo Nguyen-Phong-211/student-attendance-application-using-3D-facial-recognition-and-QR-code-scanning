@@ -118,13 +118,14 @@ export default function AddRequest() {
                     `leaves/leave-request/${accountId}/${selectedSubject}/${selectedAcademicYear}/${selectedSemester}/`
                 );
 
-                if (res.data && res.data.length > 0) {
+                if (Array.isArray(res.data) && res.data.length > 0) {
                     setLeaveData(res.data[0]);
                     const lecturerName = res.data[0].lecturer_name || '';
                     form.setFieldsValue({ teacher: lecturerName });
                 } else {
                     setLeaveData(null);
                     form.setFieldsValue({ teacher: '' });
+                    message.error("Lỗi khi lấy thông tin giảng viên.");
                 }
 
             } catch (error) {
@@ -155,37 +156,48 @@ export default function AddRequest() {
                             layout="vertical"
                             className="w-full"
                             onFinish={async (values) => {
-                                if(leaveData?.max_leave_days > 0) {
-                                    try {
-                                        setLoading(true);
+                                if (Array.isArray(leaveData) && leaveData.length > 0) {
+                                    if(leaveData?.max_leave_days > 0) {
+                                        try {
+                                            setLoading(true);
+        
+                                            const payload = {
+                                                student: leaveData?.student_id,
+                                                subject: values.subject,
+                                                reason: values.personalLeave,
+                                                from_date: values.rangeDate[0].toISOString(),
+                                                to_date: values.rangeDate[1].toISOString(),
+                                                academic_year: values.academicYear,
+                                                semester: values.semester,
+                                                leave_data: leaveData, 
+                                                to_target: leaveData?.lecturer_id,
+                                            };
     
-                                        const payload = {
-                                            student: leaveData?.student_id,
-                                            subject: values.subject,
-                                            reason: values.personalLeave,
-                                            from_date: values.rangeDate[0].toISOString(),
-                                            to_date: values.rangeDate[1].toISOString(),
-                                            academic_year: values.academicYear,
-                                            semester: values.semester,
-                                            leave_data: leaveData, 
-                                        };
-
-                                        console.log(payload);
-    
-                                        await api.post("leaves/leave-requests/", payload);
-    
-                                        message.success("Gửi đơn thành công!");
-                                        setLoading(false);
-                                        form.resetFields();
-                                    } catch (error) {
-                                        console.error(error);
-                                        message.error("Gửi đơn thất bại!");
-                                        setLoading(false);
-                                    } finally {
-                                        setLoading(false);
+                                            console.log(payload);
+        
+                                            await api.post("leaves/leave-requests/", payload);
+        
+                                            message.success("Gửi đơn thành công!");
+                                            setLoading(false);
+                                            form.resetFields([
+                                                "subject",
+                                                "teacher",
+                                                "personalLeave",
+                                                "rangeDate",
+                                                "images",
+                                            ]);
+                                        } catch (error) {
+                                            console.error(error);
+                                            message.error("Gửi đơn thất bại!");
+                                            setLoading(false);
+                                        } finally {
+                                            setLoading(false);
+                                        }
+                                    } else {
+                                        message.error("Bạn đã hết ngày xin nghỉ phép!");
                                     }
                                 } else {
-                                    message.error("Bạn đã hết ngày xin nghỉ phép!");
+                                    message.error("Không tồn tại lịch học!");
                                 }
                             }}
                             onFinishFailed={(errorInfo) => {

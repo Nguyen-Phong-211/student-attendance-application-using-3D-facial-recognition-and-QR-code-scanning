@@ -1,7 +1,7 @@
 from django.db import models
 from accounts.models import Account
 from subjects.models import Subject
-from subjects.models import AcademicYear
+# from subjects.models import AcademicYear
 from students.models import Student
 
 class Notification(models.Model):
@@ -35,10 +35,10 @@ class Reminder(models.Model):
     content = models.TextField()
     start_date = models.DateTimeField(auto_now_add=True)
     end_date = models.DateTimeField(auto_now_add=True)
-    email_notification = models.CharField(max_length=1)
+    email_notification = models.CharField(max_length=1, default='1')
     time_reminder = models.TimeField(auto_now_add=False, default='30:00:00')
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
-    academic_year = models.ForeignKey(AcademicYear, on_delete=models.CASCADE)
+    # academic_year = models.ForeignKey(AcademicYear, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
@@ -47,7 +47,7 @@ class Reminder(models.Model):
         db_table = 'reminders'
         indexes = [
             models.Index(fields=['subject_id']),
-            models.Index(fields=['academic_year_id']),
+            # models.Index(fields=['academic_year_id']),
             models.Index(fields=['student_id']),
         ]
         managed = True

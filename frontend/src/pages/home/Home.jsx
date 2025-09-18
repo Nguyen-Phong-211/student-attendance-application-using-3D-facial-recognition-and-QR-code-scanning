@@ -83,7 +83,7 @@ export default function HomePage() {
                 try {
                     await api.post("/accounts/logout/", {}, { withCredentials: true });
                     message.success("Đăng xuất thành công");
-                    navigate("/login");
+                    navigate("/account/login");
                 } catch (err) {
                     message.error("Có lỗi khi đăng xuất");
                 }

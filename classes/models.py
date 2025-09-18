@@ -33,7 +33,7 @@ class Class(models.Model):
         verbose_name_plural = 'Classes'
 
     def __str__(self):
-        return self.class_name
+        return f"{self.class_name} ({self.class_code})"
 
 class ClassStudent(models.Model):
     class_student_id = models.BigAutoField(primary_key=True)
@@ -61,7 +61,7 @@ class ClassStudent(models.Model):
         verbose_name_plural = 'Class Students'
 
     def __str__(self):
-        return f"{self.class_id} - {self.student_id}"
+        return f"{self.student} in {self.school_class}"
 
 class Schedule(models.Model):
     schedule_id = models.BigAutoField(primary_key=True)
@@ -93,4 +93,4 @@ class Schedule(models.Model):
         verbose_name_plural = 'Schedules'
 
     def __str__(self):
-        return f"{self.class_id} - {self.subject_id}"
+        return f"{self.school_class} - {self.subject} ({self.start_time.strftime('%Y-%m-%d %H:%M')})"

@@ -170,13 +170,13 @@ STATIC_URL = 'static/'
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'attend3d/templates/react/static'),
+    # os.path.join(BASE_DIR, 'frontend/build/static'),
 ]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-CORS_ALLOW_ALL_ORIGINS = True  
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
@@ -205,16 +205,16 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
     "authorization",
     "x-csrftoken",
 ]
-ORS_ALLOW_ALL_ORIGINS = False
-CSRF_COOKIE_SECURE = False
-SESSION_COOKIE_SECURE = False
+CORS_ALLOW_ALL_ORIGINS = False
+CSRF_COOKIE_SECURE = False # True if using HTTPS
+SESSION_COOKIE_SECURE = False # True if using HTTPS
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SAMESITE = 'Lax'
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=180),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
     'USER_ID_FIELD': 'account_id',
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
@@ -223,14 +223,9 @@ SIMPLE_JWT = {
     "AUTH_COOKIE_REFRESH": "refresh_token",
 }
 
-CORS_ALLOW_HEADERS = list(default_headers) + [
-    "authorization",
-]
-
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'accounts.authentication.CookieJWTAuthentication',
-        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',

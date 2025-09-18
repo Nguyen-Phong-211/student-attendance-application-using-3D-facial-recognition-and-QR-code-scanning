@@ -22,21 +22,16 @@ export default function LeaveForm({ form, academicYears, semesters, subjects, le
                 rules={[{ required: true, message: 'Vui lòng chọn năm học!' }]}
                 name={'academicYear'}
                 className="mt-5"
-                // hidden
+                hidden
             >
                 <Select
                     options={academicYears.map(item => ({
                         label: `${item.academic_year_name}`,
                         value: item.academic_year_id
                     }))}
-                    allowClear
                     placeholder="Chọn năm học"
                     size="large"
                     className="w-full custom-select"
-                    // defaultValue={academicYears.map(item => ({
-                    //     label: `${item.academic_year_name}`,
-                    //     value: item.academic_year_id
-                    // }))}
                 />
             </Form.Item>
 
@@ -45,24 +40,19 @@ export default function LeaveForm({ form, academicYears, semesters, subjects, le
                 rules={[{ required: true, message: 'Vui lòng chọn học kỳ!' }]}
                 name={'semester'}
                 className="mt-5"
-                // hidden
+                hidden
             >
                 <Select
                     options={semesters.map(item => ({
                         label: item.semester_name,
                         value: item.semester_id
                     }))}
-                    allowClear
                     placeholder={
                         selectedAcademicYear ? "Chọn học kỳ" : "Vui lòng chọn năm học trước"
                     }
                     disabled={!selectedAcademicYear}
                     size="large"
                     className="w-full custom-select"
-                    // defaultValue={semesters.map(item => ({
-                    //     label: item.semester_name,
-                    //     value: item.semester_id
-                    // }))}
                 />
             </Form.Item>
 

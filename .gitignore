@@ -1,3 +1,4 @@
 # Ignore React build and dependencies
 frontend/node_modules/
 frontend/build/
+./STRUCTURE_PROJECT.md
