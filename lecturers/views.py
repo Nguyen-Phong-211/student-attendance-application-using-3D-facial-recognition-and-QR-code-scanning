@@ -32,8 +32,8 @@ class LecturerListAPIView(generics.ListAPIView):
 class AllLecturerView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     def get(self, request):
-        lecturers = Student.objects.select_related('account').all()
-        serializer = StudentGetListSerializer(lecturers, many=True)
+        lecturers = Lecturer.objects.select_related('account').all()
+        serializer = LecturerListSerializer(lecturers, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 # ==================================================

@@ -101,9 +101,10 @@ class LeaveRequestRawView(APIView):
                     JOIN lecturers AS l ON l.lecturer_id = lsub.lecturer_id
                     JOIN student_subjects AS ss ON ss.subject_registration_request_id = srr.subject_registration_request_id
                     JOIN departments AS d ON d.department_id = st.department_id
+                    JOIN accounts AS acc ON acc.account_id = st.account_id
                     CROSS JOIN week w
                     WHERE srr.status = 'approved'
-                    AND srr.student_id = %s
+                    AND acc.account_id = %s
                     AND sub.subject_id = %s
                     AND sch.status = '1'
                     AND sh.status = '1'

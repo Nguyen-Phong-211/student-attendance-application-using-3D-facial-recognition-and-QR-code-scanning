@@ -48,7 +48,7 @@ class Command(BaseCommand):
                 account.user_permissions.set(all_permissions)
 
                 # Add to admin group
-                admin_group, created = Group.objects.get_or_create(name="Admin")
+                admin_group, created = Group.objects.get_or_create(name="admin")
                 account.groups.add(admin_group)
 
                 account.save()
