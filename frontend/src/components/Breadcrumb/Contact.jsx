@@ -19,4 +19,4 @@ const BreadcrumbContact = ({ t }) => {
     );
 };
 
-export default BreadcrumbContact;
+export default BreadcrumbContact; 

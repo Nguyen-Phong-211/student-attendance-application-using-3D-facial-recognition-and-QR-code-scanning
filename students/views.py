@@ -468,7 +468,7 @@ class AdminScheduleManagementView(APIView):
     def get(self, request, student_code):
         query = """
         SELECT DISTINCT ON (sch.schedule_id)
-            srr.subject_registration_request_id,
+            srr.subject_registration_request_id, 
             srr.reason,
             srr.status AS register_status,
             srr.created_at,
@@ -500,7 +500,6 @@ class AdminScheduleManagementView(APIView):
         JOIN semesters AS se ON se.semester_id = srr.semester_id
         JOIN lecturer_subjects AS lsub ON lsub.subject_id = srr.subject_id
         JOIN lecturers AS l ON l.lecturer_id = lsub.lecturer_id
-        JOIN student_subjects AS ss ON ss.subject_registration_request_id = srr.subject_registration_request_id
         WHERE st.student_code = %s
         AND sch.status = '1'
         AND sh.status = '1'
@@ -569,6 +568,7 @@ class AdminApproveScheduleView(APIView):
         updated_count = SubjectRegistrationRequest.objects.filter(
             pk__in=request_ids
         ).update(
+            status="approved",
             reason=reason,
             approved_by=request.user
         )
@@ -624,3 +624,4 @@ class CountSubjectRegistrationRequestView(APIView):
         })
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+    

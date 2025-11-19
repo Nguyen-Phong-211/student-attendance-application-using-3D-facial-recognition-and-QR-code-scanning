@@ -41,6 +41,10 @@ urlpatterns = [
     # 
     path('api/v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    
+    #trang
+    path('api/v1/', include('attend.urls')),
+    #path('api/v1/lecturer_contacts/', include('lecturer_contacts.urls')),
 ]
 
 if settings.DEBUG:

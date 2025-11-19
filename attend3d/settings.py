@@ -18,7 +18,6 @@ from corsheaders.defaults import default_headers
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -29,7 +28,6 @@ SECRET_KEY = 'django-insecure-^9^_%2z^agw&jke8+j&igjqd!(1lm(r!8uys6%h@t@dr-%_&j+
 DEBUG = True
 
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
-
 
 # ========================
 # APPS ARE DEFINED HERE
@@ -67,7 +65,11 @@ INSTALLED_APPS = [
     'rooms',
     'students',
     'subjects',
-    'staffs'
+    'staffs',
+    
+    #trang
+    'attend',
+    #'lecturer_contacts'
 ]
 
 # ========================
@@ -141,16 +143,15 @@ CHANNEL_LAYERS = {
     },
 }
 
-
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'attendance_management_db',
+        'NAME': 'attend3d',
         'USER': 'postgres',
-        'PASSWORD': '1234',
+        'PASSWORD': '16102003',
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -165,7 +166,6 @@ DATABASES = {
 #         'PORT': os.getenv("DB_PORT", "5432"),
 #     }
 # }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -185,7 +185,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
@@ -196,7 +195,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
@@ -221,7 +219,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'zephyrnguyen.vn@gmail.com'
+EMAIL_HOST_USER = 'huyentrangqb2003@gmail.com'
 EMAIL_HOST_PASSWORD = ''
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
@@ -297,7 +295,7 @@ CACHES = {
     }
 }
 
-RECAPTCHA_SECRET_KEY = ''
+RECAPTCHA_SECRET_KEY = '6LcfimYrAAAAAL9AYBWbOi1EzXrTDaS6DvnZqNeA'
 
 # ================================== DJANGO CRONJOBS ==================================
 CRONJOBS = [

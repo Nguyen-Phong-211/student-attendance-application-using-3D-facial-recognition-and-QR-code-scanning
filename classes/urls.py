@@ -8,4 +8,6 @@ urlpatterns = [
     path('classes/create/', ClassCreateView.as_view(), name='class-create'),
     path('classes/update/<int:pk>/', ClassUpdateAPIView.as_view(), name='class-update'),
     path('classes/schedules/<int:subject_id>/<int:semester_id>/', ScheduleListAPIView.as_view(), name='schedule-list'), # <int:semester_id>/
+    
+    #  path('<int:class_id>/subjects/<int:subject_id>/students/', StudentsByClassSubjectView.as_view(), name='students-by-class-subject'),
 ]

@@ -9,6 +9,7 @@ from .serializers import (
 from rest_framework import generics
 from django.utils import timezone
 from datetime import datetime
+from django.db import connection
 
 # ==================================================
 # Get all subjects
@@ -101,3 +102,40 @@ class StudentSubjectView(APIView):
 
         serializer = StudentSubjectSerializer(subjects, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+# TRANG THÊM
+
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework.permissions import IsAuthenticated
+# from django.db import connection
+
+# class GetSubjectByClassView(APIView):
+#     permission_classes = [IsAuthenticated]  # đảm bảo user đã login
+
+#     def get(self, request, class_id):
+#         lecturer_id = request.user.id  # lấy giảng viên từ login
+#         query = """
+#              SELECT DISTINCT
+#                 c.class_id,
+#                 c.class_name,
+#                 s.subject_id,
+#                 s.subject_code,
+#                 s.subject_name
+#             FROM classes c
+#             JOIN schedules sch ON sch.class_id_id = c.class_id
+#             JOIN subjects s ON sch.subject_id_id = s.subject_id
+#             JOIN lecturer_subjects ls ON ls.subject_id = s.subject_id
+#             JOIN student_subjects ss ON ss.subject_id = s.subject_id
+#             WHERE c.class_id = %s
+#             AND ls.lecturer_id = %s
+#             ORDER BY s.subject_name;
+#         """
+#         with connection.cursor() as cursor:
+#             cursor.execute(query, [class_id, lecturer_id])
+#             columns = [col[0] for col in cursor.description]
+#             results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+#         return Response(results, status=200)
+
+    

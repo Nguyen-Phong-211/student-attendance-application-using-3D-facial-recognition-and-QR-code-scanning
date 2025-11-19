@@ -73,3 +73,5 @@ class EditReminderSerializer(serializers.ModelSerializer):
             'reminder_id', 'title', 'content', 'start_date', 'end_date', 'time_reminder', 'status_reminder',
             'student', 'subject'
         ]
+#TRANG
+

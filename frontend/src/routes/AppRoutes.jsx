@@ -56,6 +56,18 @@ import LecturerList from "../pages/admin/lecturers/LecturerList";
 import AdminSchedule from "../pages/admin/Schedule";
 import Audit from "../pages/admin/Audit";
 
+// Giảng viên
+import LecturersDashboard from "../pages/lecturers/Dashboard"; //
+import NotificationManagementLecturers from "../pages/lecturers/Notifications"; //
+import Teachingschedule from "../pages/lecturers/Schedule_QR/Lecturerschedule"; //
+import QRCodeListManagement from "../pages/lecturers/QRCode/QRCodeList"; //
+import QRCodeCreateManagement from "../pages/lecturers/QRCode/QRCodeCreate"; //
+import Leaveapproval from "../pages/lecturers/LeaveRequest/leave_approval"; //
+import ClassList from "../pages/lecturers/Attend/ClassList"; //
+import Contactfeedback from "../pages/lecturers/ContactFeedback/Contactfeedback"; //
+import Reportproblem from "../pages/lecturers/Reportproblem/Reportproblem"; //
+import ProfileLecturers from "../pages/lecturers/profile/profile"; //
+
 import Error403 from "../components/403";
 import WaitingPage from "../components/Waiting";
 
@@ -125,6 +137,17 @@ const AppRoutes = () => {
 
             <Route path="/admin/management/log" element={<ProtectedRoute allowedRoles={["admin", "superadmin"]}><Audit /></ProtectedRoute>} />
             
+            {/* Giảng viên */}
+            <Route path="/lecturers/dashboard" element={<ProtectedRoute><LecturersDashboard /></ProtectedRoute>} />
+            <Route path="/lecturers/notifications" element={<ProtectedRoute><NotificationManagementLecturers /></ProtectedRoute>} />
+            <Route path="lecturers/lecturerschedule" element={<ProtectedRoute><Teachingschedule /></ProtectedRoute>} />
+            <Route path="/lecturers/QRCodeList" element={<ProtectedRoute><QRCodeListManagement /></ProtectedRoute>} />
+            <Route path="/lecturers/QRCodeCreate" element={<ProtectedRoute><QRCodeCreateManagement /></ProtectedRoute>} />
+            <Route path="/lecturers/Leaveapproval" element={<ProtectedRoute><Leaveapproval /></ProtectedRoute>} />
+            <Route path="/lecturers/ClassList" element={<ProtectedRoute><ClassList /></ProtectedRoute>} />
+            <Route path="/lecturers/Contactfeedback" element={<ProtectedRoute><Contactfeedback /></ProtectedRoute>} />
+            <Route path="/lecturers/Reportproblem" element={<ProtectedRoute><Reportproblem /></ProtectedRoute>} />
+            <Route path="/lecturers/profile" element={<ProtectedRoute><ProfileLecturers /></ProtectedRoute>} />
         </Routes>
     );
 };

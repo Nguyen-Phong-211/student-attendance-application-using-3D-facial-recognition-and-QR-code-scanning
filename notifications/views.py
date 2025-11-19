@@ -14,6 +14,10 @@ from .tasks import send_reminder_email
 from rest_framework import serializers
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from notifications.utils import send_notification 
+#TRANG
+# from notifications.models import Notification
+# from notifications.utils import send_notification
 
 # ==================================================
 # Display list notifications by account_id
@@ -34,7 +38,8 @@ class UnreadNotificationListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        account_id = self.request.user.account_id
+        # Cho phép đọc thông báo theo account_id trên URL
+        account_id = self.kwargs.get("account_id", self.request.user.account_id)
         return (
             Notification.objects
             .filter(to_target_id=account_id, is_read='0')
@@ -270,3 +275,6 @@ class ReminderListView(generics.ListAPIView):
         account = self.request.user
         student = Student.objects.filter(account=account).first()
         return Reminder.objects.filter(student=student, status_reminder='P').order_by('-created_at') if student else Reminder.objects.none()
+    
+
+

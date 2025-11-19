@@ -239,9 +239,9 @@ export default function Schedule() {
                                             name='approve-schedule'
                                             onFinish={onFinish}
                                         >
-                                            {
+                                            {/* {
                                                 studentCode?.register_status === "pending" ? (
-                                                    <>
+                                                    <> */}
                                                         <Form.Item
                                                             label="Lý do"
                                                             name="reason"
@@ -258,16 +258,16 @@ export default function Schedule() {
                                                                 Duyệt
                                                             </Button>
                                                         </Form.Item>
-                                                    </>
-                                                ) : (
-                                                    <TextArea
-                                                        rows={4}
-                                                        value={studentCode?.reason}
-                                                        disabled
-                                                        style={{ borderWidth: 1.5, boxShadow: "none" }}
-                                                    />
-                                                )
-                                            }
+                                                    {/* </>
+                                            //     ) : (
+                                            //         <TextArea
+                                            //             rows={4}
+                                            //             value={studentCode?.reason}
+                                            //             disabled
+                                            //             style={{ borderWidth: 1.5, boxShadow: "none" }}
+                                            //         />
+                                            //     )
+                                            // } */}
                                         </Form>
                                     </Card>
                                 )

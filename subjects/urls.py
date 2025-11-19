@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     SubjectListAPIView, AcademicYearListAPIView, SemesterListAPIView, 
-    SemesterByAcademicAPIView, DisplaySubjectForRegistionAPIView, StudentSubjectView
+    SemesterByAcademicAPIView, DisplaySubjectForRegistionAPIView, StudentSubjectView,
 )
 
 urlpatterns = [
@@ -13,4 +13,8 @@ urlpatterns = [
 
     # Get all subject of student view
     path('subjects/student-subjects/<int:account_id>/', StudentSubjectView.as_view(), name='student-subjects'), 
+    
+    #  # Thêm dòng này để lấy môn học theo lớp
+    #path('classes/<int:class_id>/subjects/', GetSubjectByClassView.as_view(), name='class-subjects'),
+
 ]
