@@ -1,6 +1,9 @@
 from django.urls import path
-from .views import ContactCreateAPIView
+from . import views
+from .views import LecturerSendToStudentAPIView
 
 urlpatterns = [
-    path('add/', ContactCreateAPIView.as_view(), name='create-contact'),
+    path("", views.ContactCreateAPIView.as_view(), name="contact-create-api"),  # React gọi AP
+    #TRANG
+    path("lecturer-send/", LecturerSendToStudentAPIView.as_view(), name="lecturer-send"),  # lecturer gửi
 ]

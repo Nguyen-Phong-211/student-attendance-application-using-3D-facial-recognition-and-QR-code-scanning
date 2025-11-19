@@ -114,7 +114,8 @@ class FaceRecognitionLog(models.Model):
 class QRCheckin(models.Model):
     qr_checkin_id = models.BigAutoField(primary_key=True)
     qr_code = models.CharField(max_length=255, unique=True)
-    qr_image_url = models.URLField(null=True, blank=True)
+    #qr_image_url = models.URLField(null=True, blank=True)
+    qr_image_url = models.ImageField(upload_to="qr_codes/", null=True, blank=True)
     schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE)
     expire_at = models.TimeField(auto_now_add=False)
     created_at = models.DateTimeField(auto_now_add=True)

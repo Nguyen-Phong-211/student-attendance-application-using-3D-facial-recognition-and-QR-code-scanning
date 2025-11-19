@@ -181,3 +181,63 @@ class LecturerContactSerializer(serializers.Serializer):
 # ==================================================
 class TotalLecturerSerializer(serializers.Serializer):
     total_lecturer = serializers.IntegerField()
+    
+
+# ==================================================
+# LECTURER: Get schedule by lecturer
+# ==================================================
+class GetScheduleLecturerSerializer(serializers.Serializer):
+    lecturer_id = serializers.IntegerField()
+    lecturer_name = serializers.CharField()
+    schedule_id = serializers.IntegerField()
+    day_of_week = serializers.IntegerField()
+    lesson_type = serializers.CharField()
+    subject_id = serializers.IntegerField()
+    subject_name = serializers.CharField()
+    class_id = serializers.IntegerField()
+    class_name = serializers.CharField()
+    room_name = serializers.CharField()
+    latitude = serializers.DecimalField(max_digits=10, decimal_places=5)
+    longitude = serializers.DecimalField(max_digits=10, decimal_places=5)
+    slot_name = serializers.CharField()
+    shift_name = serializers.CharField()
+    lesson_start_time = serializers.TimeField()
+    lesson_end_time = serializers.TimeField()
+
+# # ==================================================
+# # Lấy lớp theo giảng viên
+# # ==================================================
+class ScheduleManagementSerializer(serializers.Serializer):
+    student_id = serializers.IntegerField()
+    student_name = serializers.CharField()
+    subject_id = serializers.IntegerField()
+    subject_name = serializers.CharField()
+    class_id = serializers.IntegerField()
+    class_name = serializers.CharField()
+    lecturer_name = serializers.CharField(allow_null=True)
+    schedule_id = serializers.IntegerField()
+    day_of_week = serializers.IntegerField()
+    slot_name = serializers.CharField()
+    lesson_start = serializers.TimeField()
+    lesson_end = serializers.TimeField()
+    occurrence_start = serializers.DateTimeField()
+    occurrence_end = serializers.DateTimeField()
+    room_name = serializers.CharField()
+    latitude = serializers.DecimalField(max_digits=10, decimal_places=5)
+    longitude = serializers.DecimalField(max_digits=10, decimal_places=5)
+    lesson_type = serializers.CharField()
+    repeat_weekly = serializers.CharField()
+    semester_start_date = serializers.DateField()
+    semester_end_date = serializers.DateField()
+    
+#TRANG
+from rest_framework import serializers
+from .models import Lecturer
+
+class LecturerProfileSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(source='account.email', read_only=True)
+    phone_number = serializers.CharField(source='account.phone_number', read_only=True)
+
+    class Meta:
+        model = Lecturer
+        fields = ['fullname', 'lecturer_id', 'gender', 'dob', 'email', 'phone_number']

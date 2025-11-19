@@ -95,3 +95,12 @@ class StudentSubjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subject
         fields = ['subject_id', 'subject_name']
+        
+        
+# # ==================================================
+# # Serializer: Lấy danh sách môn học theo lớp học
+# # ==================================================
+# class ClassSubjectSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Subject
+#         fields = ['subject_id', 'subject_code', 'subject_name']

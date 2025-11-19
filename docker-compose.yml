@@ -4,18 +4,16 @@ services:
   web:
     build: .
     command: gunicorn attend3d.wsgi:application --bind 0.0.0.0:8000
-    volumes:
-      - .:/app
     ports:
       - "8000:8000"
     depends_on:
       - db
     environment:
       - DEBUG=1
-      - DB_NAME=attendance_management_db
-      - DB_USER=postgres
-      - DB_PASSWORD=1234
-      - DB_HOST=localhost
+      - DB_NAME=attend3d_db
+      - DB_USER=attend3d_user
+      - DB_PASSWORD=attend3d_pass
+      - DB_HOST=db
       - DB_PORT=5432
 
   db:

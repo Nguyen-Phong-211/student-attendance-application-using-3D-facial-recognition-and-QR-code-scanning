@@ -190,3 +190,4 @@ def create_notification_for_lecturer(sender, instance, created, **kwargs):
             created_by=student.account,
             to_target=lecturer.account,
         )
+        

@@ -5,7 +5,7 @@ from .views import (
     MajorUpdateAPIView, StudentUpdateAPIView, SubjectRegistrationRequestCreateView, 
     SubjectRegistrationRequestListView, StudentScheduleView, StudentSubjectBySemesterView,
     get_student_semester, GetAllStudentCodeView, AdminScheduleManagementView, TotalStudentView, AdminApproveScheduleView,
-    CountSubjectRegistrationRequestView
+    CountSubjectRegistrationRequestView,
 )
 
 urlpatterns = [
@@ -60,4 +60,5 @@ urlpatterns = [
         get_student_semester,
         name='get-student-semester'
     ),
+    
 ]

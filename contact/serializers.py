@@ -61,3 +61,28 @@ class ContactSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Invalid contact type.")
 
         return super().create(validated_data)
+#TRANG
+# serializers.py
+
+class ContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = '__all__'
+
+    def create(self, validated_data):
+        # Người gửi là lecturer
+        from_person = validated_data.pop('from_person', None)
+        student_id = validated_data.pop('student_id', None)
+
+        # Lấy đối tượng Student từ payload
+        student = None
+        if student_id:
+            student = Student.objects.get(pk=student_id)
+
+        contact = Contact.objects.create(
+            from_person=from_person,
+            to_student=student,
+            **validated_data
+        )
+        return contact
+

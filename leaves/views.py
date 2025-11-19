@@ -11,6 +11,9 @@ from classes.models import Schedule
 from django.db import connection
 from rest_framework import viewsets
 from .models import LeaveRequest
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
 
 # ==================================================
 # Class LeaveRequestView
@@ -176,3 +179,80 @@ class ListSubjectsLeaveRequestView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+#Trang
+# ==================================================
+# Lấy danh sách đơn gửi đến giảng viên cụ thể
+# ==================================================
+class LecturerReceivedLeaveRequestsView(APIView):
+    def get(self, request, lecturer_id):
+        try:
+            with connection.cursor() as cursor:
+                query = """
+                SELECT
+                    lr.leave_request_id,
+                    lr.leave_request_code,
+                    lr.reason,
+                    lr.from_date,
+                    lr.to_date,
+                    lr.status AS leave_request_status,
+                    lr.rejected_reason,
+                    lr.attachment,
+                    lr.images_urls, 
+                    st.student_id,
+                    st.fullname,
+                    cl.class_name,
+                    sub.subject_name
+                FROM leave_requests AS lr
+                JOIN students AS st
+                    ON st.student_id = lr.student_id
+                JOIN classes AS cl
+                    ON cl.class_id = (
+                        SELECT cs.class_id_id
+                        FROM class_students cs
+                        WHERE cs.student_id = st.student_id
+                        LIMIT 1
+                    )
+                JOIN subjects AS sub
+                    ON sub.subject_id = lr.subject_id
+                WHERE EXISTS (
+                    SELECT 1
+                    FROM lecturer_subjects AS ls
+                    WHERE ls.subject_id = lr.subject_id
+                    AND ls.lecturer_id = %s
+                )
+                ORDER BY lr.leave_request_id ASC;
+
+                """
+                cursor.execute(query, [lecturer_id])
+                columns = [col[0] for col in cursor.description]
+                results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+            return Response(results, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+def approve_leave_request(request, pk):
+    try:
+        lr = LeaveRequest.objects.get(pk=pk)
+        lr.status = 'A'
+        lr.save()
+        return Response({'success': True})
+    except LeaveRequest.DoesNotExist:
+        return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['PUT'])
+def reject_leave_request(request, pk):
+    try:
+        lr = LeaveRequest.objects.get(pk=pk)
+        lr.status = 'R'
+        lr.rejected_reason = request.data.get('rejected_reason', '')
+        lr.save()
+        return Response({'success': True})
+    except LeaveRequest.DoesNotExist:
+        return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+#TRANG(THÔNG)
+

@@ -21,4 +21,5 @@ urlpatterns = [
 
     # CRUD reminders (list/create/update/delete)
     path('', include(router.urls)),
+    
 ]

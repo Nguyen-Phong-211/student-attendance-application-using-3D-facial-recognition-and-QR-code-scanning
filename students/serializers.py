@@ -320,3 +320,5 @@ class CountSubjectRegistrationRequestSerializer(serializers.Serializer):
         if value < 0:
             raise serializers.ValidationError("Vui lòng đăng ký môn học để được tiếp tục sử dụng hệ thống")
         return value
+
+

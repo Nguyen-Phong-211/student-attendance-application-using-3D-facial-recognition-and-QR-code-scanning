@@ -138,6 +138,8 @@ const Navbar = ({ changeLanguage }) => {
         });
     };
 
+    
+
     useEffect(() => {
         if (!searchValue?.trim()) {
             setFilteredData(data);
@@ -177,18 +179,22 @@ const Navbar = ({ changeLanguage }) => {
         </div>
     );
 
-    const userMenuItems = [
-        {
-            key: 'changePassword',
-            label: <a href="/account/forgot-password/" target='_blank' rel="noopener noreferrer">Đổi mật khẩu</a>,
-            icon: <UserOutlined />,
-        },
-        {
-            key: 'logout',
-            label: <span className='text-red-500' onClick={handleLogout}>Đăng xuất</span>,
-            icon: <LogoutOutlined className='text-red-500' />,
-        },
-    ];
+     const userMenuItems = [
+            {
+                key: "profile",
+                label: <a href="/lecturers/profile">{t("profile")}</a>,
+                icon: <UserOutlined />,
+            },
+            {
+                key: "logout",
+                label: (
+                    <span onClick={handleLogout} style={{ color: "red" }}>
+                        {t("logout")}
+                    </span>
+                ),
+                icon: <LogoutOutlined style={{ color: "red" }} />,
+            },
+        ];
 
     return (
         <div className="flex items-center gap-4">
@@ -218,7 +224,7 @@ const Navbar = ({ changeLanguage }) => {
 
                 <Dropdown trigger={['hover']} placement="bottomRight" menu={{ items: userMenuItems }}>
                     <div className="flex items-center gap-2 cursor-pointer">
-                        <span className="font-medium hidden sm:block">Admin</span>
+                        {/* <span className="font-medium hidden sm:block">Admin</span> */}
                         <Avatar icon={<UserOutlined />} />
                     </div>
                 </Dropdown>

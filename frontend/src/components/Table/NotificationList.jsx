@@ -22,7 +22,11 @@ const TableNotificationList = ({ notifications, markAsRead, t }) => {
             render: (_, record) => (
                 <div>
                     <div className="font-medium">{record.title}</div>
-                    <div className="text-gray-500">{record.content}</div>
+                    <div
+                        className="text-gray-500"
+                        dangerouslySetInnerHTML={{ __html: record.content }}
+                        style={{ whiteSpace: "pre-wrap" }}
+                    />
                 </div>
             ),
         },

@@ -1,6 +1,8 @@
 import dayjs from "dayjs";
 
 export const getShift = (time) => {
+    // Trang
+    if (!time) return "";
     const hour = parseInt(time.split(":")[0]);
     if (hour < 12) return "morning";
     if (hour < 18) return "afternoon";
@@ -18,6 +20,8 @@ export const buildWeekSchedule = (data, currentTime) => {
     data.forEach((item) => {
         const dayName = days[item.day_of_week];
         const shift = getShift(item.lesson_start);
+        //Trang
+        if (!shift) return;
         const semesterStart = dayjs(item.semester_start_date);
         const semesterEnd = dayjs(item.semester_end_date);
 

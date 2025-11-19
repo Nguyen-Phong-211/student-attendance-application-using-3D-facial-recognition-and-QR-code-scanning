@@ -1,4 +1,7 @@
 from django.db import connection
+# from notifications.models import Notification
+# from channels.layers import get_channel_layer
+# from asgiref.sync import async_to_sync
 
 def get_schedule_info(student_id, subject_id):
     query = """
@@ -68,3 +71,179 @@ def send_notification_to_user(account_id, data: dict):
             "content": data,
         },
     )
+    #TRANG
+# def send_notification(to_account_id, title, content):
+#     """
+#     Tạo Notification và gửi realtime qua channels.
+#     """
+#     notification = Notification.objects.create(
+#         to_target_id=to_account_id,
+#         title=title,
+#         content=content,
+#         is_read='0'
+#     )
+#     # gửi realtime qua WebSocket
+#     channel_layer = get_channel_layer()
+#     async_to_sync(channel_layer.group_send)(
+#         f"user_{to_account_id}",
+#         {
+#             "type": "send_notification",
+#             "message": {
+#                 "id": notification.id,
+#                 "title": notification.title,
+#                 "content": notification.content,
+#                 "created_at": str(notification.created_at),
+#                 "is_read": notification.is_read
+#             }
+#         }
+#     )
+
+#TRANG
+from .models import Notification
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
+def send_notification(to_target_id, title, content):
+    """
+    Hàm tạo thông báo và gửi qua WebSocket.
+    """
+    notification = Notification.objects.create(
+        to_target_id=to_target_id,
+        title=title,
+        content=content,
+        is_read='0'
+    )
+
+    # Gửi real-time nếu có WebSocket
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f"user_{to_target_id}",
+        {
+            "type": "send_notification",
+            "content": {
+                "notification_id": notification.notification_id,
+                "title": notification.title,
+                "content": notification.content,
+                "created_at": str(notification.created_at)
+            }
+        }
+    )
+
+    return notification
+
+# notifications/utils.py
+from notifications.models import Notification
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
+
+def send_notification(to_target_id, title, content, created_by=None):
+    """
+    Hàm tạo thông báo và gửi qua WebSocket (Realtime).
+    """
+    notification = Notification.objects.create(
+        title=title,
+        content=content,
+        created_by=created_by,      # có thể là giảng viên hoặc hệ thống
+        to_target_id=to_target_id,  # người nhận (Account)
+        is_read='0',                # model là CharField, không phải BooleanField
+    )
+
+    # Gửi realtime nếu Channels hoạt động
+    channel_layer = get_channel_layer()
+    if channel_layer:
+        async_to_sync(channel_layer.group_send)(
+            f"user_{to_target_id}",
+            {
+                "type": "send_notification",
+                "content": {
+                    "notification_id": notification.notification_id,
+                    "title": notification.title,
+                    "content": notification.content,
+                    "created_at": str(notification.created_at),
+                    "is_read": notification.is_read,
+                },
+            },
+        )
+
+    return notification
+# from notifications.models import Notification
+# from channels.layers import get_channel_layer
+# from asgiref.sync import async_to_sync
+
+# def send_notification(to_target_id, title, content, created_by=None):
+#     """
+#     Tạo Notification và gửi qua WebSocket realtime.
+#     """
+#     notification = Notification.objects.create(
+#         title=title,
+#         content=content,
+#         created_by=created_by,
+#         to_target_id=to_target_id,
+#         is_read='0'
+#     )
+
+#     channel_layer = get_channel_layer()
+#     if channel_layer:
+#         async_to_sync(channel_layer.group_send)(
+#             f"user_{to_target_id}",  # ⚠️ phải khớp với account_id trong frontend
+#             {
+#                 "type": "send_notification",
+#                 "content": {
+#                     "id": notification.notification_id,
+#                     "title": notification.title,
+#                     "content": notification.content,
+#                     "created_at": str(notification.created_at),
+#                     "is_read": notification.is_read,
+#                 },
+#             },
+#         )
+
+#     return notification
+
+from django.utils import timezone
+from notifications.models import Notification
+from accounts.models import Account
+
+
+def send_qr_notifications(lecturer, student_rows, schedule_id, qr_image_url=None):
+    """
+    Gửi thông báo QR check-in tới sinh viên và giảng viên (có link xem mã QR).
+    """
+    # --- Nội dung chung ---
+    title = f"📢 Mã QR điểm danh mới cho lịch học #{schedule_id}"
+    content = (
+        f"Giảng viên {lecturer.fullname} đã tạo mã QR điểm danh mới.\n"
+        f"👉 <a href='{qr_image_url}' target='_blank'>Nhấn vào đây để xem mã QR</a>"
+    )
+
+    # --- 1️⃣ Gửi cho tất cả sinh viên ---
+    for student in student_rows:
+        try:
+            account = Account.objects.get(student=student["student_id"])
+
+            Notification.objects.create(
+                title=title,
+                content=content,                # Có link trong nội dung
+                created_by=lecturer.account,
+                to_target=account,
+                is_read='0',
+            )
+
+        except Exception as e:
+            print(f"[Signal Error] Không thể gửi thông báo QR cho {student['fullname']}: {e}")
+
+    # --- 2️⃣ Gửi lại cho chính giảng viên ---
+    try:
+        Notification.objects.create(
+            title="✅ Đã tạo mã QR điểm danh thành công",
+            content=(
+                f"Bạn đã tạo mã QR điểm danh cho lịch học #{schedule_id}.\n"
+            ),
+            created_by=lecturer.account,
+            to_target=lecturer.account,
+            is_read='0',
+        )
+        print(f"✅ Đã gửi thông báo xác nhận cho giảng viên {lecturer.fullname}.")
+    except Exception as e:
+        print(f"⚠️ Lỗi khi gửi thông báo cho giảng viên: {e}")

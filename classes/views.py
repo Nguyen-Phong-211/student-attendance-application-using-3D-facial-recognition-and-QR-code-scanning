@@ -150,3 +150,25 @@ class ScheduleListAPIView(APIView):
             }
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    
+# from students.models import Student
+    
+# class StudentsByClassSubjectView(APIView):
+#     """
+#     Lấy danh sách sinh viên theo lớp + môn học
+#     """
+#     def get(self, request, class_id, subject_id):
+#         try:
+#             students = Student.objects.filter(
+#                 class_students__class_id=class_id,
+#                 student_subjects__subject_id=subject_id
+#             ).distinct()
+
+#             data = [
+#                 {"student_id": s.student_id, "fullname": s.fullname, "student_code": s.student_code}
+#                 for s in students
+#             ]
+#             return Response(data, status=200)
+#         except Exception as e:
+#             return Response({"detail": str(e)}, status=400)
