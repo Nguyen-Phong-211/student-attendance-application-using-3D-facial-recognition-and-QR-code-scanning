@@ -26,8 +26,8 @@ urlpatterns = [
     path('', include(router.urls)),
     
     path(
-    'leave-requests/lecturer/<int:lecturer_id>/',LecturerReceivedLeaveRequestsView.as_view(),name='lecturer-received-leave-requests',
-),
+        'leave-requests/lecturer/<int:lecturer_id>/',LecturerReceivedLeaveRequestsView.as_view(),name='lecturer-received-leave-requests',
+    ),
     path('leave-requests/<int:pk>/approve/', approve_leave_request, name='approve_leave_request'),
     path('leave-requests/<int:pk>/reject/', reject_leave_request, name='reject_leave_request'),
     

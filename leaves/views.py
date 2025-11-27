@@ -1,19 +1,24 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from students.models import Student
+from students.models import Student, StudentSubject
 from classes.models import ClassStudent
 from .serializers import (
-    LeaveRequestSerializer, SaveLeaveRequestSerializer, ListSubjectLeaveRequestSerializer
+    LeaveRequestSerializer, SaveLeaveRequestSerializer, ListSubjectLeaveRequestSerializer, LecturerLeaveRequestSerializer
 )
 from lecturers.models import SubjectClass
 from classes.models import Schedule
 from django.db import connection
 from rest_framework import viewsets
 from .models import LeaveRequest
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
+from django.utils.timezone import now
+from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
+from lecturers.models import Lecturer
+from subjects.models import Semester
 
 # ==================================================
 # Class LeaveRequestView
@@ -147,8 +152,7 @@ class ListSubjectsLeaveRequestView(APIView):
         try:
             with connection.cursor() as cursor:
                 query = """
-                SELECT
-                    lr.leave_request_id,
+                SELECT lr.leave_request_id,
                     lr.leave_request_code,
                     lr.reason,
                     lr.from_date,
@@ -156,19 +160,32 @@ class ListSubjectsLeaveRequestView(APIView):
                     lr.status AS leave_request_status,
                     lr.rejected_reason,
                     lr.attachment,
+                    lr.images_urls,
                     sub.subject_name,
-                    ss.max_leave_days
+                    MAX(ss.max_leave_days) AS max_leave_days
                 FROM leave_requests AS lr
-                    JOIN subjects AS sub
-                        ON sub.subject_id = lr.subject_id
-                    JOIN students AS st
-                        ON st.student_id = lr.student_id
-                    LEFT JOIN accounts AS acc 
-                        ON acc.account_id = st.account_id
-                    LEFT JOIN student_subjects AS ss
-                        ON ss.subject_id = sub.subject_id
+                JOIN subjects AS sub
+                ON sub.subject_id = lr.subject_id
+                JOIN students AS st
+                ON st.student_id = lr.student_id
+                LEFT JOIN accounts AS acc 
+                ON acc.account_id = st.account_id
+                LEFT JOIN student_subjects AS ss
+                ON ss.subject_id = sub.subject_id
+                AND ss.student_id = st.student_id
                 WHERE acc.account_id = %s
-                    AND sub.status = '1'
+                AND sub.status = '1'
+                GROUP BY lr.leave_request_id,
+                        lr.leave_request_code,
+                        lr.reason,
+                        lr.from_date,
+                        lr.to_date,
+                        lr.status,
+                        lr.rejected_reason,
+                        lr.attachment,
+                        lr.images_urls,
+                        sub.subject_name
+                ORDER BY lr.leave_request_id DESC;
                 """
                 cursor.execute(query, [account_id])
 
@@ -180,79 +197,105 @@ class ListSubjectsLeaveRequestView(APIView):
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
-#Trang
 # ==================================================
-# Lấy danh sách đơn gửi đến giảng viên cụ thể
+# LECTURER: GET LIST LEAVE REQUEST
 # ==================================================
 class LecturerReceivedLeaveRequestsView(APIView):
     def get(self, request, lecturer_id):
         try:
             with connection.cursor() as cursor:
                 query = """
-                SELECT
+                SELECT 
                     lr.leave_request_id,
                     lr.leave_request_code,
                     lr.reason,
                     lr.from_date,
                     lr.to_date,
-                    lr.status AS leave_request_status,
+                    lr.status,
                     lr.rejected_reason,
                     lr.attachment,
-                    lr.images_urls, 
+                    lr.reviewed_at,
+                    lr.images_urls,
+                    lr.created_at,
                     st.student_id,
+                    st.student_code,
                     st.fullname,
+                    sub.subject_name,
+                    MAX(ss.max_leave_days) AS max_leave_days,
                     cl.class_name,
-                    sub.subject_name
-                FROM leave_requests AS lr
-                JOIN students AS st
-                    ON st.student_id = lr.student_id
-                JOIN classes AS cl
-                    ON cl.class_id = (
-                        SELECT cs.class_id_id
-                        FROM class_students cs
-                        WHERE cs.student_id = st.student_id
-                        LIMIT 1
-                    )
-                JOIN subjects AS sub
-                    ON sub.subject_id = lr.subject_id
-                WHERE EXISTS (
-                    SELECT 1
-                    FROM lecturer_subjects AS ls
-                    WHERE ls.subject_id = lr.subject_id
-                    AND ls.lecturer_id = %s
-                )
-                ORDER BY lr.leave_request_id ASC;
-
+                    cl.class_id
+                FROM leave_requests lr
+                JOIN lecturers le ON le.lecturer_id = lr.to_target_id
+                JOIN accounts acc ON acc.account_id = le.account_id
+                JOIN students st ON st.student_id = lr.student_id
+                JOIN subjects sub ON sub.subject_id = lr.subject_id
+                JOIN student_subjects ss 
+                    ON ss.subject_id = lr.subject_id
+                AND ss.student_id = lr.student_id
+                JOIN subject_classes sc 
+                    ON sc.subject_id = lr.subject_id 
+                AND sc.lecturer_id = le.lecturer_id
+                JOIN classes cl ON cl.class_id = sc.class_id_id
+                WHERE acc.account_id = %s
+                GROUP BY lr.leave_request_id, lr.leave_request_code, lr.reason, lr.from_date, lr.to_date,
+                        lr.status, lr.rejected_reason, lr.attachment, lr.reviewed_at, lr.images_urls, lr.created_at,
+                        st.student_id, st.student_code, st.fullname, sub.subject_name, cl.class_name, cl.class_id
+                ORDER BY lr.created_at DESC;
                 """
+
                 cursor.execute(query, [lecturer_id])
                 columns = [col[0] for col in cursor.description]
-                results = [dict(zip(columns, row)) for row in cursor.fetchall()]
-
-            return Response(results, status=status.HTTP_200_OK)
+                raw_data = [dict(zip(columns, row)) for row in cursor.fetchall()]
+            
+            serializer = LecturerLeaveRequestSerializer(
+                raw_data, 
+                many=True, 
+                context={"request": request}
+            )
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['PUT'])
+@permission_classes([IsAuthenticated])
 def approve_leave_request(request, pk):
-    try:
-        lr = LeaveRequest.objects.get(pk=pk)
-        lr.status = 'A'
-        lr.save()
-        return Response({'success': True})
-    except LeaveRequest.DoesNotExist:
-        return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+    lr = get_object_or_404(LeaveRequest, pk=pk)
+    lecturer = get_object_or_404(Lecturer, account=request.user)
+
+    # Lấy bản ghi StudentSubject của kỳ hiện tại
+    student_subject = StudentSubject.objects.filter(
+        student=lr.student,
+        subject=lr.subject,
+    ).first()
+
+    if not student_subject:
+        return Response({'error': 'Không tìm thấy StudentSubject cho môn học này'}, status=400)
+
+    if student_subject.max_leave_days <= 0:
+        return Response({'error': 'Sinh viên đã hết ngày nghỉ phép'}, status=400)
+
+    # Duyệt đơn
+    lr.status = 'A'
+    lr.reviewed_at = now()
+    lr.approved_by = lecturer
+    lr.save()
+
+    # Trừ 1 ngày phép
+    student_subject.max_leave_days -= 1
+    student_subject.save()
+
+    return Response({'success': True, 'remaining_leave_days': student_subject.max_leave_days})
 
 @api_view(['PUT'])
+@permission_classes([IsAuthenticated])
 def reject_leave_request(request, pk):
-    try:
-        lr = LeaveRequest.objects.get(pk=pk)
-        lr.status = 'R'
-        lr.rejected_reason = request.data.get('rejected_reason', '')
-        lr.save()
-        return Response({'success': True})
-    except LeaveRequest.DoesNotExist:
-        return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
-    
-#TRANG(THÔNG)
+    lr = get_object_or_404(LeaveRequest, pk=pk)
+    lecturer = get_object_or_404(Lecturer, account=request.user)
 
+    lr.status = 'R'
+    lr.rejected_reason = request.data.get('rejected_reason', '')
+    lr.reviewed_at = now()
+    lr.approved_by = lecturer
+    lr.save()
+    return Response({'success': True})

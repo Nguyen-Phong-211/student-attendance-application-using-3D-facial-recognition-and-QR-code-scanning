@@ -30,7 +30,7 @@ import Sidebar from "../../../components/Layout/Sidebar";
 import Navbar from "../../../components/Layout/Navbar";
 import api from "../../../api/axiosInstance";
 import { getAccountId, logout } from "../../../utils/auth";
-import FormEditProfile from "../profile/EditProfile";
+import FormEditProfile from "./EditProfile";
 
 const { Header } = Layout;
 const { Title } = Typography;

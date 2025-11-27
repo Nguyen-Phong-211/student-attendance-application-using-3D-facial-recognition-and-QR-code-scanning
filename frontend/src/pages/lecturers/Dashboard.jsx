@@ -39,6 +39,7 @@ export default function LecturerDashboard() {
         pending: 0,
         approved: 0,
         rejected: 0,
+        total_classes: 0,
     });
 
     const accountId = getAccountId();

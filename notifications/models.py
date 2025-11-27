@@ -112,5 +112,3 @@ class Reminder(models.Model):
 
     def __str__(self):
         return self.title
-    
-#TRANG

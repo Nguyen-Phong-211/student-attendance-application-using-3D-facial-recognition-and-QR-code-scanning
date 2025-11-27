@@ -190,4 +190,41 @@ def create_notification_for_lecturer(sender, instance, created, **kwargs):
             created_by=student.account,
             to_target=lecturer.account,
         )
-        
+# ==================================================
+# Create notification for student when lecture leave request is approved or rejected
+# ==================================================
+@receiver(post_save, sender=LeaveRequest)
+def create_notification_on_status_change(sender, instance, created, **kwargs):
+    """
+    Tạo thông báo khi LeaveRequest được duyệt hoặc từ chối.
+    """
+    if not created:  # Only care about updated leave requests
+        if instance.status == 'A':  # Approved
+            # Notification for student
+            Notification.objects.create(
+                title=f"Đơn nghỉ được duyệt",
+                content=f"Đơn nghỉ {instance.leave_request_code} của bạn đã được duyệt bởi giảng viên {instance.approved_by.fullname}.",
+                created_by=instance.approved_by.account,
+                to_target=instance.student.account,
+            )
+            # Notification for lecturer
+            Notification.objects.create(
+                title=f"Bạn đã duyệt đơn nghỉ",
+                content=f"Bạn vừa duyệt đơn nghỉ {instance.leave_request_code} của sinh viên {instance.student.fullname}.",
+                created_by=instance.approved_by.account,
+                to_target=instance.approved_by.account,
+            )
+
+        elif instance.status == 'R':  # Rejected
+            Notification.objects.create(
+                title=f"Đơn nghỉ bị từ chối",
+                content=f"Đơn nghỉ {instance.leave_request_code} của bạn đã bị từ chối bởi giảng viên {instance.approved_by.fullname}. Lý do: {instance.rejected_reason}",
+                created_by=instance.approved_by.account,
+                to_target=instance.student.account,
+            )
+            Notification.objects.create(
+                title=f"Bạn đã từ chối đơn nghỉ",
+                content=f"Bạn vừa từ chối đơn nghỉ {instance.leave_request_code} của sinh viên {instance.student.fullname}.",
+                created_by=instance.approved_by.account,
+                to_target=instance.approved_by.account,
+            )

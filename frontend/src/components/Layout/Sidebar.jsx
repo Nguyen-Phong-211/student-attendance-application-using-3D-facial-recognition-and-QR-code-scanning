@@ -69,8 +69,8 @@ const Sidebar = ({ collapsed, setCollapsed, t }) => {
     else if (path.startsWith('/lecturers/notifications')) setSelectedKey('L3');
     else if (path.startsWith('/lecturers/schedule')) setSelectedKey('L5');
     else if (path.startsWith('/lecturers/class/list/all')) setSelectedKey('L7');
-    else if (path.startsWith('/lecturers/leaveapproval')) setSelectedKey('L8');
-    else if (path.startsWith('/lecturers/contactfeedback')) setSelectedKey('L9-1');
+    else if (path.startsWith('/lecturers/leave/approval')) setSelectedKey('L8');
+    else if (path.startsWith('/lecturers/contact/reply')) setSelectedKey('L9-1');
     else if (path.startsWith('/lecturers/reportproblem')) setSelectedKey('L9-2');
     else if (path.startsWith('/lecturers/logout')) setSelectedKey('L10');
 
@@ -273,7 +273,7 @@ const Sidebar = ({ collapsed, setCollapsed, t }) => {
     {
       key: 'L8',
       icon: <FileDoneOutlined />,
-      label: <a href='/lecturers/leaveapproval'>Duyệt đơn nghỉ phép</a>,
+      label: <a href='/lecturers/leave/approval'>Duyệt đơn nghỉ phép</a>,
     },
     {
       key: 'L9',
@@ -283,18 +283,23 @@ const Sidebar = ({ collapsed, setCollapsed, t }) => {
     {
       key: 'L9-1',
       icon: <CustomerServiceOutlined />,
-      label: <a href='/lecturers/contactfeedback'>Phản hồi liên hệ</a>,
+      label: <a href='/lecturers/contact/reply'>Phản hồi liên hệ</a>,
     },
     {
       key: 'L9-2',
       icon: <WarningOutlined />,
-      label: <a href='/lecturers/reportproblem'>Báo cáo sự cố</a>,
+      label: <a href='https://forms.gle/gGpU86suRuBfNd459' target="_blank" rel="noopener noreferrer">Báo cáo sự cố</a>,
     },
     {
       key: 'L10',
-      icon: <LogoutOutlined />,
+      icon: <LogoutOutlined className='text-red-500' />,
       label: (
-        <a href='/lecturers/logout'>Đăng xuất</a>
+        <span
+          onClick={handleLogout}
+          className='text-red-500 cursor-pointer font-bold'
+        >
+          Đăng xuất
+        </span>
       )
     },
   ];

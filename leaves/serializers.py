@@ -175,6 +175,7 @@ class ListSubjectLeaveRequestSerializer(serializers.Serializer):
     subject_name = serializers.CharField()
     max_leave_days = serializers.IntegerField()
     attachment_url = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
 
     def get_attachment_url(self, obj):
         attachment = obj.get("attachment")
@@ -182,3 +183,72 @@ class ListSubjectLeaveRequestSerializer(serializers.Serializer):
             request = self.context.get("request")  # get the request object to get the base url
             return request.build_absolute_uri(f"{settings.MEDIA_URL}{attachment}")
         return None
+    
+    def get_image_url(self, obj):
+        images = obj.get("images_urls")
+        if images:
+            if isinstance(images, str):
+                try:
+                    images = json.loads(images)
+                except:
+                    return []
+            
+            request = self.context.get("request")
+            return [
+                request.build_absolute_uri(image)
+                for image in images
+            ]
+
+        return []
+
+# ==================================================
+# LECTURER: GET LIST LEAVE REQUEST SERIALIZER
+# ==================================================
+class LecturerLeaveRequestSerializer(serializers.Serializer):
+    leave_request_id = serializers.IntegerField()
+    leave_request_code = serializers.UUIDField()
+    reason = serializers.CharField()
+    from_date = serializers.DateTimeField()
+    to_date = serializers.DateTimeField()
+    status = serializers.CharField()
+    rejected_reason = serializers.CharField(allow_null=True)
+    reviewed_at = serializers.DateTimeField(allow_null=True)
+    subject_name = serializers.CharField()
+    max_leave_days = serializers.IntegerField()
+    class_name = serializers.CharField()
+    class_id = serializers.IntegerField()
+    
+    # student info
+    student_id = serializers.IntegerField()
+    student_code = serializers.CharField()
+    fullname = serializers.CharField()
+
+    attachment_url = serializers.SerializerMethodField()
+    images_urls = serializers.SerializerMethodField()
+    created_at = serializers.DateTimeField()
+
+    def get_attachment_url(self, obj):
+        attachment = obj.get("attachment")
+        if not attachment:
+            return None
+
+        request = self.context.get("request")
+        return request.build_absolute_uri(f"{settings.MEDIA_URL}{attachment}")
+
+    def get_images_urls(self, obj):
+        images = obj.get("images_urls")
+        if not images:
+            return []
+
+        # If images is a string, convert it to a list
+        if isinstance(images, str):
+            try:
+                images = json.loads(images)
+            except:
+                return []
+
+        request = self.context.get("request")
+        return [
+            request.build_absolute_uri(f"{image}")
+            for image in images
+        ]
