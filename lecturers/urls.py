@@ -17,7 +17,7 @@ urlpatterns = [
     # Get total lecturer
     path('admin/total-lecturer/', TotalLecturerView.as_view(), name='get-total-lecturer'),
     
-    # Lịch dạy của giảng viên
+    # Schedules
     path('schedules/<int:account_id>/', GetScheduleLecturerView.as_view(), name='lecturer-schedule'),
     
     path('schedules/<int:account_id>/month/', LecturerMonthlyScheduleView.as_view()),

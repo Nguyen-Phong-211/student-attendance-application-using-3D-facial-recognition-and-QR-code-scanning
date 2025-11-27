@@ -13,21 +13,26 @@ const { Text } = Typography;
 
 export default function MonthView({ scheduleData, currentTime }) {
     const getListData = (value) => {
-        const jsDay = value.day();
-        const weekday = jsDay === 0 ? 8 : jsDay + 1;
-        const dateStr = value.format("YYYY-MM-DD");
+    const jsDay = value.day();
+    const weekday = jsDay === 0 ? 8 : jsDay + 1;
+    const dateStr = value.format("YYYY-MM-DD");
 
-        return scheduleData.filter((item) => {
-            const semesterStart = dayjs(item?.semester_start_date);
-            const semesterEnd = dayjs(item?.semester_end_date);
+    return scheduleData.filter((item) => {
+        if (!item) return false;
 
-            if (value.isBefore(semesterStart, "day") || value.isAfter(semesterEnd, "day")) return false;
-            if (item?.repeat_weekly === true || item?.repeat_weekly === "True" || item?.repeat_weekly === 1) {
-                return parseInt(item?.day_of_week, 10) === weekday;
-            }
-            const localDate = dayjs.utc(item?.occurrence_start).tz("Asia/Ho_Chi_Minh").format("YYYY-MM-DD");
-            return localDate === dateStr;
-        });
+        const semesterStart = item?.semester_start_date ? dayjs(item.semester_start_date) : null;
+        const semesterEnd = item?.semester_end_date ? dayjs(item.semester_end_date) : null;
+
+        if ((semesterStart && value.isBefore(semesterStart, "day")) ||
+            (semesterEnd && value.isAfter(semesterEnd, "day"))) return false;
+
+        if (item?.repeat_weekly === true || item?.repeat_weekly === "True" || item?.repeat_weekly === 1) {
+        return parseInt(item?.day_of_week, 10) === weekday;
+        }
+
+        const localDate = item?.occurrence_start ? dayjs.utc(item.occurrence_start).tz("Asia/Ho_Chi_Minh").format("YYYY-MM-DD") : null;
+        return localDate === dateStr;
+    });
     };
 
     const dateCellRender = (value) => {

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Layout, Card, Form, Input, Upload, Button, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
-import Sidebar from "../../../components/Layout/Sidebar_lecturer";
+import Sidebar from "../../../components/Layout/Sidebar";
 import Navbar from "../../../components/Layout/Navbar";
 import Footer from "../../../components/Layout/Footer";
 import axios from "axios";

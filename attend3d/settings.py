@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     # 'daphne',
     'django_crontab',
+    'django_extensions',
     
     'attend3d',
     'accounts',
@@ -66,10 +67,6 @@ INSTALLED_APPS = [
     'students',
     'subjects',
     'staffs',
-    
-    #trang
-    'attend',
-    #'lecturer_contacts'
 ]
 
 # ========================
@@ -149,9 +146,9 @@ CHANNEL_LAYERS = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'attend3d',
+        'NAME': 'attendance_management_db',
         'USER': 'postgres',
-        'PASSWORD': '16102003',
+        'PASSWORD': '1234',
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -200,12 +197,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+# STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'attend3d/templates/react/static'),
-    # os.path.join(BASE_DIR, 'frontend/build/static'),
 ]
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -220,13 +219,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-<<<<<<< HEAD
-EMAIL_HOST_USER = 'zephyrnguyen.vn@gmail.com'
-EMAIL_HOST_PASSWORD = 'uhad fopw pxmb ptlc'
-=======
-EMAIL_HOST_USER = 'huyentrangqb2003@gmail.com'
-EMAIL_HOST_PASSWORD = ''
->>>>>>> htrang
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''  # App password for Gmail
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # ========================
@@ -301,7 +295,7 @@ CACHES = {
     }
 }
 
-RECAPTCHA_SECRET_KEY = '6LcfimYrAAAAAL9AYBWbOi1EzXrTDaS6DvnZqNeA'
+RECAPTCHA_SECRET_KEY = ''
 
 # ================================== DJANGO CRONJOBS ==================================
 CRONJOBS = [

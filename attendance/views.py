@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Attendance
-from students.models import Department
+from students.models import Department, Student
 from .serializers import (
     AttendanceSummarySerializer, AttendanceHistorySerializer, AttendanceStatisticSerializer,
     AttendanceStatisticTotalSerializer, AttendanceByDepartmentSerializer, AttendanceByDateSerializer, AttendanceByClassSerializer
@@ -11,12 +11,13 @@ from .serializers import (
 from django.db.models import Count, Q, F
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
-from subjects.models import Semester
+from subjects.models import Semester, Subject
 from django.utils import timezone
 from django.db.models.functions import TruncDate
 from datetime import timedelta
 from classes.models import Class
 from django.db import transaction
+from lecturers.models import Lecturer, SubjectClass
 
 # ==================================================
 # Display list attendance summary by account_id
@@ -397,3 +398,265 @@ class AttendanceStatisticByClassView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+# ==================================================
+# IMPORT FOR LECTURER VIEWS
+# ==================================================
+
+from classes.minimal_serializers import ClassSerializer
+from subjects.minimal_serializers import SubjectSerializer
+from students.minimal_serializers import StudentSerializer
+
+# ==================================================
+# LECTURER: Calulation the total of attendance session by class
+# ==================================================
+class LecturerClassesView(APIView):
+    """ Get classes taught by the lecturer """
+    def get(self, request, account_id):
+        try:
+            lecturer = Lecturer.objects.filter(account_id=account_id).first()
+            if not lecturer:
+                return Response({"detail": "Giảng viên không tồn tại"}, status=404)
+
+            classes = Class.objects.filter(
+                subject_classes__lecturer=lecturer
+            ).distinct()
+
+            serializer = ClassSerializer(classes, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+class LecturerClassSubjectsView(APIView):
+    """ Get subjects taught by the lecturer in a specific class """
+    def get(self, request, class_id, account_id):
+        try:
+            lecturer = Lecturer.objects.filter(account_id=account_id).first()
+            if not lecturer:
+                return Response({"detail": "Giảng viên không tồn tại"}, status=404)
+
+            subjects = Subject.objects.filter(
+                subject_classes__class_id_id=class_id,
+                subject_classes__lecturer=lecturer
+            ).distinct()
+
+            serializer = SubjectSerializer(subjects, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+class StudentsByClassSubjectView(APIView):
+    """ Get students by class and subject taught by the lecturer """
+    def get(self, request, class_id, subject_id, account_id):
+        try:
+            # Check if the lecturer is teaching the subject in the class
+            if not SubjectClass.objects.filter(
+                subject_id=subject_id,
+                class_id_id=class_id,
+                lecturer__account_id=account_id
+            ).exists():
+                return Response({"detail": "Giảng viên không dạy môn này trong lớp"}, status=400)
+
+            # Get students enrolled in the subject and class
+            students = Student.objects.filter(
+                studentsubject__subject_id=subject_id,
+                class_students__class_id=class_id
+            ).distinct().order_by('fullname')
+
+            serializer = StudentSerializer(students, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+# ====================================================
+# LECTURER: DASHBOARD STATISTICS VIEW
+# ====================================================
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from attendance.models import Attendance
+from students.models import Student
+from subjects.models import Subject
+from classes.models import Class
+
+@api_view(["GET"])
+def lecturer_dashboard_statistics(request):
+    """ Get dashboard statistics for lecturer """
+    class_id = request.GET.get("class_id")
+    subject_id = request.GET.get("subject_id")
+
+    if not class_id or not subject_id:
+        return Response({"detail": "Thiếu class_id hoặc subject_id"}, status=400)
+
+    try:
+        total_attendance = Attendance.objects.filter(
+            schedule__subject_id=subject_id,
+            schedule__class_id=class_id
+        ).count()
+
+        total_present = Attendance.objects.filter(
+            schedule__subject_id=subject_id,
+            schedule__class_id=class_id,
+            status="P"
+        ).count()
+
+        total_absent = Attendance.objects.filter(
+            schedule__subject_id=subject_id,
+            schedule__class_id=class_id,
+            status="A"
+        ).count()
+
+        data = {
+            "totalAttendance": total_attendance,
+            "totalPresent": total_present,
+            "totalAbsent": total_absent,
+        }
+
+        return Response(data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from lecturers.models import SubjectClass
+from leaves.models import LeaveRequest
+
+
+class LeaveRequestStatsView(APIView):
+    """
+    Get leave request statistics for a specific class and subject taught by the lecturer.
+    Returns the count of leave requests in different statuses: Pending, Approved, Rejected.
+    """
+
+    def get(self, request, class_id, subject_id, account_id):
+        try:
+            # Check if the lecturer is teaching the subject in the class
+            if not SubjectClass.objects.filter(
+                subject_id=subject_id,
+                class_id_id=class_id,
+                lecturer__account_id=account_id
+            ).exists():
+                return Response(
+                    {"detail": "Giảng viên không dạy môn này trong lớp"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Get leave requests for the specified class and subject
+            leave_requests = LeaveRequest.objects.filter(
+                subject_id=subject_id,
+                student__class_students__class_id=class_id
+            )
+
+            # Count leave requests in different statuses
+            pending_requests = leave_requests.filter(status='P').count()  # Pending
+            approved_requests = leave_requests.filter(status='A').count()
+            rejected_requests = leave_requests.filter(status='R').count()
+
+            # Prepare response data
+            data = {
+                "pending_requests": pending_requests,
+                "approved_requests": approved_requests,
+                "rejected_requests": rejected_requests,
+            }
+
+            return Response(data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+class LeavePieStatsView(APIView):
+    """
+    Statistics of leave requests by class and subject (for pie chart)
+    Returns the count of each status: Pending / Approved / Rejected
+    """
+    def get(self, request, class_id, subject_id, account_id):
+        try:
+            if not SubjectClass.objects.filter(
+                class_id_id=class_id,
+                subject_id=subject_id,
+                lecturer__account_id=account_id
+            ).exists():
+                return Response({"detail": "Giảng viên không dạy lớp này"}, status=400)
+
+            leave_requests = LeaveRequest.objects.filter(
+                subject_id=subject_id,
+                student__class_students__class_id=class_id
+            )
+
+            data = {
+                "pending": leave_requests.filter(status="P").count(),
+                "approved": leave_requests.filter(status="A").count(),
+                "rejected": leave_requests.filter(status="R").count(),
+            }
+            return Response(data, status=200)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=400)
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from leaves.models import LeaveRequest
+from lecturers.models import SubjectClass
+
+class LeavePieStatsView(APIView):
+    """
+    Statistics of leave requests by class and subject (for pie chart)
+    Returns the count of each status: Pending / Approved / Rejected
+    """
+    def get(self, request, class_id, subject_id, account_id):
+        try:
+            if not SubjectClass.objects.filter(
+                class_id_id=class_id,
+                subject_id=subject_id,
+                lecturer__account_id=account_id
+            ).exists():
+                return Response({"detail": "Giảng viên không dạy lớp này"}, status=400)
+
+            leave_requests = LeaveRequest.objects.filter(
+                subject_id=subject_id,
+                student__class_students__class_id=class_id
+            )
+
+            data = {
+                "pending": leave_requests.filter(status="P").count(),
+                "approved": leave_requests.filter(status="A").count(),
+                "rejected": leave_requests.filter(status="R").count(),
+            }
+            return Response(data, status=200)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=400)
+        
+# ====================================================
+# GET CLASS, SUBJECT, LECTURER INFO FOR EXCEL EXPORT
+# ====================================================
+@api_view(["GET"])
+def get_class_info(request, class_id):
+    try:
+        cls = Class.objects.get(pk=class_id)
+        return Response({"class_name": cls.class_name}, status=200)
+    except Class.DoesNotExist:
+        return Response({"detail": "Không tìm thấy lớp"}, status=404)
+
+
+@api_view(["GET"])
+def get_subject_info(request, subject_id):
+    try:
+        subject = Subject.objects.get(pk=subject_id)
+        return Response({"subject_name": subject.subject_name}, status=200)
+    except Subject.DoesNotExist:
+        return Response({"detail": "Không tìm thấy môn học"}, status=404)
+
+
+@api_view(["GET"])
+def get_lecturer_by_account(request, account_id):
+    try:
+        lecturer = Lecturer.objects.get(account_id=account_id)
+        return Response({"fullname": lecturer.fullname}, status=200)
+    except Lecturer.DoesNotExist:
+        return Response({"detail": "Không tìm thấy giảng viên"}, status=404)

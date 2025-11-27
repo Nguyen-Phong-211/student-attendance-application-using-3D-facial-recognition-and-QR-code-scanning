@@ -1,5 +1,5 @@
 # ==================================================
-# API: Dashboard Overview (Tổng quan giảng viên)
+# API: Dashboard Overview
 # ==================================================
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -44,5 +44,3 @@ class LecturerOverviewView(APIView):
             "totalClasses": total_classes,
             "totalStudents": total_students,
         })
-        
-# Đơn..

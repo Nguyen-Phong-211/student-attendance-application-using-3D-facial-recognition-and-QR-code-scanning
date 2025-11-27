@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Layout, Table, Button, Tabs, message, Tag, Typography, Space
+    Layout, Button, message, Tag, Typography, Space
 } from 'antd';
-import { ReloadOutlined } from '@ant-design/icons';
 import Sidebar from '../../components/Layout/Sidebar';
 import Navbar from '../../components/Layout/Navbar';
 import dayjs from 'dayjs';
 import api from '../../api/axiosInstance';
 import {logout} from '../../utils/auth';
+import TabAuditTransaction from '../../components/Tab/AuditTransaction';
 
 const { Header } = Layout;
-const { TabPane } = Tabs;
 const { Title } = Typography;
 
 export default function Audit() {
@@ -144,9 +143,6 @@ export default function Audit() {
                     <Button type='primary' onClick={() => handleLogout(record)}>
                         Đăng xuất
                     </Button>
-                    <Button type='primary' danger>
-                        Cảnh báo
-                    </Button>
                 </Space>
         },
     ];
@@ -207,52 +203,15 @@ export default function Audit() {
 
                 <main className="mx-4 my-4 p-4 sm:p-6 bg-white rounded shadow">
                     <Title level={3}>Giám sát hệ thống</Title>
-
-                    <Tabs defaultActiveKey="auditTransactions">
-                        <TabPane tab="Giám sát thao tác người dùng" key="auditTransactions">
-                            <div className="flex justify-end mb-3">
-                                <Button
-                                    icon={<ReloadOutlined />}
-                                    onClick={fetchAuditLogs}
-                                    loading={loading}
-                                >
-                                    Làm mới
-                                </Button>
-                            </div>
-
-                            <Table 
-                                rowKey={"log_id"}
-                                columns={columnsAuditLogs}
-                                dataSource={auditLogs}
-                                loading={loading}
-                                pagination={{ pageSize: 10 }}
-                                bordered
-                                scroll={{ x: 'max-content' }}
-                            />
-                        </TabPane>
-
-                        <TabPane tab="Giám sát đăng nhập người dùng" key="auditLogin">
-                            <div className="flex justify-end mb-3">
-                                <Button
-                                    icon={<ReloadOutlined />}
-                                    onClick={fetchLoginLogs}
-                                    loading={loading}
-                                >
-                                    Làm mới
-                                </Button>
-                            </div>
-
-                            <Table
-                                rowKey="login_code"
-                                columns={columnsLoginLogs}
-                                dataSource={loginLogs}
-                                loading={loading}
-                                pagination={{ pageSize: 10 }}
-                                bordered
-                                scroll={{ x: 'max-content' }}
-                            />
-                        </TabPane>
-                    </Tabs>
+                    <TabAuditTransaction
+                        fetchAuditLogs={fetchAuditLogs}
+                        loading={loading}
+                        columnsAuditLogs={columnsAuditLogs}
+                        auditLogs={auditLogs}
+                        fetchLoginLogs={fetchLoginLogs}
+                        loginLogs={loginLogs}
+                        columnsLoginLogs={columnsLoginLogs}
+                    />
                 </main>
             </Layout>
         </Layout>

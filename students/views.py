@@ -547,7 +547,7 @@ class AdminApproveScheduleView(APIView):
     - reason
     - approved_by_id (auto-fetched from request.user)
     """
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser, IsAuthenticated]
 
     def put(self, request):
         request_ids = request.data.get("request_ids")

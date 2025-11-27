@@ -22,7 +22,6 @@ import {
     LogoutOutlined,
     UploadOutlined,
 } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { useTranslation } from "react-i18next";
 import Header from "../../components/Layout/Header";
@@ -37,7 +36,6 @@ const { Title } = Typography;
 
 export default function ProfilePage() {
     const { t } = useTranslation();
-    const navigate = useNavigate();
     const [formData, setFormData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [activeKey, setActiveKey] = useState("personal");

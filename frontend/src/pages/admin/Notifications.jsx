@@ -33,7 +33,7 @@ export default function NotificationManagement() {
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [dateRange, setDateRange] = useState([]);
     const [readStatus, setReadStatus] = useState('all');
-    const [user, setUser] = useState(null);
+    const [, setUser] = useState(null);
 
     useEffect(() => {
         let socket;

@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Layout, Table, Button, Spin, message } from 'antd';
 import { EyeOutlined, ReloadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import Sidebar from '../../../components/Layout/Sidebar_lecturer';
+import Sidebar from "../../../components/Layout/Sidebar";
 import Navbar from '../../../components/Layout/Navbar';
 import api from '../../../api/axiosInstance';
 import LeaveRequestModal from '../LeaveRequest/LeaveRequestModal';
@@ -18,37 +18,39 @@ export default function LeaveRequestList() {
 
   const lecturerId = localStorage.getItem('lecturer_id') || 3;
 
+  const fetchRequests = useCallback(
+    async () => {
+      setLoading(true);
+      try {
+        const res = await api.get(`/leaves/leave-requests/lecturer/${lecturerId}/`);
+        const formatted = res.data.map(r => ({
+          id: r.leave_request_id,
+          leave_request_code: r.leave_request_code,
+          student_id: r.student_id,
+          student_name: r.fullname,
+          subject_name: r.subject_name,
+          class_name: r.class_name || '-',
+          start_date: r.from_date,
+          end_date: r.to_date,
+          reason: r.reason,
+          status: r.leave_request_status,
+          attachment: r.attachment,
+          rejected_reason: r.rejected_reason,
+        }));
+        setRequests(formatted);
+      } catch (err) {
+        console.error(err);
+        message.error('Không thể tải danh sách đơn nghỉ');
+      } finally {
+        setLoading(false);
+      }
+    }, [lecturerId]
+  );
+
   useEffect(() => {
     document.title = 'ATTEND3D - Duyệt đơn nghỉ';
     fetchRequests();
-  }, []);
-
-  const fetchRequests = async () => {
-    setLoading(true);
-    try {
-      const res = await api.get(`/leaves/leave-requests/lecturer/${lecturerId}/`);
-      const formatted = res.data.map(r => ({
-        id: r.leave_request_id,
-        leave_request_code: r.leave_request_code,
-        student_id: r.student_id,
-        student_name: r.fullname,
-        subject_name: r.subject_name,
-        class_name: r.class_name || '-',
-        start_date: r.from_date,
-        end_date: r.to_date,
-        reason: r.reason,
-        status: r.leave_request_status, 
-        attachment: r.attachment,
-        rejected_reason: r.rejected_reason,
-      }));
-      setRequests(formatted);
-    } catch (err) {
-      console.error(err);
-      message.error('Không thể tải danh sách đơn nghỉ');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [fetchRequests]);
 
   const handleView = (record) => {
     setSelectedRequest(record);
@@ -87,16 +89,16 @@ export default function LeaveRequestList() {
     { title: 'Môn học', dataIndex: 'subject_name', key: 'subject_name' },
     { title: 'Từ ngày', dataIndex: 'start_date', render: d => dayjs(d).format('DD/MM/YYYY') },
     { title: 'Đến ngày', dataIndex: 'end_date', render: d => dayjs(d).format('DD/MM/YYYY') },
-    { 
+    {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
       render: s => {
-        switch(s) {
-          case 'A': return <span style={{color:'green'}}>Đã duyệt</span>;
-          case 'R': return <span style={{color:'red'}}>Từ chối</span>;
+        switch (s) {
+          case 'A': return <span style={{ color: 'green' }}>Đã duyệt</span>;
+          case 'R': return <span style={{ color: 'red' }}>Từ chối</span>;
           case 'P':
-          default: return <span style={{color:'orange'}}>Đang chờ</span>;
+          default: return <span style={{ color: 'orange' }}>Đang chờ</span>;
         }
       }
     },

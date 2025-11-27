@@ -6,7 +6,7 @@ import ScheduleCard from "./ScheduleCard";
 const { Text } = Typography;
 
 export default function WeekView({ weekSchedule, currentTime, onLessonClick }) {
-  const startOfWeek = currentTime.startOf("week").add(1, "day"); // Bắt đầu từ Thứ 2
+  const startOfWeek = currentTime.startOf("week").add(1, "day");
 
   const dayColumns = [
     { key: "Monday", label: "Thứ 2" },
@@ -56,7 +56,7 @@ export default function WeekView({ weekSchedule, currentTime, onLessonClick }) {
       >
         {data.map((item, idx) => (
           <div key={idx} style={{ position: "relative" }}>
-            <Tooltip title="Xem mã QR">
+            <Tooltip title="Tạo mã QR điểm danh">
               <QrcodeOutlined
                 style={{
                   position: "absolute",
@@ -104,7 +104,7 @@ export default function WeekView({ weekSchedule, currentTime, onLessonClick }) {
       pagination={false}
       bordered
       scroll={{ x: true }}
-      size="middle"
+      // size="middle"
     />
   );
 }

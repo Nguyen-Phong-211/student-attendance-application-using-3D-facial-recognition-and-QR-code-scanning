@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Thông báo liên hệ - ATTEND 3D</title>
+
+        <!-- Font Quicksand -->
+        <link
+            href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap"
+            rel="stylesheet" />
+
+        <style>
+      body {
+        background-color: #f6f8fb;
+        font-family: "Quicksand", sans-serif;
+        margin: 0;
+        padding: 0;
+        color: #333;
+      }
+
+      .container {
+        max-width: 600px;
+        background: #ffffff;
+        margin: 60px auto;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.06);
+      }
+
+      /* Header */
+      .header {
+        background: linear-gradient(135deg, #06b6d4, #0ea5e9);
+        color: #ffffff;
+        text-align: center;
+        padding: 28px 20px;
+      }
+
+      .header h1 {
+        margin: 0;
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: 1px;
+      }
+
+      .header p {
+        margin: 6px 0 0;
+        font-size: 15px;
+        opacity: 0.9;
+      }
+
+      /* Content */
+      .content {
+        padding: 36px 42px;
+      }
+
+      .content h2 {
+        font-size: 20px;
+        color: #0e7490;
+        margin-bottom: 16px;
+      }
+
+      .content p {
+        font-size: 15px;
+        line-height: 1.8;
+        margin: 12px 0;
+        color: #444;
+      }
+
+      .info-box {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin: 20px 0;
+      }
+
+      .info-box li {
+        font-size: 15px;
+        margin: 8px 0;
+        color: #0369a1;
+      }
+
+      .btn-container {
+        text-align: center;
+        margin: 35px 0 20px;
+      }
+
+      .btn {
+        display: inline-block;
+        background: linear-gradient(135deg, #0891b2, #0ea5e9);
+        color: #fff;
+        text-decoration: none;
+        padding: 12px 36px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 15px;
+        box-shadow: 0 4px 10px rgba(14, 165, 233, 0.25);
+        transition: all 0.3s ease;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px rgba(14, 165, 233, 0.35);
+      }
+
+      /* Footer */
+      .footer {
+        background-color: #f9fafc;
+        border-top: 1px solid #e5e7eb;
+        text-align: center;
+        padding: 24px;
+        font-size: 13px;
+        color: #777;
+      }
+
+      .footer p {
+        margin: 6px 0;
+      }
+
+      .footer a {
+        color: #0ea5e9;
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      .footer a:hover {
+        text-decoration: underline;
+      }
+
+      .footer strong {
+        color: #0ea5e9;
+      }
+    </style>
+    </head>
+
+    <body>
+        <div class="container">
+            <!-- Header -->
+            <div class="header">
+                <h1>ATTEND 3D</h1>
+                <p>Thông báo gửi phản hồi liên hệ thành công</p>
+            </div>
+
+            <!-- Content -->
+            <div class="content">
+                <h2>Xin chào {{ name }}!</h2>
+                <p>Nội dung liên hệ trước đó bạn đã gửi liên hệ</p>
+
+                <div class="info-box">
+                    <ul>
+                        <li><strong>Nội dung liên hệ:</strong> {{ message }}</li>
+                        <li><strong>Thời gian gửi:</strong> {{ createdTime }}</li>
+                    </ul>
+                </div>
+
+                <p>Nội dung liên hệ được {{ fullName }} phản hồi:</p>
+
+                <div class="info-box">
+                    <ul>
+                        <li><strong>Nội dung phản hồi:</strong> {{ response }}</li>
+                        <li><strong>Vào lúc:</strong> {{ updatedTime }}</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
+                <p><strong>FACE CLASS</strong></p>
+                <p>
+                    Website: <a href="https://faceclass.io">faceclass.io</a> |
+                    Phone: 0825&nbsp;025&nbsp;347
+                </p>
+                <p>
+                    Email:
+                    <a
+                        href="mailto:zephyrnguyen.vn@gmail.com">zephyrnguyen.vn@gmail.com</a>
+                </p>
+                <p>&copy; 2025 FACE CLASS. All rights reserved.</p>
+            </div>
+        </div>
+    </body>
+</html>

@@ -10,12 +10,13 @@ import {
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axiosInstance';
 import { useNavigate } from 'react-router-dom';
+import { getRoleAccountId } from '../../utils/auth';
 
 const Navbar = ({ changeLanguage }) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [openDrawer, setOpenDrawer] = useState(false);
-    const [user, setUser] = useState(null);
+    const [, setUser] = useState(null);
     const [notifications, setNotifications] = useState([]);
 
     const [data,] = useState([]);
@@ -173,28 +174,46 @@ const Navbar = ({ changeLanguage }) => {
             ) : (
                 <p className="text-sm text-gray-500">Không có thông báo.</p>
             )}
-            <a href="/admin/notifications" className="block text-center mt-2 text-blue-500 hover:underline text-sm">
-                Xem tất cả
-            </a>
+            {getRoleAccountId() === 'admin' ? (
+                <a href="/admin/notifications" className="block text-center mt-2 text-blue-500 hover:underline text-sm">
+                    Xem tất cả
+                </a>
+            ) : (
+                <a href="/lecturers/notifications" className="block text-center mt-2 text-blue-500 hover:underline text-sm">
+                    Xem tất cả
+                </a>
+            )}
         </div>
     );
 
-     const userMenuItems = [
-            {
-                key: "profile",
-                label: <a href="/lecturers/profile">{t("profile")}</a>,
-                icon: <UserOutlined />,
-            },
-            {
-                key: "logout",
-                label: (
-                    <span onClick={handleLogout} style={{ color: "red" }}>
-                        {t("logout")}
-                    </span>
-                ),
-                icon: <LogoutOutlined style={{ color: "red" }} />,
-            },
-        ];
+    const userMenuItems = getRoleAccountId() === 'admin' 
+    ? [
+        {
+            key: "logout",
+            label: (
+                <span onClick={handleLogout} style={{ color: "red" }}>
+                    {t("logout")}
+                </span>
+            ),
+            icon: <LogoutOutlined style={{ color: "red" }} />,
+        },
+    ]
+    : [
+        {
+            key: "profile",
+            label: <a href="/lecturers/profile">{t("profile")}</a>,
+            icon: <UserOutlined />,
+        },
+        {
+            key: "logout",
+            label: (
+                <span onClick={handleLogout} style={{ color: "red" }}>
+                    {t("logout")}
+                </span>
+            ),
+            icon: <LogoutOutlined style={{ color: "red" }} />,
+        },
+    ];
 
     return (
         <div className="flex items-center gap-4">

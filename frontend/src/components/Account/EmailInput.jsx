@@ -1,6 +1,5 @@
 import React from "react";
 import { Form, Input } from "antd";
-import { ProfileOutlined } from "@ant-design/icons";
 import {Icons} from "../Icons/Icons";
 
 export default function EmailInput({ apiErrors }) {

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Layout, message } from "antd";
-import Sidebar from "../../../components/Layout/Sidebar_lecturer";
+import Sidebar from "../../../components/Layout/Sidebar";
 import Navbar from "../../../components/Layout/Navbar";
 import Footer from "../../../components/Layout/Footer";
 import { useTranslation } from "react-i18next";
@@ -16,7 +16,7 @@ export default function ContactPage() {
     const [collapsed, setCollapsed] = useState(false);
     const [contactType, setContactType] = useState("");
     const [loading, setLoading] = useState(false);
-    const [currentUser, setCurrentUser] = useState({ id: 8 }); // Thay bằng API /accounts/me nếu cần
+    const [currentUser, ] = useState({ id: 8 });
     const [form] = FormAddContactDynamic.useForm?.() || [];
 
     const handleContactTypeChange = (value) => setContactType(value);

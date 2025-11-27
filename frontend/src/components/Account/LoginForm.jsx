@@ -36,7 +36,7 @@ const LoginForm = ({ messageApi, executeRecaptcha, navigate, randomId, loading, 
                 if (loggedInUser?.role === "admin" || loggedInUser?.role === "superadmin") {
                     navigate("/admin/dashboard");
                 } else if (loggedInUser?.role === "lecturer") {
-                    navigate("/lecturer/dashboard");
+                    navigate("/lecturers/dashboard");
                 } else if (loggedInUser?.role === "student") {
                     navigate("/");
                 } else {

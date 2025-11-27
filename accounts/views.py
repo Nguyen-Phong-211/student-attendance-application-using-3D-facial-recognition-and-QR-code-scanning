@@ -280,7 +280,7 @@ class LoginView(APIView):
                     ip_address=ip,
                     user_agent=user_agent,
                 )
-                print(f"Created session ID: {session.id} for user {user.email}")
+                # print(f"Created session ID: {session.id} for user {user.email}")
             except Exception as e:
                 print(f"Failed to create session: {e}")
 
@@ -761,15 +761,16 @@ class ForceLogoutUserView(APIView):
         account.last_logout_at = timezone.now()
         account.save(update_fields=["last_logout_at"])
 
-        # Update logout_time
-        loginLog = LoginLog.objects.get(account_id=account_id)
-        loginLog.logout_time = timezone.now()
-        loginLog.save(update_fields=["logout_time"])
+        # Update all login logs that are still active
+        LoginLog.objects.filter(
+            account_id=account_id,
+            logout_time__isnull=True
+        ).update(logout_time=timezone.now())
 
         # Get all sessions
         sessions = UserSession.objects.filter(account=account)
 
-        # Blacklist and delete token
+        # Blacklist and delete tokens
         for s in sessions:
             try:
                 token = RefreshToken(s.refresh_token)

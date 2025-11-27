@@ -1,6 +1,5 @@
 import React from "react";
 import { Form, Input } from "antd";
-import Icon, { IdcardOutlined } from "@ant-design/icons";
 import {Icons} from "../Icons/Icons";
 
 const LoginFormItems = () => (

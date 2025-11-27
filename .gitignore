@@ -22,3 +22,5 @@ db.sqlite3
 # 
 .DS_Store
 Thumbs.db
+
+accounts/management/commands/seed_account.py

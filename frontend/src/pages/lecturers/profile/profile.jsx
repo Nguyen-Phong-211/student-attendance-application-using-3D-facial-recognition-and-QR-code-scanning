@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Tabs,
   Typography,
@@ -26,7 +26,7 @@ import {
 } from "@ant-design/icons";
 import { v4 as uuidv4 } from "uuid";
 import { useTranslation } from "react-i18next";
-import Sidebar from "../../../components/Layout/Sidebar_lecturer";
+import Sidebar from "../../../components/Layout/Sidebar";
 import Navbar from "../../../components/Layout/Navbar";
 import api from "../../../api/axiosInstance";
 import { getAccountId, logout } from "../../../utils/auth";
@@ -45,12 +45,7 @@ export default function LecturerProfilePage() {
   const accountId = getAccountId();
   const randomId = uuidv4();
 
-  useEffect(() => {
-    document.title = "ATTEND 3D - Hồ sơ giảng viên";
-    fetchData();
-  }, [accountId]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get(`/lecturers/${accountId}/`);
@@ -61,7 +56,12 @@ export default function LecturerProfilePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [accountId]);
+
+  useEffect(() => {
+    document.title = "ATTEND 3D - Hồ sơ giảng viên";
+    fetchData();
+  }, [fetchData, t]);
 
   const items = [
     {
@@ -119,11 +119,11 @@ export default function LecturerProfilePage() {
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
-     
+
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
 
       <Layout>
-    
+
         <Header className="bg-white px-4 flex justify-between items-center border-b">
           <Navbar />
         </Header>
@@ -244,17 +244,17 @@ function PersonalInfo({ formData, setFormData, accountId }) {
               <InfoItem label="Email" value={formData?.email} />
               <InfoItem label="Số điện thoại" value={formData?.phone_number} />
               <InfoItem
-                                label="Giới tính"
-                                value={
-                                    formData?.gender === "M"
-                                    ? "Nam"
-                                    : formData?.gender === "F"
-                                    ? "Nữ"
-                                    : formData?.gender === "O"
-                                    ? "Khác"
-                                    : "Không xác định"
-                                }
-                            />
+                label="Giới tính"
+                value={
+                  formData?.gender === "M"
+                    ? "Nam"
+                    : formData?.gender === "F"
+                      ? "Nữ"
+                      : formData?.gender === "O"
+                        ? "Khác"
+                        : "Không xác định"
+                }
+              />
               <InfoItem
                 label="Ngày sinh"
                 value={

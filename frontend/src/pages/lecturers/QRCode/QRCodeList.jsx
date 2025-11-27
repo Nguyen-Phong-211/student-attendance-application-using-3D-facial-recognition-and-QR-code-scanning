@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import {Layout,Table,Button,Form,DatePicker,TimePicker,Select, Spin,App} from 'antd';
+import React, { useEffect, useState, useCallback } from 'react';
+import { Layout, Table, Button, Form, Spin, App } from 'antd';
 import { ReloadOutlined, DownloadOutlined, PlusOutlined } from '@ant-design/icons';
-import { QRCodeCanvas } from 'qrcode.react';
-import Sidebar from '../../../components/Layout/Sidebar_lecturer';
+import Sidebar from "../../../components/Layout/Sidebar";
 import Navbar from '../../../components/Layout/Navbar';
 import * as XLSX from 'xlsx';
 import api from '../../../api/axiosInstance';
@@ -18,25 +17,27 @@ export default function QRCodeList() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [qrData, setQrData] = useState(null);
   const [form] = Form.useForm();
-  const { message } = App.useApp(); // ✅ Lấy message đúng cách
+  const { message } = App.useApp();
+
+  const fetchSessions = useCallback(
+    async () => {
+      try {
+        setLoading(true);
+        const response = await api.get('/lecturers/attendance/sessions');
+        setSessions(response.data);
+      } catch (error) {
+        console.error('Error fetching sessions:', error);
+        message.error('Lỗi khi tải dữ liệu buổi học');
+      } finally {
+        setLoading(false);
+      }
+    }, [message]
+  );
 
   useEffect(() => {
     document.title = 'ATTEND3D - Danh sách buổi học QR';
     fetchSessions();
-  }, []);
-
-  const fetchSessions = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get('/lecturers/attendance/sessions'); // ✅ bỏ dấu / cuối
-      setSessions(response.data);
-    } catch (error) {
-      console.error('Error fetching sessions:', error);
-      message.error('Lỗi khi tải dữ liệu buổi học');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [ fetchSessions ]);
 
   const exportExcel = () => {
     const excelData = sessions.map(s => ({
@@ -52,7 +53,7 @@ export default function QRCodeList() {
     const worksheet = XLSX.utils.json_to_sheet(excelData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Buổi học QR');
-    XLSX.writeFile(workbook, `danh_sach_qr_${new Date().toISOString().slice(0,10)}.xlsx`);
+    XLSX.writeFile(workbook, `danh_sach_qr_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
   const handleCreateQR = () => {
@@ -109,16 +110,16 @@ export default function QRCodeList() {
 
   const subjectOptions = selectedClassId
     ? [...new Map(
-        sessions.filter(s => s.class_id === selectedClassId)
-                .map(s => [s.subject_name, { label: s.subject_name, value: s.subject_name }])
-      ).values()]
+      sessions.filter(s => s.class_id === selectedClassId)
+        .map(s => [s.subject_name, { label: s.subject_name, value: s.subject_name }])
+    ).values()]
     : [];
 
   const lecturerOptions = selectedClassId && selectedSubjectName
     ? [...new Map(
-        sessions.filter(s => s.class_id === selectedClassId && s.subject_name === selectedSubjectName)
-                .map(s => [s.lecturer_name, { label: s.lecturer_name, value: s.lecturer_name }])
-      ).values()]
+      sessions.filter(s => s.class_id === selectedClassId && s.subject_name === selectedSubjectName)
+        .map(s => [s.lecturer_name, { label: s.lecturer_name, value: s.lecturer_name }])
+    ).values()]
     : [];
 
   const handleLecturerChange = (lecturerName) => {

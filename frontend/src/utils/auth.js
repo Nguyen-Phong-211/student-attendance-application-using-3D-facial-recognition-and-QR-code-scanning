@@ -38,3 +38,11 @@ export const getAccountId = () => {
     const user = getUser();
     return user ? user.account_id : null;
 };
+
+/**
+ * Get account id
+ */
+export const getRoleAccountId = () => {
+    const user = getUser();
+    return user ? user.role : null;
+};

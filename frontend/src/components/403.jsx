@@ -26,7 +26,7 @@ export default function Error403() {
                     status="403"
                     title="403"
                     subTitle="Bạn không có quyền truy cập trang này"
-                    extra={<Button type="primary" size="large" onClick={() => navigate("/lecturer/dashboard")}>Về trang chủ</Button>}
+                    extra={<Button type="primary" size="large" onClick={() => navigate("/lecturers/dashboard")}>Về trang chủ</Button>}
                 />
             </div>
         );

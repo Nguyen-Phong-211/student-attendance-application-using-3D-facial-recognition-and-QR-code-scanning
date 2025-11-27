@@ -36,7 +36,7 @@ class AccountManager(BaseUserManager):
 class Account(AbstractBaseUser, PermissionsMixin):
     class UserType(models.TextChoices):
         STUDENT = "student", "Student"
-        TEACHER = "teacher", "Teacher"
+        TEACHER = "lecturer", "Lecturer"
         ADMIN = "admin", "Admin"
         STAFF = "staff", "Staff"
 

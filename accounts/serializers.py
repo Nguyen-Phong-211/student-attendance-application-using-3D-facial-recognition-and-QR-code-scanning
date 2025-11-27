@@ -70,7 +70,7 @@ class AccountSerializer(serializers.ModelSerializer):
         
         if role.name.lower() == "student":
             validated_data['user_type'] = Account.UserType.STUDENT
-        elif role.name.lower() == "teacher":
+        elif role.name.lower() == "lecturer":
             validated_data['user_type'] = Account.UserType.TEACHER
         elif role.name.lower() == "staff":
             validated_data['user_type'] = Account.UserType.STAFF

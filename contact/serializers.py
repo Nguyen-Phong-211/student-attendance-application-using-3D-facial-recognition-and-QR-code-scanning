@@ -61,7 +61,6 @@ class ContactSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Invalid contact type.")
 
         return super().create(validated_data)
-#TRANG
 # serializers.py
 
 class ContactSerializer(serializers.ModelSerializer):
@@ -70,11 +69,11 @@ class ContactSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def create(self, validated_data):
-        # Người gửi là lecturer
+        # Sender là lecturer
         from_person = validated_data.pop('from_person', None)
         student_id = validated_data.pop('student_id', None)
 
-        # Lấy đối tượng Student từ payload
+        # Get the Student from payload
         student = None
         if student_id:
             student = Student.objects.get(pk=student_id)
@@ -85,4 +84,59 @@ class ContactSerializer(serializers.ModelSerializer):
             **validated_data
         )
         return contact
+# ==============================
+# RESPONSE CONTACT SERIALIZER
+# ==============================
+class ContactListSerializer(serializers.ModelSerializer):
+    subject_name = serializers.SerializerMethodField()
+    class Meta:
+        model = Contact
+        fields = [
+            "contact_id",
+            "contact_code",
+            "fullname",
+            "email",
+            "phone_number",
+            "subject",
+            "subject_name",
+            "message",
+            "status",
+            "status_response",
+            "created_at",
+            "updated_at",
+            "response",
+        ]
 
+    def get_subject_name(self, obj):
+        if obj.subject:
+            return obj.subject.subject_name
+        return None
+
+class ContactDetailSerializer(serializers.ModelSerializer):
+    to_person_name = serializers.SerializerMethodField()
+    subject_name = serializers.SerializerMethodField()
+    class Meta:
+        model = Contact
+        fields = "__all__"
+
+    def get_to_person_name(self, obj):
+        if obj.to_person:
+            return getattr(obj.to_person, "fullname", str(obj.to_person))
+        return None
+    
+    def get_subject_name(self, obj):
+        if obj.subject:
+            return obj.subject.subject_name
+        return None
+
+class ContactReplySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = ["response"]
+
+    def update(self, instance, validated_data):
+        instance.response = validated_data.get("response", instance.response)
+        instance.status = Contact.Status.REPLIED
+        instance.status_response = Contact.Status.REPLIED
+        instance.save()
+        return instance
