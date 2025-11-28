@@ -65,7 +65,7 @@ import Teachingschedule from "../pages/lecturers/schedule/LecturerSchedule"; //
 import QRCodeListManagement from "../pages/lecturers/QRCode/QRCodeList"; //
 import QRCodeCreateManagement from "../pages/lecturers/QRCode/QRCodeCreate"; //
 import Leaveapproval from "../pages/lecturers/leave_request/ApprovalLeaveRequest"; //
-import ManagementClass from "../pages/lecturers/classes/ManagementClass"; //
+import AttendanceManagement from "../pages/lecturers/attendance/AttendanceManagement"; //
 import ReplyContactLecturers from "../pages/lecturers/contact/ReplyContact"; //
 import ProfileLecturers from "../pages/lecturers/profile/Profile"; //
 
@@ -146,7 +146,7 @@ const AppRoutes = () => {
             <Route path="/lecturers/QRCodeList" element={<ProtectedRoute><QRCodeListManagement /></ProtectedRoute>} />
             <Route path="/lecturers/QRCodeCreate" element={<ProtectedRoute><QRCodeCreateManagement /></ProtectedRoute>} />
             <Route path="/lecturers/leave/approval" element={<ProtectedRoute><Leaveapproval /></ProtectedRoute>} />
-            <Route path="/lecturers/class/list/all" element={<ProtectedRoute><ManagementClass /></ProtectedRoute>} />
+            <Route path="/lecturers/management/attendance" element={<ProtectedRoute><AttendanceManagement /></ProtectedRoute>} />
             <Route path="/lecturers/contact/reply" element={<ProtectedRoute><ReplyContactLecturers /></ProtectedRoute>} />
             <Route path="/lecturers/profile" element={<ProtectedRoute><ProfileLecturers /></ProtectedRoute>} />
         </Routes>

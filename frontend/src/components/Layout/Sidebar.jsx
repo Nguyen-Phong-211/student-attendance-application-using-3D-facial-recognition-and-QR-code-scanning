@@ -14,7 +14,8 @@ import {
   FileDoneOutlined,
   CustomerServiceOutlined,
   WarningOutlined,
-  ContactsOutlined
+  ContactsOutlined,
+  // FileExcelOutlined
 } from '@ant-design/icons';
 import LogoFaceId from '../../assets/general/face-recognition.png';
 import api from '../../api/axiosInstance';
@@ -68,11 +69,12 @@ const Sidebar = ({ collapsed, setCollapsed, t }) => {
     else if (path.startsWith('/lecturers/dashboard')) setSelectedKey('L1');
     else if (path.startsWith('/lecturers/notifications')) setSelectedKey('L3');
     else if (path.startsWith('/lecturers/schedule')) setSelectedKey('L5');
-    else if (path.startsWith('/lecturers/class/list/all')) setSelectedKey('L7');
+    else if (path.startsWith('/lecturers/management/attendance')) setSelectedKey('L7');
     else if (path.startsWith('/lecturers/leave/approval')) setSelectedKey('L8');
     else if (path.startsWith('/lecturers/contact/reply')) setSelectedKey('L9-1');
     else if (path.startsWith('/lecturers/reportproblem')) setSelectedKey('L9-2');
     else if (path.startsWith('/lecturers/logout')) setSelectedKey('L10');
+    //  else if (path.startsWith('/lecturers/attendance/export')) setSelectedKey('L11');
 
     else setSelectedKey('');
   }, []);
@@ -262,14 +264,18 @@ const Sidebar = ({ collapsed, setCollapsed, t }) => {
     {
       key: 'L6',
       type: 'group',
-      label: <span className="text-xs text-gray-500 uppercase tracking-wide">Quản lý điểm danh</span>,
+      label: <span className="text-xs text-gray-500 uppercase tracking-wide">Quản lý chung</span>,
     },
     {
       key: 'L7',
       icon: <ReconciliationOutlined />,
-      label: <a href='/lecturers/class/list/all'>Danh sách lớp học</a>,
+      label: <a href='/lecturers/management/attendance'>Điểm danh sinh viên</a>,
     },
-
+    // {
+    //   key: 'L11',
+    //   icon: <FileExcelOutlined />,
+    //   label: <a href='/lecturers/attendance/export'>Xuất file điểm danh</a>,
+    // },
     {
       key: 'L8',
       icon: <FileDoneOutlined />,

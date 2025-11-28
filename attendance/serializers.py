@@ -84,3 +84,37 @@ class AttendanceByClassSerializer(serializers.Serializer):
     present_rate = serializers.FloatField()
     late_rate = serializers.FloatField()
     absent_rate = serializers.FloatField()
+# ==================================================
+# LECTURER: Statistics of attendance by lecturer
+# ==================================================
+class AttendanceRecordSerializer(serializers.Serializer):
+    attendance_id = serializers.IntegerField()
+    code = serializers.CharField()
+    attendance_status = serializers.CharField()
+    attendance_type = serializers.CharField()
+    checkin_at = serializers.DateTimeField()
+
+    student_code = serializers.CharField()
+    fullname = serializers.CharField()
+
+    subject_name = serializers.CharField()
+    subject_id = serializers.IntegerField()
+
+    class_name = serializers.CharField()
+    class_id = serializers.IntegerField()
+
+    schedule_id = serializers.IntegerField()
+    start_time = serializers.DateTimeField()
+# ==================================================
+# LECTURER: Update status of attendance
+# ==================================================
+class AttendanceStatusUpdateSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(
+        choices=[("P", "Present"), ("A", "Absent"), ("L", "Late")],
+        required=True
+    )
+
+    def update(self, instance, validated_data):
+        instance.status = validated_data["status"]
+        instance.save()
+        return instance

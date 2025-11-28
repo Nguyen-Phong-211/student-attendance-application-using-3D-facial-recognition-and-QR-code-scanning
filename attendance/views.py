@@ -6,7 +6,8 @@ from .models import Attendance
 from students.models import Department, Student
 from .serializers import (
     AttendanceSummarySerializer, AttendanceHistorySerializer, AttendanceStatisticSerializer,
-    AttendanceStatisticTotalSerializer, AttendanceByDepartmentSerializer, AttendanceByDateSerializer, AttendanceByClassSerializer
+    AttendanceStatisticTotalSerializer, AttendanceByDepartmentSerializer, AttendanceByDateSerializer, AttendanceByClassSerializer,
+    AttendanceRecordSerializer, AttendanceStatusUpdateSerializer
 )
 from django.db.models import Count, Q, F
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
@@ -18,6 +19,7 @@ from datetime import timedelta
 from classes.models import Class
 from django.db import transaction
 from lecturers.models import Lecturer, SubjectClass
+from datetime import date
 
 # ==================================================
 # Display list attendance summary by account_id
@@ -660,3 +662,101 @@ def get_lecturer_by_account(request, account_id):
         return Response({"fullname": lecturer.fullname}, status=200)
     except Lecturer.DoesNotExist:
         return Response({"detail": "Không tìm thấy giảng viên"}, status=404)
+
+# ====================================================
+# LECTURER: Statistics of attendance by lecturer
+# ====================================================
+class AttendanceByLecturerView(APIView):
+
+    def get(self, request):
+        subject_id = request.query_params.get("subject_id")
+        class_id = request.query_params.get("class_id")
+        account_id = request.query_params.get("account_id")
+        selected_date = request.query_params.get("date")  # optional
+
+        if not subject_id or not class_id or not account_id:
+            return Response({"error": "subject_id, class_id, account_id are required"}, status=400)
+
+        # Nếu date không có → lấy today
+        if selected_date is None:
+            selected_date = date.today().strftime("%Y-%m-%d")
+
+        query = """
+            SELECT
+                a.attendance_id,
+                a.attendance_code AS code,
+                a.status AS attendance_status,
+                a.attendance_type,
+                a.checkin_at,
+                st.student_code,
+                st.fullname,
+                sub.subject_name,
+                sub.subject_id,
+                cl.class_name,
+                cl.class_id,
+                sh.schedule_id,
+                sh.start_time
+            FROM attendances a
+            JOIN students st ON st.student_id = a.student_id
+            JOIN schedules sh ON sh.schedule_id = a.schedule_id
+            JOIN subjects sub ON sub.subject_id = sh.subject_id_id
+            JOIN classes cl  ON cl.class_id   = sh.class_id_id
+            JOIN lecturer_subjects ls ON ls.subject_id = sub.subject_id
+            JOIN lecturers le ON le.lecturer_id = ls.lecturer_id
+            WHERE sub.subject_id = %s
+              AND cl.class_id    = %s
+              AND le.account_id  = %s
+              AND a.checkin_at >= %s::date
+              AND a.checkin_at <  (%s::date + INTERVAL '1 day')
+            ORDER BY st.student_code, a.checkin_at DESC;
+        """
+
+        params = [
+            subject_id,
+            class_id,
+            account_id,
+            selected_date,
+            selected_date,
+        ]
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+
+        columns = [
+            "attendance_id",
+            "code",
+            "attendance_status",
+            "attendance_type",
+            "checkin_at",
+            "student_code",
+            "fullname",
+            "subject_name",
+            "subject_id",
+            "class_name",
+            "class_id",
+            "schedule_id",
+            "start_time",
+        ]
+
+        results = [dict(zip(columns, row)) for row in rows]
+
+        serializer = AttendanceRecordSerializer(results, many=True)
+        return Response(serializer.data)
+# ====================================================
+# LECTURER: Update status of attendance
+# ====================================================
+class AttendanceStatusUpdateView(APIView):
+    def patch(self, request, attendance_id):
+        try:
+            attendance = Attendance.objects.get(attendance_id=attendance_id)
+        except Attendance.DoesNotExist:
+            return Response({"error": "Attendance not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = AttendanceStatusUpdateSerializer(attendance, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Cập nhật thành công", "data": serializer.data}, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

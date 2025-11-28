@@ -1,12 +1,11 @@
 import React from "react";
 import { Result, Button } from "antd";
 import { useNavigate } from "react-router-dom";
+import { getRoleAccountId } from '../utils/auth';
 
 export default function Error403() {
     const navigate = useNavigate();
-
-    const user = localStorage.getItem("user");
-    const userRole = user ? JSON.parse(user).role : null;
+    const userRole = getRoleAccountId();
 
     if (userRole === "admin") {
         return (
