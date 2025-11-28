@@ -14,6 +14,7 @@ from pathlib import Path
 import os
 from datetime import timedelta
 from corsheaders.defaults import default_headers
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,6 +29,7 @@ SECRET_KEY = 'django-insecure-^9^_%2z^agw&jke8+j&igjqd!(1lm(r!8uys6%h@t@dr-%_&j+
 DEBUG = True
 
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+# ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
 
 # ========================
 # APPS ARE DEFINED HERE
@@ -131,11 +133,15 @@ ASGI_APPLICATION = 'attend3d.asgi.application'
 # CHANNEL LAYERS ARE DEFINED HERE
 # ========================
 
+# REDIS_HOST = os.environ.get('REDIS_HOST', 'redis')
+# REDIS_PORT = os.environ.get('REDIS_PORT', '6379')
+
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
             "hosts": [('127.0.0.1', 6379)],
+            # "hosts": [(REDIS_HOST, int(REDIS_PORT))],
         },
     },
 }
@@ -153,16 +159,13 @@ DATABASES = {
         'PORT': '5432',
     }
 }
-
 # DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': os.getenv("DB_NAME"),
-#         'USER': os.getenv("DB_USER"),
-#         'PASSWORD': os.getenv("DB_PASSWORD"),
-#         'HOST': os.getenv("DB_HOST", "localhost"),
-#         'PORT': os.getenv("DB_PORT", "5432"),
-#     }
+#     'default': dj_database_url.config(
+#         default=os.environ.get(
+#             'DATABASE_URL',
+#             'postgres://postgres:1234@db:5432/attendance_management_db'
+#         )
+#     )
 # }
 
 # Password validation
@@ -306,6 +309,8 @@ CRONJOBS = [
 # ==================================================================================
 CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
 CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+# CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
+# CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
 CELERY_TIMEZONE = "Asia/Ho_Chi_Minh"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60

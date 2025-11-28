@@ -1,30 +1,58 @@
-version: '3.9'
+version: "3.9"
 
 services:
-  web:
-    build: .
-    command: gunicorn attend3d.wsgi:application --bind 0.0.0.0:8000
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: attend3d-backend
+    command: python manage.py runserver 0.0.0.0:8000
     ports:
       - "8000:8000"
+    environment:
+      DATABASE_URL: postgres://postgres:1234@db:5432/attendance_management_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      DJANGO_ALLOWED_HOSTS: "127.0.0.1,localhost"
     depends_on:
       - db
-    environment:
-      - DEBUG=1
-      - DB_NAME=attend3d_db
-      - DB_USER=attend3d_user
-      - DB_PASSWORD=attend3d_pass
-      - DB_HOST=db
-      - DB_PORT=5432
+      - redis
+    volumes:
+      - .:/app
+
+  frontend:
+    container_name: attend3d-frontend
+    working_dir: /app/frontend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: npm start
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    tty: true
+    depends_on:
+      - backend
 
   db:
     image: postgres:15
+    container_name: attend3d-db
     restart: always
     environment:
-      POSTGRES_DB: attend3d_db
-      POSTGRES_USER: attend3d_user
-      POSTGRES_PASSWORD: attend3d_pass
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: attendance_management_db
     volumes:
-      - pgdata:/var/lib/postgresql/data/
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  redis:
+    image: redis:7
+    container_name: attend3d-redis
+    ports:
+      - "6379:6379"
+    restart: always
 
 volumes:
-  pgdata:
+  postgres_data:
