@@ -79,7 +79,7 @@ class RefreshTokenView(APIView):
                 new_access_token,
                 httponly=True,
                 samesite='Lax',
-                secure=False,
+                secure=True,
                 max_age=15 * 60,
                 path='/'
             )
@@ -89,7 +89,7 @@ class RefreshTokenView(APIView):
                 new_refresh_token,
                 httponly=True,
                 samesite='Lax',
-                secure=False,
+                secure=True,
                 max_age=30 * 24 * 60 * 60,
                 path='/'
             )
@@ -300,7 +300,7 @@ class LoginView(APIView):
                 key='access_token',
                 value=access_token,
                 httponly=True,
-                secure=False, # True if using HTTPS
+                secure=True, # True if using HTTPS
                 samesite='Lax',
                 max_age=15 * 60,
                 path='/'
@@ -311,7 +311,7 @@ class LoginView(APIView):
                 key='refresh_token',
                 value=refresh_token,
                 httponly=True,
-                secure=False, # True if using HTTPS
+                secure=True, # True if using HTTPS
                 samesite='Lax',
                 max_age=30 * 24 * 60 * 60,
                 path='/'
