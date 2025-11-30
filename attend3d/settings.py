@@ -140,8 +140,8 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
-            # "hosts": [(REDIS_HOST, int(REDIS_PORT))],
+            # "hosts": [('127.0.0.1', 6379)],
+            "hosts": [os.environ.get("REDIS_URL")]
         },
     },
 }
@@ -149,9 +149,11 @@ CHANNEL_LAYERS = {
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DDATABASES = {
+DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get("DATABASE_URL")
+        default=os.environ.get("DATABASE_URL"),
+        conn_max_age=600,
+        ssl_require=True
     )
 }
 
@@ -192,6 +194,7 @@ STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
     # os.path.join(BASE_DIR, 'attend3d/templates/react/static'),
+    os.path.join(BASE_DIR, 'frontend', 'build', 'static'),
 ]
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
@@ -210,7 +213,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True") == "True"
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
@@ -238,20 +241,18 @@ FILE_UPLOAD_HANDLERS = [
 CORS_ALLOW_CREDENTIALS = True
 CSRF_COOKIE_HTTPONLY = False
 CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:3000",
-    "http://localhost:3000",
+    "https://attend3d.onrender.com",
 ]
 CSRF_TRUSTED_ORIGINS = [
-    "http://127.0.0.1:3000",
-    "http://localhost:3000",
+    "https://attend3d.onrender.com",
 ]
 CORS_ALLOW_HEADERS = list(default_headers) + [
     "authorization",
     "x-csrftoken",
 ]
 CORS_ALLOW_ALL_ORIGINS = False
-CSRF_COOKIE_SECURE = False # True if using HTTPS
-SESSION_COOKIE_SECURE = False # True if using HTTPS
+CSRF_COOKIE_SECURE = True # True if using HTTPS
+SESSION_COOKIE_SECURE = True # True if using HTTPS
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SAMESITE = 'Lax'
@@ -296,10 +297,8 @@ CRONJOBS = [
 # ==================================================================================
 # REDIS
 # ==================================================================================
-CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
-CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
-# CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
-# CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
+CELERY_BROKER_URL = os.environ.get("REDIS_URL") + "/0"
+CELERY_RESULT_BACKEND = os.environ.get("REDIS_URL") + "/0"
 CELERY_TIMEZONE = "Asia/Ho_Chi_Minh"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60

@@ -1,30 +1,31 @@
 from django.core.management.base import BaseCommand
 from accounts.models import Account
 from django.contrib.auth.models import Permission, Group
+import os
 
 class Command(BaseCommand):
     help = "Seed 2 admin accounts into the database with is_staff=True, is_superuser=True"
 
     def handle(self, *args, **options):
-        admin_data = [
+        admins = [
             {
-                "email": "zephyrnguyen.vn@gmail.com",
-                "phone_number": "0862302449",
-                "password": "XqkeAo2i7487Yz7upLTp",
+                "email": os.environ.get("ADMIN1_EMAIL"),
+                "phone_number": os.environ.get("ADMIN1_PHONE"),
+                "password": os.environ.get("ADMIN1_PASSWORD"),
                 "user_type": "admin",
             },
             {
-                "email": "huyentrangqb2003@gmail.com",
-                "phone_number": "0932357360",
-                "password": "7thkj9dCD2xzMMocCrs7",
+                "email": os.environ.get("ADMIN2_EMAIL"),
+                "phone_number": os.environ.get("ADMIN2_PHONE"),
+                "password": os.environ.get("ADMIN2_PASSWORD"),
                 "user_type": "admin",
-            },
+            }
         ]
 
         created_count = 0
         skipped_count = 0
 
-        for data in admin_data:
+        for data in admins:
             try:
                 # If account already exists
                 account = Account.objects.filter(email=data['email']).first()
