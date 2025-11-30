@@ -21,6 +21,7 @@ class Command(BaseCommand):
         'seed_subject_classes',
         'seed_students',
         'seed_schedule',
+        'seed_account',
     ]
 
     def handle(self, *args, **kwargs):
