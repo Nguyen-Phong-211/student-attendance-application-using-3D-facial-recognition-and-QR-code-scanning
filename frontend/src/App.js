@@ -6,7 +6,7 @@ import { AuthProvider } from "./auth/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { AppProvider } from "./context/Context";
 
-const SITE_KEY = "6LcfimYrAAAAADA4cOKVbRBjWsmd4Z1LAfPwyEBm";
+const SITE_KEY = "6Lfc8RwsAAAAACX9o7Lk192bZvg3O_2Kl4T3onvZ";
 
 const App = () => {
   return (

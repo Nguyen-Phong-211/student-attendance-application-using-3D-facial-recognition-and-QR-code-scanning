@@ -78,7 +78,7 @@ class RefreshTokenView(APIView):
                 'access_token',
                 new_access_token,
                 httponly=True,
-                samesite='Lax',
+                samesite='None',
                 secure=True,
                 max_age=15 * 60,
                 path='/'
@@ -88,7 +88,7 @@ class RefreshTokenView(APIView):
                 'refresh_token',
                 new_refresh_token,
                 httponly=True,
-                samesite='Lax',
+                samesite='None',
                 secure=True,
                 max_age=30 * 24 * 60 * 60,
                 path='/'
@@ -301,7 +301,7 @@ class LoginView(APIView):
                 value=access_token,
                 httponly=True,
                 secure=True, # True if using HTTPS
-                samesite='Lax',
+                samesite='None',
                 max_age=15 * 60,
                 path='/'
             )
@@ -312,7 +312,7 @@ class LoginView(APIView):
                 value=refresh_token,
                 httponly=True,
                 secure=True, # True if using HTTPS
-                samesite='Lax',
+                samesite='None',
                 max_age=30 * 24 * 60 * 60,
                 path='/'
             )
@@ -367,12 +367,12 @@ class LogoutView(APIView):
         response.delete_cookie(
             "access_token",
             path="/",
-            samesite="Lax"
+            samesite="None"
         )
         response.delete_cookie(
             "refresh_token",
             path="/",
-            samesite="Lax"
+            samesite="None"
         )
         return response
 # End logout
