@@ -1,1 +1,1 @@
-web: uvicorn yourproject.asgi:application --host 0.0.0.0 --port $PORT
+web: uvicorn attend3d.asgi:application --host 0.0.0.0 --port $PORT
