@@ -27,6 +27,7 @@ import uuid
 from django.db.models.fields.files import FieldFile
 import logging
 from .middleware import get_current_user
+from django.core.management import get_commands
 
 logger = logging.getLogger(__name__)
 _old_instance_cache = {}
@@ -197,13 +198,17 @@ def audit_pre_save(sender, instance, **kwargs):
         pass
 
 
+def is_running_management_command():
+    import sys
+    commands = get_commands()
+    return len(sys.argv) > 1 and sys.argv[1] in commands
+
 @receiver(post_save)
 def audit_post_save(sender, instance, created, **kwargs):
-    """
-    Log when model is created or updated.
-    """
     if sender.__name__ == "AuditLog":
         return
+    if is_running_management_command():
+        return  # ignore during migrate/seed/loaddata
 
     old_data = None
     if not created:

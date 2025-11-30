@@ -1,6 +1,5 @@
 # Ignore React build and dependencies
 frontend/node_modules/
-frontend/build/
 
 # 
 __pycache__/
@@ -13,8 +12,6 @@ venv/
 *.env
 
 # 
-*/migrations/*
-!*/migrations/__init__.py
 
 # 
 db.sqlite3
@@ -22,5 +19,3 @@ db.sqlite3
 # 
 .DS_Store
 Thumbs.db
-
-accounts/management/commands/seed_account.py

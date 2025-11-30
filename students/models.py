@@ -139,7 +139,7 @@ class SubjectRegistrationRequest(models.Model):
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, null=True)
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE, null=True)
     reason = models.TextField(null=True)
-    status = models.CharField(default='pending')
+    status = models.CharField(max_length=50, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     reviewed_at = models.DateTimeField(auto_now=True)

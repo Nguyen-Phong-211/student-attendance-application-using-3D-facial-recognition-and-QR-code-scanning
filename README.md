@@ -113,6 +113,12 @@ python manage.py seed_class
 python manage.py seed_subject
 python manage.py seed_shift
 python manage.py seed_lesson_slot
+python manage.py seed_lecturers
+python manage.py seed_lecturer_subjects
+python manage.py makemigrations students --empty -n init_triggers
+python manage.py makemigrations students --empty -n update_sessions_per_class
+python manage.py seed_subject_classes
+python manage.py seed_students
 python manage.py seed_schedule # When system have lecturer's accounts
 ```
 

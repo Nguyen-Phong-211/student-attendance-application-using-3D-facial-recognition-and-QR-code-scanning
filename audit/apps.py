@@ -6,4 +6,3 @@ class AuditConfig(AppConfig):
 
     def ready(self):
         import audit.signals
-        # pass

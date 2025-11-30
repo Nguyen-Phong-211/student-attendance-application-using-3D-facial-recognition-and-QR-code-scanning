@@ -421,7 +421,7 @@ class CreateQRCheckinView(APIView):
                 qr_image_url=f"qr_codes/{file_name}",
             )
 
-            # --- 4️⃣ Gửi thông báo ---
+            # --- Gửi thông báo ---
             try:
                 lecturer = Lecturer.objects.get(account_id=created_by)
 
@@ -437,7 +437,7 @@ class CreateQRCheckinView(APIView):
                 if result:
                     class_id, subject_id = result
 
-                    # 🔥 Truy vấn sinh viên theo lớp & môn học
+                    # Truy vấn sinh viên theo lớp & môn học
                     with connection.cursor() as cursor:
                         cursor.execute("""
                             SELECT DISTINCT
@@ -461,22 +461,22 @@ class CreateQRCheckinView(APIView):
 
                     print(f"DEBUG >>> class_id={class_id}, subject_id={subject_id}, found={len(student_rows)} sinh viên.")
 
-                    # --- 5️⃣ Gửi thông báo ---
+                    # --- 5️Gửi thông báo ---
                     if student_rows:
                         qr_image_full_url = request.build_absolute_uri(f"{settings.MEDIA_URL}qr_codes/{file_name}")
                         send_qr_notifications(lecturer, student_rows, schedule, qr_image_full_url)
                     else:
-                        print("⚠️ Không có sinh viên nào trong lớp/môn này!")
+                        print("Không có sinh viên nào trong lớp/môn này!")
 
                 else:
-                    print("⚠️ Không tìm thấy lịch học để gửi thông báo!")
+                    print("Không tìm thấy lịch học để gửi thông báo!")
 
             except Exception as e:
-                print("❌ Lỗi khi gửi thông báo:", e)
+                print("Lỗi khi gửi thông báo:", e)
 
-            # --- 6️⃣ Trả phản hồi ---
+            # --- 6️Trả phản hồi ---
             return Response({
-                "message": "✅ QR đã được tạo, lưu ảnh và gửi thông báo thành công!",
+                "message": "QR đã được tạo, lưu ảnh và gửi thông báo thành công!",
                 "qr_checkin_id": qr.pk,
                 "qr_image_url": request.build_absolute_uri(
                     f"{settings.MEDIA_URL}qr_codes/{file_name}"
@@ -484,7 +484,7 @@ class CreateQRCheckinView(APIView):
             }, status=201)
 
         except Exception as e:
-            print("❌ ERROR:", e)
+            print("ERROR:", e)
             return Response({"error": str(e)}, status=500)
         
 #TRANG

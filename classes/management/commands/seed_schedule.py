@@ -10,21 +10,8 @@ from classes.models import Class as ClassModel
 from subjects.models import Subject, LessonSlot
 from rooms.models import Room
 from classes.models import Schedule
-
-# Attempt imports for Lecturer, LecturerSubject, SubjectClass, Semester
-# (nhiều project đặt các model này ở app khác nhau -> thử nhiều chỗ)
-Lecturer = None
-LecturerSubject = None
-SubjectClass = None
-Semester = None
-
-try:
-    from lecturers.models import Lecturer
-except Exception:
-    try:
-        from subjects.models import Lecturer  # fallback
-    except Exception:
-        Lecturer = None
+from lecturers.models import SubjectClass, LecturerSubject, Lecturer
+from subjects.models import Semester
 
 for modpath in ("lecturer_subjects.models", "subjects.models", "lecturers.models"):
     if LecturerSubject is None:
@@ -180,14 +167,11 @@ class Command(BaseCommand):
                 continue
 
             # chọn classes cùng academic_year + department (ưu tiên)
-            candidate_classes = [c for c in classes if getattr(c, "academic_year_id", getattr(c, "academic_year", None) and c.academic_year.pk) == subject.academic_year_id and getattr(c, "department_id", getattr(c, "department", None) and c.department.pk) == subject.department_id]
-            # try broader if none: same academic_year, or same department
-            if not candidate_classes:
-                candidate_classes = [c for c in classes if getattr(c, "academic_year_id", None) == subject.academic_year_id]
-            if not candidate_classes:
-                candidate_classes = [c for c in classes if getattr(c, "department_id", None) == subject.department_id]
-            if not candidate_classes:
-                candidate_classes = classes  # fallback
+            subject_classes = SubjectClass.objects.filter(subject=subject).select_related('class_id', 'lecturer', 'semester')
+            if not subject_classes:
+                self.stdout.write(self.style.WARNING(f"[SKIP] Subject '{subject}' không có SubjectClass."))
+                skipped_subjects += 1
+                continue
 
             # choose room pool based on practical credits
             try:
@@ -207,8 +191,10 @@ class Command(BaseCommand):
                 slot = random.choice(slots)
                 day = random.choice(valid_days)
                 room = random.choice(room_pool)
-                class_obj = random.choice(candidate_classes)
-                lecturer = random.choice(lecturers)
+                sc_obj = random.choice(subject_classes)
+                class_obj = sc_obj.class_id
+                lecturer = sc_obj.lecturer
+                chosen_semester = sc_obj.semester
 
                 # conflict checks
                 key_room = (room.pk, slot.pk, day)
