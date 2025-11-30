@@ -253,10 +253,10 @@ FILE_UPLOAD_HANDLERS = [
 CORS_ALLOW_CREDENTIALS = True
 CSRF_COOKIE_HTTPONLY = False
 CORS_ALLOWED_ORIGINS = [
-    "https://attend3d.onrender.com",
+    "https://attend3d.vercel.app",
 ]
 CSRF_TRUSTED_ORIGINS = [
-    "https://attend3d.onrender.com",
+    "https://attend3d.vercel.app",
 ]
 CORS_ALLOW_HEADERS = list(default_headers) + [
     "authorization",
