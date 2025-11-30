@@ -101,6 +101,7 @@ weasyprint==66.0
 webencodings==0.5.1
 websockets==15.0.1
 wheel==0.45.1
+whitenoise==6.11.0
 yarl==1.20.1
 zope.interface==7.2
 zopfli==0.2.3.post1

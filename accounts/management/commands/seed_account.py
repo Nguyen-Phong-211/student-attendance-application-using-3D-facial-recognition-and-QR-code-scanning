@@ -10,13 +10,13 @@ class Command(BaseCommand):
             {
                 "email": "zephyrnguyen.vn@gmail.com",
                 "phone_number": "0862302449",
-                "password": "SDW3l)ISP2c3$_Pn<U8W",
+                "password": "XqkeAo2i7487Yz7upLTp",
                 "user_type": "admin",
             },
             {
                 "email": "huyentrangqb2003@gmail.com",
                 "phone_number": "0932357360",
-                "password": "<A2D@743CMWfG+(vZt{[",
+                "password": "7thkj9dCD2xzMMocCrs7",
                 "user_type": "admin",
             },
         ]

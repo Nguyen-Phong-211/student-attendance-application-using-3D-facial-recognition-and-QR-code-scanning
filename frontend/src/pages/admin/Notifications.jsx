@@ -51,7 +51,7 @@ export default function NotificationManagement() {
                     socket = new WebSocket(`${wsScheme}://127.0.0.1:8000/ws/notifications/${res.data.account_id}/`);
 
                     socket.onopen = () => {
-                        console.log("✅ WebSocket connected to notifications");
+                        console.log("WebSocket connected to notifications");
                     };
 
                     socket.onmessage = (event) => {
