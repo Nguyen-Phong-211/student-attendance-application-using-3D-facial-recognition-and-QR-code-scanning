@@ -47,7 +47,7 @@ from django.contrib.auth import logout
 from django.shortcuts import get_object_or_404
 from audit.models import LoginLog
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from authentication import CookieOrHeaderJWTAuthentication
+from authentication import CookieJWTAuthentication
 
 # Limit the number of active sessions
 MAX_ACTIVE_SESSIONS = 2
@@ -331,7 +331,7 @@ class LoginView(APIView):
 
 # Me
 class MeView(APIView):
-    authentication_classes = [CookieOrHeaderJWTAuthentication]
+    authentication_classes = [CookieJWTAuthentication]
 
     def get(self, request):
         user = request.user
