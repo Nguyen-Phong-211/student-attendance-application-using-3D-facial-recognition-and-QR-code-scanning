@@ -243,7 +243,7 @@ def update_avatar(request, account_id):
     })
 
 # Login
-@method_decorator(name='dispatch')
+@method_decorator(csrf_exempt, name='dispatch')
 class LoginView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
