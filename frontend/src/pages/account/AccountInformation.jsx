@@ -135,8 +135,8 @@ export default function AccountInformation() {
     );
 
     const onFinish = async (values) => {
-        if (totalCredits < 15) {
-            message.error("Bạn phải đăng ký ít nhất 15 tín chỉ!");
+        if (totalCredits < 1) {
+            message.error("Bạn phải đăng ký ít nhất 1 tín chỉ!");
             return;
         }
 

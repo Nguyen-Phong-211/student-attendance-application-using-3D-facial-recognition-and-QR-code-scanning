@@ -33,6 +33,7 @@ from notifications.models import Notification
 from audit.models import AuditLog
 from lecturers.models import Lecturer
 from django.contrib.auth import login
+from django.utils.decorators import method_decorator
 # 
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
@@ -45,6 +46,8 @@ from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.contrib.auth import logout
 from django.shortcuts import get_object_or_404
 from audit.models import LoginLog
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from authentication import CookieOrHeaderJWTAuthentication
 
 # Limit the number of active sessions
 MAX_ACTIVE_SESSIONS = 2
@@ -73,7 +76,11 @@ class RefreshTokenView(APIView):
             new_access_token = str(refresh.access_token)
             new_refresh_token = str(refresh)
 
-            response = JsonResponse({'message': 'Token refreshed successfully'})
+            response = JsonResponse({
+                'message': 'Token refreshed successfully',
+                'access': new_access_token,
+                'refresh': new_refresh_token
+            })
             response.set_cookie(
                 'access_token',
                 new_access_token,
@@ -116,7 +123,6 @@ def csrf_cookie(request):
 # ==================================================
 # Send OTP
 # ==================================================
-@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def send_otp(request):
@@ -151,7 +157,6 @@ def send_otp(request):
 
 
 # Save information of user then auth OTP
-@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def verify_otp(request):
@@ -195,7 +200,6 @@ def verify_otp(request):
     else:
         return Response({'error': serializer.errors}, status=400)
 
-@csrf_exempt
 @api_view(['POST'])
 def update_avatar(request, account_id):
     avatar_file = request.FILES.get('avatar')
@@ -239,6 +243,7 @@ def update_avatar(request, account_id):
     })
 
 # Login
+@method_decorator(name='dispatch')
 class LoginView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
@@ -287,6 +292,8 @@ class LoginView(APIView):
             student_fullname = user.student.fullname if hasattr(user, "student") else None
 
             response = JsonResponse({
+                "access": access_token,
+                "refresh": refresh_token,
                 "user": {
                     "message": "Đăng nhập thành công",
                     "account_id": user.account_id,
@@ -324,11 +331,13 @@ class LoginView(APIView):
 
 # Me
 class MeView(APIView):
+    authentication_classes = [CookieOrHeaderJWTAuthentication]
+
     def get(self, request):
-        if not request.user or not request.user.is_authenticated:
+        user = request.user
+        if not user or not user.is_authenticated:
             return Response({"error": "Unauthorized"}, status=401)
 
-        user = request.user
         return Response({
             "account_id": user.account_id,
             "avatar": request.build_absolute_uri(user.avatar.url) if user.avatar else None,

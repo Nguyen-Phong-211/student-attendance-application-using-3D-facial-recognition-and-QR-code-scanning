@@ -48,7 +48,7 @@ export default function NotificationManagement() {
 
                     // --- Thiết lập WebSocket sau khi có user ---
                     const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
-                    socket = new WebSocket(`${wsScheme}://127.0.0.1:8000/ws/notifications/${res.data.account_id}/`);
+                    socket = new WebSocket(`${wsScheme}://api-attend3d.onrender.com/ws/notifications/${res.data.account_id}/`);
 
                     socket.onopen = () => {
                         console.log("WebSocket connected to notifications");

@@ -144,7 +144,7 @@ const Sidebar = ({ collapsed, setCollapsed, t }) => {
       label: 'Quản lý tài khoản',
       children: [
         { key: '5-1', label: (<a href='/admin/management/account'><i className="fa-regular fa-address-book me-2"></i> Người dùng</a>) },
-        { key: '5-2', label: (<a href='http://127.0.0.1:8000/admin/' target='_blank' rel="noopener noreferrer"><i className="fa-brands fa-square-font-awesome-stroke me-2"></i> Vai trò và phân quyền</a>) },
+        { key: '5-2', label: (<a href='https://api-attend3d.onrender.com/admin' target='_blank' rel="noopener noreferrer"><i className="fa-brands fa-square-font-awesome-stroke me-2"></i> Vai trò và phân quyền</a>) },
       ],
     },
     {
