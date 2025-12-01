@@ -351,41 +351,33 @@ class LogoutView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        user = getattr(request, "user", None)
-        refresh_token = request.data.get("refresh_token")
+        try:
+            user = getattr(request, "user", None)
+            refresh_token = request.data.get("refresh_token") or request.COOKIES.get("refresh_token")
 
-        if not refresh_token:
-            refresh_token = request.COOKIES.get("refresh_token")
+            if user and user.is_authenticated:
+                user.last_logout_at = timezone.now()
+                user.save(update_fields=["last_logout_at"])
+                user_logged_out.send(sender=user.__class__, request=request, user=user)
 
-        if user and user.is_authenticated:
-            user.last_logout_at = timezone.now()
-            user.save(update_fields=["last_logout_at"])
-            user_logged_out.send(sender=user.__class__, request=request, user=user)
+            if refresh_token:
+                UserSession.objects.filter(refresh_token=refresh_token).delete()
+                try:
+                    token = RefreshToken(refresh_token)
+                    token.blacklist()
+                except Exception as e:
+                    print("Blacklist token failed:", e)
 
-        if refresh_token:
-            UserSession.objects.filter(refresh_token=refresh_token).delete()
+            logout(request)
 
-            # blacklist token
-            try:
-                token = RefreshToken(refresh_token)
-                token.blacklist()
-            except Exception:
-                pass
+            response = JsonResponse({"message": "Đăng xuất thành công"})
+            response.delete_cookie("access_token", path="/", samesite='None')
+            response.delete_cookie("refresh_token", path="/", samesite='None')
+            return response
 
-        logout(request)
-
-        response = JsonResponse({"message": "Đăng xuất thành công"})
-        response.delete_cookie(
-            "access_token",
-            path="/",
-            samesite='None'
-        )
-        response.delete_cookie(
-            "refresh_token",
-            path="/",
-            samesite='None'
-        )
-        return response
+        except Exception as e:
+            print("Logout failed:", e)
+            return JsonResponse({"error": "Logout failed", "details": str(e)}, status=400)
 # End logout
 
 class ResetPasswordView(APIView):
