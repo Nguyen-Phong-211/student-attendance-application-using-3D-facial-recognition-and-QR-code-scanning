@@ -252,15 +252,16 @@ class LoginView(APIView):
         serializer = LoginSerializer(data=request.data)
         captcha_token = request.data.get("captcha")
 
-        if not captcha_token or not verify_recaptcha(captcha_token):
-            return Response({'error': 'Xác minh reCAPTCHA không hợp lệ.'}, status=400)
+        user_agent = request.META.get("HTTP_USER_AGENT", "").lower()
+        is_mobile = "flutter" in user_agent
+
+        if not is_mobile:
+            if not captcha_token or not verify_recaptcha(captcha_token):
+                return Response({'error': 'Xác minh reCAPTCHA không hợp lệ.'}, status=400)
 
         if serializer.is_valid():
             user = serializer.validated_data['user']
             login(request, user)
-
-            # Send user_logged_in signal
-            # user_logged_in.send(sender=user.__class__, request=request, user=user)
 
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
