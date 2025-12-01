@@ -1,7 +1,7 @@
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
 
-class CookieOrHeaderJWTAuthentication(JWTAuthentication):
+class CookieJWTAuthentication(JWTAuthentication):
     """
     Authenticate from HttpOnly cookie first (for web),
     fallback to Authorization header (for mobile app).
