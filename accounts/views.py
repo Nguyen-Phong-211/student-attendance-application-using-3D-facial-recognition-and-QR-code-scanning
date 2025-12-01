@@ -297,6 +297,7 @@ class LoginView(APIView):
                 "refresh": refresh_token,
                 "user": {
                     "message": "Đăng nhập thành công",
+                    "student_fullname": student_fullname,
                     "account_id": user.account_id,
                     "role": user.groups.first().name if user.groups.exists() else None,
                     "avatar": request.build_absolute_uri(user.avatar.url) if user.avatar else None,
@@ -368,11 +369,15 @@ class LogoutView(APIView):
                 except Exception as e:
                     print("Blacklist token failed:", e)
 
-            logout(request)
+            # Chỉ logout session nếu user đang login
+            if user and user.is_authenticated:
+                logout(request)
 
             response = JsonResponse({"message": "Đăng xuất thành công"})
+
             response.delete_cookie("access_token", path="/", samesite='None')
             response.delete_cookie("refresh_token", path="/", samesite='None')
+
             return response
 
         except Exception as e:
