@@ -352,19 +352,20 @@ class LogoutView(APIView):
 
     def post(self, request):
         user = getattr(request, "user", None)
-        refresh_token = request.COOKIES.get("refresh_token")
+        refresh_token = request.data.get("refresh_token")
 
-        # Send user_logged_out signal
+        if not refresh_token:
+            refresh_token = request.COOKIES.get("refresh_token")
+
         if user and user.is_authenticated:
             user.last_logout_at = timezone.now()
             user.save(update_fields=["last_logout_at"])
-
             user_logged_out.send(sender=user.__class__, request=request, user=user)
 
         if refresh_token:
             UserSession.objects.filter(refresh_token=refresh_token).delete()
 
-        if refresh_token:
+            # blacklist token
             try:
                 token = RefreshToken(refresh_token)
                 token.blacklist()
@@ -377,12 +378,12 @@ class LogoutView(APIView):
         response.delete_cookie(
             "access_token",
             path="/",
-            samesite="None"
+            samesite='None'
         )
         response.delete_cookie(
             "refresh_token",
             path="/",
-            samesite="None"
+            samesite='None'
         )
         return response
 # End logout
