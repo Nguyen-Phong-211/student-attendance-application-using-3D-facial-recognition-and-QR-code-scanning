@@ -47,7 +47,7 @@ from django.contrib.auth import logout
 from django.shortcuts import get_object_or_404
 from audit.models import LoginLog
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from authentication import CookieJWTAuthentication
+from accounts.authentication import CookieJWTAuthentication
 
 # Limit the number of active sessions
 MAX_ACTIVE_SESSIONS = 2
